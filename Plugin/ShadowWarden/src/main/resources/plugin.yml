@@ -1,0 +1,11 @@
+name: ShadowWarden
+version: '1.0'
+main: dev.didelfo.shadowWarden.ShadowWarden
+api-version: '1.20'
+commands:
+  stafflist:
+    description: Abre el menu con las cabezas
+    usage: /stafflist
+    permission: ShadowWarden.SMS.StaffList
+    permission-message: No tienes permiso para usar este comando
+
