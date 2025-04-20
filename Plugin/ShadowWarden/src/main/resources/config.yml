@@ -1,0 +1,6 @@
+# DataBase Configuration
+db:
+  url: "localhost:3306"
+  name: "shawdowWarden"
+  user: "root"
+  pass: "root"
