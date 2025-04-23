@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.screen
+package dev.didelfo.shadowwarden.ui.screens.addserver
 
 
 import android.Manifest
@@ -65,7 +65,7 @@ fun AddServerScreen(navController: NavHostController, qr: String?) {
         topBar = {
             viewToolBarAddServer(
                 title = "Añadir",
-                onBackClick = { navController.navigate(AppScreens.ServerListScreen.route) }
+                onBackClick = { navController.navigate(AppScreens.HomeScreen.route) }
             )
         },
         content = { paddingValues ->

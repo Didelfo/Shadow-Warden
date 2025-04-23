@@ -45,7 +45,7 @@ class RegisterScreenViewModel: ViewModel() {
         // Encriptamos el token en base64
         val token64 = Base64.getEncoder().encodeToString(token.toByteArray())
 
-        val user = User(response.name, response.uuid, "https://crafatar.com/renders/body/${uuid}?overlay")
+        val user = User(response.name, response.uuid, "https://crafatar.com/renders/head/${uuid}?overlay")
 
         // Creamos el JSON con el usuario
 //                        val jsonUser = Gson().toJson(user)

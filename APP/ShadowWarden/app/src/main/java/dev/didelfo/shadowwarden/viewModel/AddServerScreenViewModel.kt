@@ -89,7 +89,7 @@ class AddServerScreenViewModel(context: Context): ViewModel() {
             mgJSON.saveObject(context, servers,"servers.json" )
 
             // Navegamos a la ventana
-            nav.navigate(AppScreens.ServerListScreen.route)
+            nav.navigate(AppScreens.HomeScreen.route)
 
         }
     }

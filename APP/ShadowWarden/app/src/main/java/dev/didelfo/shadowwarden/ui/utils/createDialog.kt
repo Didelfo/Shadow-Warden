@@ -59,7 +59,7 @@ fun createDialog(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Button(
-                    onClick = { onClick },
+                    onClick = { onClick() },
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = AzulVerdosoOscuro,
