@@ -1,6 +1,47 @@
-# DataBase Configuration
-db:
-  url: "localhost:3306"
+
+#===============================================
+#            Database Configuration
+#===============================================
+dataBase:
+
+  # Enter the type of database you are going to use: "SQLITE", "MYSQL",
+  # "MARIADB" or leave it as "none" if you do not use a database.
+  type: "none"
+
+  # Enter the IP address of your database and the port, if
+  # you selected "SQLITE" you do not need to provide this data
+  ip: "localhost"
+  port: 3306
+
+  # Enter the name of the database the plugin will use. If you don't
+  # know what to enter, leave the default one.
   name: "shawdowWarden"
+
+  # Enter the username and password, if you chose "SQLITE" type,
+  # do not fill in these fields.
   user: "root"
   pass: "root"
+
+
+# -------------------------------------------
+
+
+#===============================================
+#            WebSocket configuration
+#===============================================
+
+websocket:
+
+  # The settings in this section are only for establishing communication
+  # with the mobile app. If you do not want this service, leave it set to false.
+  enable: false
+
+  # Enter the numeric IP of this server (the server where the plugin is, not Bungecord
+  # or Velocity), and the open port for this service. If your host does not allow you
+  # to open ports, you will not be able to use this service.
+  ip: "0.0.0.0"
+  port: 0000
+
+
+# -------------------------------------------
+

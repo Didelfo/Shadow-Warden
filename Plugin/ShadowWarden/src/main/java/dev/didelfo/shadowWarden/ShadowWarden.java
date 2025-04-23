@@ -74,7 +74,7 @@ public final class ShadowWarden extends JavaPlugin {
 
     // Secuencia de inicio
     private void startupSquence(){
-        dbm.secuenciaInicioTablas();
+        //dbm.secuenciaInicioTablas();
     }
 
     // Getters de objetos utilies
