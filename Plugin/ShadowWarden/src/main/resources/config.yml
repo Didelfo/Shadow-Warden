@@ -5,8 +5,8 @@
 dataBase:
 
   # Enter the type of database you are going to use: "SQLITE", "MYSQL",
-  # "MARIADB" or leave it as "none" if you do not use a database.
-  type: "none"
+  # "MARIADB" or leave it as "NONE" if you do not use a database.
+  type: "NONE"
 
   # Enter the IP address of your database and the port, if
   # you selected "SQLITE" you do not need to provide this data
@@ -21,9 +21,6 @@ dataBase:
   # do not fill in these fields.
   user: "root"
   pass: "root"
-
-
-# -------------------------------------------
 
 
 #===============================================
@@ -43,5 +40,4 @@ websocket:
   port: 0000
 
 
-# -------------------------------------------
 

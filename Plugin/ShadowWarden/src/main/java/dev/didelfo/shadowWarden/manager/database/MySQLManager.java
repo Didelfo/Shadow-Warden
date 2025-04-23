@@ -1,4 +1,4 @@
-package dev.didelfo.shadowWarden.manager.db;
+package dev.didelfo.shadowWarden.manager.database;
 
 
 import dev.didelfo.shadowWarden.ShadowWarden;

@@ -4,15 +4,18 @@ import dev.didelfo.shadowWarden.commands.StaffListCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventLogger;
-import dev.didelfo.shadowWarden.manager.db.ManagerDB;
+import dev.didelfo.shadowWarden.manager.connections.WSManager;
+import dev.didelfo.shadowWarden.manager.database.ManagerDB;
 import dev.didelfo.shadowWarden.manager.inventory.InventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ShadowWarden extends JavaPlugin {
 
+    // Manager
     private ManagerDB dbm;
     private InventoryManager invManager;
+    private WSManager wsManager;
 
 
     @Override
@@ -51,7 +54,15 @@ public final class ShadowWarden extends JavaPlugin {
 
     // Inicializador de objetos
     private void initializeObjets(ShadowWarden pl){
-        this.dbm = new ManagerDB(pl);
+        // Inicializar manager
+        if (!pl.getConfig().getString("dataBase.type").equals("NONE")) {
+            this.dbm = new ManagerDB(pl);
+        }
+
+        if (pl.getConfig().getBoolean("websocket.enable")) {
+            this.wsManager = new WSManager(pl);
+        }
+
         this.invManager = new InventoryManager(pl);
     }
 
