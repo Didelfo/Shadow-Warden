@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.screen
+package dev.didelfo.shadowwarden.ui.screens.addserver
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

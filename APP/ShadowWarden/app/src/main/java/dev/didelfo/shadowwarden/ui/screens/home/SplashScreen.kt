@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.screen
+package dev.didelfo.shadowwarden.ui.screens.home
 
 
 import androidx.compose.foundation.Image
