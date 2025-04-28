@@ -80,8 +80,8 @@ dependencies {
     //Activity - Compose
     implementation("androidx.activity:activity-compose:1.10.1")
 
-
-
+    // OKHTTP - Conexion WS
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

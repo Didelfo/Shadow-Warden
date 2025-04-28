@@ -19,7 +19,7 @@ import dev.didelfo.shadowwarden.config.servers.Server
 import dev.didelfo.shadowwarden.config.servers.Servers
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.RojoCoral
-import dev.didelfo.shadowwarden.ui.utils.createDialog
+import dev.didelfo.shadowwarden.ui.screens.utils.createDialog
 import dev.didelfo.shadowwarden.utils.json.JSONCreator
 
 

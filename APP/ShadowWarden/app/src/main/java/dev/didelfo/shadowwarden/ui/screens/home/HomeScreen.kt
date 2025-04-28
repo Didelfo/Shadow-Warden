@@ -8,9 +8,15 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,12 +30,16 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -39,6 +49,8 @@ import coil.request.ImageRequest
 import dev.didelfo.shadowwarden.config.servers.Server
 import dev.didelfo.shadowwarden.config.servers.Servers
 import dev.didelfo.shadowwarden.config.user.User
+import dev.didelfo.shadowwarden.connection.websocket.WSController
+import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.utils.json.JSONCreator
 
@@ -48,6 +60,8 @@ fun HomeScreen(navController: NavHostController){
     val context:Context = LocalContext.current
 
     val servers = remember { getServers(context) }
+
+    var loading by remember { mutableStateOf<Boolean>(false) }
 
     val user = JSONCreator().loadObject(context, "user.json", User::class.java)
 
@@ -70,15 +84,29 @@ fun HomeScreen(navController: NavHostController){
             ServersRecyclerView(
                 servers = servers,
                 modifier = Modifier.padding(paddingValues),
-                onItemClicck = {server ->
-                    Log.d("prueba", server.name)
+                onItemClick = {server ->
+                    // activamos la pantalla de carga
+                    loading = true
+
+                    // Intentamos conectar
+                    WSController.startConnection(server)
+
+                    // quitamos la pantalla de carga
+                    loading = false
+
+                    // Navegamos segun se conecte
+                    if (WSController.isConnected()) {
+                        navController.navigate(AppScreens.RegisterScreen)
+                    } else {
+
+                    }
                 }
             )
-
         }
-
-
     )
+
+    loadingView(loading)
+
 }
 
 // -----------------------------------------------------------
@@ -152,7 +180,7 @@ private fun ToolBarNewHome(
 private fun ServersRecyclerView(
     servers: ArrayList<Server>,
     modifier: Modifier = Modifier,
-    onItemClicck: (Server) -> Unit
+    onItemClick: (Server) -> Unit
 ){
 
     LazyColumn (
@@ -162,7 +190,7 @@ private fun ServersRecyclerView(
         items(servers) { server ->
             ServerItem(
                 server = server,
-                onItemClicck = {onItemClicck(server)}
+                onItemClicck = {onItemClick(server)}
             )
 
         }
@@ -180,7 +208,8 @@ private fun ServerItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal =  16.dp, vertical = 8.dp)
-            .clickable {onItemClicck}/*
+            .clickable {onItemClicck()}
+    /*
         elevation = CardDefaults.cardColors(
             containerColor = AzulVerdosoOscuro
         )

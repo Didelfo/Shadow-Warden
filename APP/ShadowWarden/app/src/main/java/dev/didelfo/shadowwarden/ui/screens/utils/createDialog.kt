@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.utils
+package dev.didelfo.shadowwarden.ui.screens.utils
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
