@@ -4,7 +4,7 @@ import dev.didelfo.shadowWarden.commands.StaffListCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventLogger;
-import dev.didelfo.shadowWarden.manager.connections.WSManager;
+import dev.didelfo.shadowWarden.manager.connections.websocket.WSManager;
 import dev.didelfo.shadowWarden.manager.database.ManagerDB;
 import dev.didelfo.shadowWarden.manager.inventory.InventoryManager;
 import org.bukkit.Bukkit;
@@ -30,19 +30,9 @@ public final class ShadowWarden extends JavaPlugin {
         initializeCommands(this);
         initializeAutocomplete(this);
 
-        // SEcuencia de inicio
+        // Secuencia de inicio
         startupSquence();
 
-
-
-        /*
-        String host = "localhost";
-        int port = 8887;
-
-        WebSocketServer server = new SimpleWebSocketServer(new InetSocketAddress(host, port));
-        server.start();
-        System.out.println("Servidor WebSocket escuchando en ws://" + host + ":" + port);
-        */
 
     }
 
@@ -89,8 +79,9 @@ public final class ShadowWarden extends JavaPlugin {
     }
 
     // Getters de objetos utilies
-    public ManagerDB getManagerDB() { return dbm;} // Gestor DB
+    public ManagerDB getManagerDB() { return dbm;} // Manager BD
     public InventoryManager getInvManager() {return invManager; } // Manager de inventarios
+    public WSManager getWsManager() {return  wsManager; } // Manager de WS
 
 
 }

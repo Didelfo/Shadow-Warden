@@ -39,5 +39,17 @@ websocket:
   ip: "0.0.0.0"
   port: 0000
 
+#===============================================
+#            Threads configuration
+#===============================================
 
+threadspool:
+  # This configuration directly affects server resources and plugin performance. This setting
+  # establishes the minimum and maximum number of threads that will be controlled by the pool
+  # for asynchronous tasks (outside the main thread) so that the thread doesn't block. If you're
+  # unfamiliar with this topic, leave it at its default value (minimum 2 - maximum 6).
+  # WARNING -> This method has no verification or security features. Failure to configure it
+  # properly can lead to multiple problems.
+  min: 2
+  max: 6
 

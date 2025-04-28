@@ -1,4 +1,4 @@
-package dev.didelfo.shadowWarden.manager.connections;
+package dev.didelfo.shadowWarden.manager.connections.websocket;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
 

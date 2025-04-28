@@ -1,5 +1,6 @@
-package dev.didelfo.shadowWarden.manager.connections;
+package dev.didelfo.shadowWarden.manager.connections.websocket;
 
+import dev.didelfo.shadowWarden.ShadowWarden;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -9,10 +10,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class WSServer extends WebSocketServer {
 
+    private ShadowWarden plugin;
     private final CopyOnWriteArraySet<WebSocket> clients = new CopyOnWriteArraySet<>();
 
-    public WSServer(int port){
+    public WSServer(ShadowWarden pl, int port){
         super(new InetSocketAddress(port));
+        this.plugin = pl;
     }
 
 

@@ -104,6 +104,13 @@
             <version>1.6.0</version>
         </dependency>
 
+<!--        ZXING - QR-->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+
 
     </dependencies>
 </project>
