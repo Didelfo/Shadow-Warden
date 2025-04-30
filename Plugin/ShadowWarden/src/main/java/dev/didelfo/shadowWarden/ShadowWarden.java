@@ -1,12 +1,15 @@
 package dev.didelfo.shadowWarden;
 
 import dev.didelfo.shadowWarden.commands.StaffListCommand;
+import dev.didelfo.shadowWarden.commands.StaffMenuCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventLogger;
 import dev.didelfo.shadowWarden.manager.connections.websocket.WSManager;
+import dev.didelfo.shadowWarden.manager.connections.websocket.WSServer;
 import dev.didelfo.shadowWarden.manager.database.ManagerDB;
 import dev.didelfo.shadowWarden.manager.inventory.InventoryManager;
+import dev.didelfo.shadowWarden.manager.message.MessageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,6 +19,8 @@ public final class ShadowWarden extends JavaPlugin {
     private ManagerDB dbm;
     private InventoryManager invManager;
     private WSManager wsManager;
+    private WSServer ws;
+    private MessageManager msgManager;
 
 
     @Override
@@ -54,11 +59,12 @@ public final class ShadowWarden extends JavaPlugin {
         }
 
         this.invManager = new InventoryManager(pl);
+        this.msgManager = new MessageManager(pl);
     }
 
     // Inicializdor de comandos
     private void initializeCommands(ShadowWarden pl){
-        pl.getCommand("stafflist").setExecutor(new StaffListCommand(pl));
+        pl.getCommand("staffmenu").setExecutor(new StaffMenuCommand(pl));
     }
 
     // Inicializador de lisener
@@ -76,12 +82,19 @@ public final class ShadowWarden extends JavaPlugin {
     // Secuencia de inicio
     private void startupSquence(){
         //dbm.secuenciaInicioTablas();
+
+        // Iniciar servicio de WS si es que esta asi configurado
+        if (getConfig().getBoolean("websocket.enable")){
+            ws = new WSServer(this, getConfig().getInt("websocket.port"));
+        }
+
     }
 
     // Getters de objetos utilies
     public ManagerDB getManagerDB() { return dbm;} // Manager BD
     public InventoryManager getInvManager() {return invManager; } // Manager de inventarios
     public WSManager getWsManager() {return  wsManager; } // Manager de WS
+    public MessageManager getMsgManager() {return  msgManager; } // manager de Mensajes (Colorines)
 
 
 }

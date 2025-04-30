@@ -37,7 +37,7 @@ websocket:
   # or Velocity), and the open port for this service. If your host does not allow you
   # to open ports, you will not be able to use this service.
   ip: "0.0.0.0"
-  port: 0000
+  port: 8080
 
 #===============================================
 #            Threads configuration

@@ -1,6 +1,9 @@
 package dev.didelfo.shadowWarden.manager.connections.websocket;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
+import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -21,16 +24,22 @@ public class WSServer extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-
+        plugin.getLogger().info("[Movil] -> Conectado");
     }
 
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-
+        plugin.getLogger().info("[Movil] -> Desconectado");
     }
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            Bukkit.getOnlinePlayers().forEach(player -> {
+                player.sendMessage("[Movil] -> " + s);
+            });
+        });
+
 
     }
 
