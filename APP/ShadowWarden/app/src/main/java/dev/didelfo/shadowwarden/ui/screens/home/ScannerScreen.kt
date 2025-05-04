@@ -1,5 +1,6 @@
-package dev.didelfo.shadowwarden.ui.screens.addserver
+package dev.didelfo.shadowwarden.ui.screens.home
 
+import dev.didelfo.shadowwarden.R
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavHostController
 import com.google.gson.Gson
 import dev.didelfo.shadowwarden.config.servers.QR
@@ -47,7 +49,7 @@ fun ScannerScreen(navController: NavHostController) {
         if (motrarError){
 
             createDialog(
-                Icons.Default.Close,
+                painterResource(R.drawable.close),
                 RojoCoral,
                 "Error",
                 RojoCoral,

@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import dev.didelfo.shadowwarden.ui.screens.addserver.*
 import dev.didelfo.shadowwarden.ui.screens.home.*
+import dev.didelfo.shadowwarden.ui.screens.server.ServerHomeScreen
 
 @Composable
 fun AppNavigation() {
@@ -38,5 +38,16 @@ fun AppNavigation() {
         composable(route = AppScreens.ScannerScreen.route){
             ScannerScreen(navController)
         }
+
+
+// ----------------------------------
+//           Server
+// ----------------------------------
+        composable(route = AppScreens.ServerHomeScreen.route){
+            ServerHomeScreen(navController)
+        }
+
+
+
     }
 }

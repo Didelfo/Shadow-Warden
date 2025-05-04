@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.screens.addserver
+package dev.didelfo.shadowwarden.ui.screens.home
 
 
 import android.Manifest
@@ -9,6 +9,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import dev.didelfo.shadowwarden.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -99,7 +101,7 @@ private fun viewToolBarAddServer(
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(
-                    imageVector = Icons.Default.KeyboardArrowLeft,
+                    painter = painterResource(R.drawable.arrow_back),
                     contentDescription = "Back",
                     tint = VerdeMenta
                 )

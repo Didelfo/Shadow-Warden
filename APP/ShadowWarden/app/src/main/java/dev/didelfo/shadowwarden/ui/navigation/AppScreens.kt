@@ -21,4 +21,10 @@ sealed class AppScreens(val route:String) {
     }
     object ScannerScreen: AppScreens("qr_scanner_screen")
 
+// ----------------------------------
+//           Server
+// ----------------------------------
+
+    object ServerHomeScreen: AppScreens("server_home_screen")
+
 }

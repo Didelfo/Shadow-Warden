@@ -1,22 +1,16 @@
 package dev.didelfo.shadowwarden.ui.screens.home
 
-import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import dev.didelfo.shadowwarden.R
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import android.content.Context
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,7 +24,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -89,7 +83,15 @@ fun HomeScreen(navController: NavHostController){
                     loading = true
 
                     // Intentamos conectar
-                    WSController.startConnection(server)
+//                    WSController.startConnection(server)
+
+                    //-----------
+                    // Pureba eliminar
+
+                    navController.navigate(AppScreens.ServerHomeScreen.route)
+
+
+                    //------------
 
                     // quitamos la pantalla de carga
                     loading = false
@@ -166,7 +168,7 @@ private fun ToolBarNewHome(
         actions = {
             IconButton(onClick = onAddClick) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    painter = painterResource(R.drawable.add),
                     contentDescription = "Add",
                     tint = VerdeMenta
                 )
@@ -221,7 +223,7 @@ private fun ServerItem(
         ) {
             // Icono (asumiendo que tienes los iconos como recursos vectoriales)
             Icon(
-                imageVector = Icons.Default.Home,
+                painter = painterResource(R.drawable.server),
                 contentDescription = "Server Icon",
                 tint = VerdeMenta,
                 modifier = Modifier.size(40.dp)

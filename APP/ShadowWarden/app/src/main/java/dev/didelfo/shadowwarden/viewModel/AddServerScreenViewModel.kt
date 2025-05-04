@@ -1,6 +1,6 @@
 package dev.didelfo.shadowwarden.viewModel
 
-
+import dev.didelfo.shadowwarden.R
 import android.content.pm.PackageManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +13,7 @@ import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.config.servers.QR
 import dev.didelfo.shadowwarden.config.servers.Server
@@ -100,7 +101,7 @@ class AddServerScreenViewModel(context: Context): ViewModel() {
 
         if (errorNombre){
             createDialog(
-                Icons.Default.Close,
+                painterResource(R.drawable.close),
                 RojoCoral,
                 "Error",
                 RojoCoral,

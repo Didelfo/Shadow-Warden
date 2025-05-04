@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import dev.didelfo.shadowwarden.ui.theme.AzulOscuroProfundo
@@ -22,7 +23,7 @@ import dev.didelfo.shadowwarden.ui.theme.VerdeMenta
 
 @Composable
 fun createDialog(
-    icono: ImageVector,
+    icono: Painter,
     colorIcono: Color,
     titulo: String,
     colorTitulo: Color,
@@ -33,7 +34,7 @@ fun createDialog(
     AlertDialog(
         icon = {
             Icon(
-                imageVector = icono,
+                painter = icono,
                 contentDescription = "dasdasd",
                 tint = colorIcono
             )

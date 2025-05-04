@@ -238,7 +238,7 @@ fun mostrarDialogs(
     if (viewModel.showDialogInfo) {
 
         createDialog(
-            Icons.Default.Info,
+            painterResource(R.drawable.info),
             Cian,
             "Información",
             Cian,
@@ -255,7 +255,7 @@ fun mostrarDialogs(
     if (viewModel.showDialogPremium) {
 
         createDialog(
-            Icons.Default.Clear,
+            painterResource(R.drawable.close),
             RojoCoral,
             "Error",
             RojoCoral,
@@ -273,7 +273,7 @@ fun mostrarDialogs(
     if (viewModel.showDialogVerificado) {
 
         createDialog(
-            Icons.Default.Check,
+            painterResource(R.drawable.check),
             VerdeEsmeralda,
             "Verificado",
             VerdeEsmeralda,
