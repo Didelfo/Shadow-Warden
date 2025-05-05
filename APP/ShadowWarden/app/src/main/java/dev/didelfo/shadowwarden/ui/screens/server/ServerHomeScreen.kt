@@ -1,6 +1,6 @@
 package dev.didelfo.shadowwarden.ui.screens.server
 
-import  dev.didelfo.shadowwarden.R
+import dev.didelfo.shadowwarden.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -16,9 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,17 +28,12 @@ import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.utils.GridItem
-
-
-// -----------------------------------------------------------
-//                   Principal
-// -----------------------------------------------------------
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.animation.core.animateFloatAsState
+import kotlin.math.roundToInt
 
 @Composable
-fun ServerHomeScreen(navController: NavHostController){
-
-    // Variables principales
-
+fun ServerHomeScreen(navController: NavHostController) {
     val isEditing = remember { mutableStateOf(false) }
     val items = remember {
         mutableStateListOf(
@@ -59,28 +51,20 @@ fun ServerHomeScreen(navController: NavHostController){
     var draggingIndex by remember { mutableStateOf<Int?>(null) }
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
-
+    var proposedTargetIndex by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
         topBar = {
             ToolBarNewHome(
                 title = "",
-                {
-                    navController.navigate(AppScreens.HomeScreen.route)
-                },
+                { navController.navigate(AppScreens.HomeScreen.route) },
                 {},
-                {
-                    if (isEditing.value){
-                        isEditing.value = false
-                    } else {
-                        isEditing.value = true
-                    }
-                }
+                { isEditing.value = !isEditing.value }
             )
         },
-
         content = { paddingValues ->
-
+            val itemSizeDp = 80.dp
+            val itemSizePx = with(LocalDensity.current) { itemSizeDp.toPx() }
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
@@ -89,13 +73,16 @@ fun ServerHomeScreen(navController: NavHostController){
                     .fillMaxSize()
             ) {
                 itemsIndexed(items) { index, item ->
+                    val isBeingDragged = draggingIndex == index
+                    val animatedOffsetX by animateFloatAsState(if (isBeingDragged) offsetX else 0f, label = "")
+                    val animatedOffsetY by animateFloatAsState(if (isBeingDragged) offsetY else 0f, label = "")
+
                     GridItemCard(
                         item = item,
                         isEditing = isEditing.value,
-                        isBeingDragged = draggingIndex == index,
+                        isBeingDragged = isBeingDragged,
                         onClick = {
                             if (!isEditing.value) {
-                                // Acción real
                                 println("Item clicado: ${item.text}")
                             }
                         },
@@ -111,56 +98,50 @@ fun ServerHomeScreen(navController: NavHostController){
                                         offsetX += dragAmount.x
                                         offsetY += dragAmount.y
 
-                                        val targetIndex = detectTargetIndex(
-                                            items.size,
-                                            draggingIndex!!,
-                                            offsetX,
-                                            offsetY,
-                                            columns = 4
+                                        proposedTargetIndex = detectTargetIndex(
+                                            listSize = items.size,
+                                            fromIndex = draggingIndex!!,
+                                            offsetX = offsetX,
+                                            offsetY = offsetY,
+                                            columns = 4,
+                                            itemSizePx = itemSizePx
                                         )
-                                        if (targetIndex != null && targetIndex != draggingIndex) {
-                                            items.swap(draggingIndex!!, targetIndex)
-                                            draggingIndex = targetIndex
-                                            offsetX = 0f
-                                            offsetY = 0f
-                                        }
                                     },
                                     onDragEnd = {
+                                        if (proposedTargetIndex != null && proposedTargetIndex != draggingIndex) {
+                                            items.swap(draggingIndex!!, proposedTargetIndex!!)
+                                        }
                                         offsetX = 0f
                                         offsetY = 0f
                                         draggingIndex = null
+                                        proposedTargetIndex = null
                                     },
                                     onDragCancel = {
                                         offsetX = 0f
                                         offsetY = 0f
                                         draggingIndex = null
+                                        proposedTargetIndex = null
                                     }
                                 )
                             }
                             .graphicsLayer {
-                                if (draggingIndex == index) {
-                                    translationX = offsetX
-                                    translationY = offsetY
-                                    scaleX = 1.05f
-                                    scaleY = 1.05f
-                                    shadowElevation = 8f
-                                }
+                                translationX = animatedOffsetX
+                                translationY = animatedOffsetY
+                                scaleX = if (isBeingDragged) 1.05f else 1f
+                                scaleY = if (isBeingDragged) 1.05f else 1f
+                                shadowElevation = if (isBeingDragged) 8f else 0f
                             }
                     )
                 }
             }
-
-            
-
         }
     )
-
 }
+
 
 // -----------------------------------------------------------
 //                   Funciones logicas
 // -----------------------------------------------------------
-
 
 fun <T> MutableList<T>.swap(from: Int, to: Int) {
     if (from in indices && to in indices) {
@@ -175,10 +156,11 @@ fun detectTargetIndex(
     fromIndex: Int,
     offsetX: Float,
     offsetY: Float,
-    columns: Int
+    columns: Int,
+    itemSizePx: Float
 ): Int? {
-    val dx = (offsetX / 200).toInt()
-    val dy = (offsetY / 200).toInt()
+    val dx = (offsetX / itemSizePx).roundToInt()
+    val dy = (offsetY / itemSizePx).roundToInt()
     val row = fromIndex / columns
     val col = fromIndex % columns
     val targetRow = row + dy
@@ -186,10 +168,6 @@ fun detectTargetIndex(
     val targetIndex = targetRow * columns + targetCol
     return if (targetIndex in 0 until listSize) targetIndex else null
 }
-
-
-
-
 
 
 // -----------------------------------------------------------
@@ -244,7 +222,6 @@ private fun ToolBarNewHome(
     )
 }
 
-
 @Composable
 fun GridItemCard(
     item: GridItem,
@@ -262,8 +239,12 @@ fun GridItemCard(
                 shape = RoundedCornerShape(16.dp)
             )
             .border(
-                width = if (isEditing) 2.dp else 1.dp,
-                color = if (isBeingDragged) Color.Red else if (isEditing) Color(0xFF7E57C2) else Color.LightGray,
+                width = if (isBeingDragged) 3.dp else if (isEditing) 2.dp else 1.dp,
+                color = when {
+                    isBeingDragged -> Color.Red
+                    isEditing -> Color(0xFF7E57C2)
+                    else -> Color.LightGray
+                },
                 shape = RoundedCornerShape(16.dp)
             ),
         contentAlignment = Alignment.Center
@@ -285,7 +266,7 @@ fun GridItemCard(
             if (isEditing) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Icon(
-                    imageVector = Icons.Default.Home,
+                    painter = painterResource(R.drawable.reload),
                     contentDescription = "Arrastrar",
                     tint = Color.Gray,
                     modifier = Modifier.size(16.dp)
