@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -61,7 +62,7 @@ fun HomeScreen(navController: NavHostController){
 
     Scaffold(
         topBar = {
-            ToolBarNewHome(
+            ToolBar(
                 title = "Servidores",
                 userrr = user,
                 onImageClick = {
@@ -132,7 +133,7 @@ private fun getServers(context: Context): ArrayList<Server> {
 // ToolBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ToolBarNewHome(
+private fun ToolBar(
     title: String,
     userrr: User,
     onImageClick: () -> Unit,
@@ -170,7 +171,8 @@ private fun ToolBarNewHome(
                 Icon(
                     painter = painterResource(R.drawable.add),
                     contentDescription = "Add",
-                    tint = VerdeMenta
+                    tint = VerdeMenta,
+                    modifier = Modifier.size(25.dp)
                 )
             }
         }
@@ -210,7 +212,11 @@ private fun ServerItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal =  16.dp, vertical = 8.dp)
-            .clickable {onItemClicck()}
+            .clickable {onItemClicck()},
+
+        colors = CardDefaults.cardColors(
+            containerColor = AzulGrisElegante // o cualquier color que desees
+        )
     /*
         elevation = CardDefaults.cardColors(
             containerColor = AzulVerdosoOscuro

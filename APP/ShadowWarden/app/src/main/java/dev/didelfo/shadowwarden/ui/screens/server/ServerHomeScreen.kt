@@ -18,7 +18,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,7 +54,7 @@ fun ServerHomeScreen(navController: NavHostController) {
 
     Scaffold(
         topBar = {
-            ToolBarNewHome(
+            ToolBar(
                 title = "",
                 { navController.navigate(AppScreens.HomeScreen.route) },
                 {},
@@ -176,7 +175,7 @@ fun detectTargetIndex(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ToolBarNewHome(
+private fun ToolBar(
     title: String,
     onBackClick: () -> Unit,
     onRefreshClick: () -> Unit,
@@ -199,7 +198,8 @@ private fun ToolBarNewHome(
                 Icon(
                     painter = painterResource(R.drawable.arrow_back),
                     contentDescription = "Atrás",
-                    tint = VerdeMenta
+                    tint = VerdeMenta,
+                    modifier = Modifier.size(25.dp)
                 )
             }
         },
@@ -208,14 +208,16 @@ private fun ToolBarNewHome(
                 Icon(
                     painter = painterResource(R.drawable.reload),
                     contentDescription = "Refrescar",
-                    tint = VerdeMenta
+                    tint = VerdeMenta,
+                    modifier = Modifier.size(25.dp)
                 )
             }
             IconButton(onClick = onEditClick) {
                 Icon(
                     painter = painterResource(R.drawable.edit),
                     contentDescription = "Editar",
-                    tint = VerdeMenta
+                    tint = VerdeMenta,
+                    modifier = Modifier.size(25.dp)
                 )
             }
         }
@@ -235,15 +237,15 @@ fun GridItemCard(
             .padding(8.dp)
             .clickable(enabled = !isEditing, onClick = onClick)
             .background(
-                color = if (isEditing) Color(0xFFEDE7F6) else Color(0xFFFFFFFF),
+                color = AzulGrisElegante,
                 shape = RoundedCornerShape(16.dp)
             )
             .border(
                 width = if (isBeingDragged) 3.dp else if (isEditing) 2.dp else 1.dp,
                 color = when {
-                    isBeingDragged -> Color.Red
-                    isEditing -> Color(0xFF7E57C2)
-                    else -> Color.LightGray
+                    isBeingDragged -> VerdeEsmeralda
+                    isEditing -> RojoCoral
+                    else -> AzulGrisElegante
                 },
                 shape = RoundedCornerShape(16.dp)
             ),
@@ -253,7 +255,7 @@ fun GridItemCard(
             Icon(
                 imageVector = item.icon,
                 contentDescription = item.text,
-                tint = if (isEditing) Color(0xFF512DA8) else Color(0xFF3F51B5),
+                tint = VerdeMenta,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -261,17 +263,9 @@ fun GridItemCard(
                 text = item.text,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = VerdeMenta
             )
-            if (isEditing) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Icon(
-                    painter = painterResource(R.drawable.reload),
-                    contentDescription = "Arrastrar",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
         }
     }
 }
