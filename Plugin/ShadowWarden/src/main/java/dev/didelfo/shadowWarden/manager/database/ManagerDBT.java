@@ -3,11 +3,11 @@ package dev.didelfo.shadowWarden.manager.database;
 import dev.didelfo.shadowWarden.ShadowWarden;
 
 
-public class ManagerDB {
+public class ManagerDBT {
 
     private ShadowWarden plugin;
 
-    public ManagerDB(ShadowWarden pl){
+    public ManagerDBT(ShadowWarden pl){
         this.plugin = pl;
     }
 

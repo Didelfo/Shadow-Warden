@@ -53,3 +53,25 @@ threadspool:
   min: 2
   max: 6
 
+#===============================================
+#            Logs configuration
+#===============================================
+
+logs:
+  # This plugin features enhanced logs stored in separate SQLite databases on a daily basis,
+  # allowing for precise searches. This option must be enabled to use the websocket option with
+  # mobile app communication.
+  enable: false
+
+  # Sources from which to obtain information
+  chat: true
+  commands: true
+  messages: true
+
+  # Set the maximum number of logs, meaning that when it reaches 30, the oldest record will be
+  # deleted the next day and the current day's record will be created. It's completely modifiable;
+  # it's recommended to set a reasonable number, such as 30 or 15.
+  logretentiondays: 30
+
+
+

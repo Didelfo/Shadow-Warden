@@ -1,13 +1,13 @@
 package dev.didelfo.shadowWarden;
 
-import dev.didelfo.shadowWarden.commands.StaffListCommand;
 import dev.didelfo.shadowWarden.commands.StaffMenuCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventLogger;
-import dev.didelfo.shadowWarden.manager.connections.websocket.WSManager;
 import dev.didelfo.shadowWarden.manager.connections.websocket.WSServer;
 import dev.didelfo.shadowWarden.manager.database.ManagerDB;
+import dev.didelfo.shadowWarden.manager.database.ManagerDBT;
+import dev.didelfo.shadowWarden.manager.executor.ExecutorServices;
 import dev.didelfo.shadowWarden.manager.inventory.InventoryManager;
 import dev.didelfo.shadowWarden.manager.message.MessageManager;
 import org.bukkit.Bukkit;
@@ -17,9 +17,10 @@ public final class ShadowWarden extends JavaPlugin {
 
     // Manager
     private ManagerDB dbm;
+    private ManagerDBT dbmT;
     private InventoryManager invManager;
-    private WSManager wsManager;
     private WSServer ws;
+    private ExecutorServices executor;
     private MessageManager msgManager;
 
 
@@ -55,11 +56,16 @@ public final class ShadowWarden extends JavaPlugin {
         }
 
         if (pl.getConfig().getBoolean("websocket.enable")) {
-            this.wsManager = new WSManager(pl);
+            this.ws = new WSServer(pl, pl.getConfig().getInt("websocket.port"));
+            executor.execute(() -> {
+                    ws.start();
+            });
         }
 
+        this.dbmT = new ManagerDBT(pl);
         this.invManager = new InventoryManager(pl);
         this.msgManager = new MessageManager(pl);
+        this.executor = new ExecutorServices(pl);
     }
 
     // Inicializdor de comandos
@@ -83,18 +89,14 @@ public final class ShadowWarden extends JavaPlugin {
     private void startupSquence(){
         //dbm.secuenciaInicioTablas();
 
-        // Iniciar servicio de WS si es que esta asi configurado
-        if (getConfig().getBoolean("websocket.enable")){
-            ws = new WSServer(this, getConfig().getInt("websocket.port"));
-        }
 
     }
 
     // Getters de objetos utilies
     public ManagerDB getManagerDB() { return dbm;} // Manager BD
     public InventoryManager getInvManager() {return invManager; } // Manager de inventarios
-    public WSManager getWsManager() {return  wsManager; } // Manager de WS
     public MessageManager getMsgManager() {return  msgManager; } // manager de Mensajes (Colorines)
+    public ExecutorServices getExecutor() {return executor;} // Ejecutor de hilos
 
 
 }

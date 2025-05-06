@@ -22,18 +22,6 @@ public class PlayerEventLogger implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event){
         Player p = event.getPlayer();
 
-        // Tabla user
-        plugin.getManagerDB().onJoinUser(
-                p.getUniqueId().toString(),
-                p.getName()
-        );
-
-        // Tabla ip
-
-        // Tabla time
-
-        // Tabla KDR
-
     }
 
     @EventHandler
