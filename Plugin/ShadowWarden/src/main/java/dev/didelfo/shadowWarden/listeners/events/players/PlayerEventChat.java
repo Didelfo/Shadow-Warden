@@ -18,12 +18,21 @@ public class PlayerEventChat implements Listener {
     @EventHandler
     public void onPlayerChat(PlayerChatEvent event){
 
-        String message = event.getMessage();
         Player p = event.getPlayer();
+        String msg = event.getMessage();
 
-
+        onMessage(
+                p.getUniqueId().toString(),
+                p.getName().toString(),
+                msg
+        );
 
     }
 
+    private void onMessage(String uuid, String name, String msg){
+        plugin.getExecutor().execute(() -> {
+            plugin.getDbmT().onChat(uuid, name, msg);
+        });
+    }
 
 }

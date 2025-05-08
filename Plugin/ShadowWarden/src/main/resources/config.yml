@@ -63,11 +63,6 @@ logs:
   # mobile app communication.
   enable: false
 
-  # Sources from which to obtain information
-  chat: true
-  commands: true
-  messages: true
-
   # Set the maximum number of logs, meaning that when it reaches 30, the oldest record will be
   # deleted the next day and the current day's record will be created. It's completely modifiable;
   # it's recommended to set a reasonable number, such as 30 or 15.

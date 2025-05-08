@@ -94,8 +94,9 @@ public final class ShadowWarden extends JavaPlugin {
 
     // Getters de objetos utilies
     public ManagerDB getManagerDB() { return dbm;} // Manager BD
+    public ManagerDBT getDbmT() {return dbmT;} // Manager DB Temporal
     public InventoryManager getInvManager() {return invManager; } // Manager de inventarios
-    public MessageManager getMsgManager() {return  msgManager; } // manager de Mensajes (Colorines)
+    public MessageManager getMsgManager() {return  msgManager; } // manager de Mensajes (Colorines);;
     public ExecutorServices getExecutor() {return executor;} // Ejecutor de hilos
 
 
