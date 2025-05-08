@@ -1,5 +1,6 @@
 package dev.didelfo.shadowWarden;
 
+import dev.didelfo.shadowWarden.commands.ReloadCommand;
 import dev.didelfo.shadowWarden.commands.StaffMenuCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
@@ -50,6 +51,13 @@ public final class ShadowWarden extends JavaPlugin {
 
     // Inicializador de objetos
     private void initializeObjets(ShadowWarden pl){
+        // Inicializadores sin condiciones
+        this.dbmT = new ManagerDBT(pl);
+        this.invManager = new InventoryManager(pl);
+        this.msgManager = new MessageManager(pl);
+        this.executor = new ExecutorServices(pl);
+
+
         // Inicializar manager
         if (!pl.getConfig().getString("dataBase.type").equals("NONE")) {
             this.dbm = new ManagerDB(pl);
@@ -62,15 +70,13 @@ public final class ShadowWarden extends JavaPlugin {
             });
         }
 
-        this.dbmT = new ManagerDBT(pl);
-        this.invManager = new InventoryManager(pl);
-        this.msgManager = new MessageManager(pl);
-        this.executor = new ExecutorServices(pl);
+
     }
 
     // Inicializdor de comandos
     private void initializeCommands(ShadowWarden pl){
         pl.getCommand("staffmenu").setExecutor(new StaffMenuCommand(pl));
+        pl.getCommand("reload").setExecutor(new ReloadCommand(pl));
     }
 
     // Inicializador de lisener

@@ -39,6 +39,12 @@ websocket:
   ip: "0.0.0.0"
   port: 8080
 
+  # The certificate expires on the date indicated in "Expiration." If it expires,
+  # delete the file from the security folder. After changing the password, delete the folder.
+  # Any change, whether to the password or the certificate, will impact this service. Handle with caution.
+  pass: "shadowWardennn"
+  expiration: ""
+
 #===============================================
 #            Threads configuration
 #===============================================

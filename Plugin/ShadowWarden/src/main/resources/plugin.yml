@@ -10,6 +10,12 @@ commands:
     permission: shadowWarden.staffmenu
     permisssion-message: No tienes permiso para usar este comando
 
+  reload:
+    description: recarga la configuracion
+    usage: /reload
+    permission: shadowWarden.reload
+    permisssion-message: No tienes permiso para usar este comando
+
 
 permissions:
   shadowWarden.staffmenu:
