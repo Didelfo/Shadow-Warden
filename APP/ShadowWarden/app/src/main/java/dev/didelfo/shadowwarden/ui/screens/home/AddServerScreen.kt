@@ -103,7 +103,8 @@ private fun viewToolBarAddServer(
                 Icon(
                     painter = painterResource(R.drawable.arrow_back),
                     contentDescription = "Back",
-                    tint = VerdeMenta
+                    tint = VerdeMenta,
+                    modifier = Modifier.size(25.dp)
                 )
             }
         }
@@ -129,8 +130,8 @@ private fun viewCentralAddServer(
                 .width(350.dp)
                 .height(200.dp),
             shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(2.dp, Cian),
-            color = AzulOscuroProfundo
+//            border = BorderStroke(2.dp, Cian),
+            color = AzulGrisElegante
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -141,6 +142,11 @@ private fun viewCentralAddServer(
             }
         }
     }
+}
+
+@Composable
+private fun genPalabras(){
+
 }
 
 @Composable

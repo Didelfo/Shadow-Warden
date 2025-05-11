@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.utils.security.json
+package dev.didelfo.shadowwarden.utils.security.keys
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
@@ -9,7 +9,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-class SecureJsonManager(private val context: Context, private val keyAlias: String) {
+class SecureManager(private val context: Context, private val keyAlias: String) {
 
     init {
         // Inicializar el Keystore y generar la clave si no existe

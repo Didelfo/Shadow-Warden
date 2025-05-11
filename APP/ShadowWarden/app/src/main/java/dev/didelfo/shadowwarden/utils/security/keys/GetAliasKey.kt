@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.utils.security.json
+package dev.didelfo.shadowwarden.utils.security.keys
 
 class GetAliasKey() {
 
@@ -7,6 +7,7 @@ class GetAliasKey() {
 
         return when (alias){
             KeyAlias.KeyToken -> "ShadowWardenTokenKey"
+            KeyAlias.KeyEncripQR -> "ShadowWardenKeyEncripQR"
         }
     }
 

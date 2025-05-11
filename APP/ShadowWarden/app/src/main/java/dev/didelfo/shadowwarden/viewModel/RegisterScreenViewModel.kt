@@ -1,10 +1,8 @@
 package dev.didelfo.shadowwarden.viewModel
 
 import android.content.Context
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
@@ -12,9 +10,9 @@ import dev.didelfo.shadowwarden.config.user.Tokeen
 import dev.didelfo.shadowwarden.config.user.User
 import dev.didelfo.shadowwarden.connection.MC.MinecraftUUIDResponse
 import dev.didelfo.shadowwarden.utils.json.JSONCreator
-import dev.didelfo.shadowwarden.utils.security.json.GetAliasKey
-import dev.didelfo.shadowwarden.utils.security.json.KeyAlias
-import dev.didelfo.shadowwarden.utils.security.json.SecureJsonManager
+import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
+import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
+import dev.didelfo.shadowwarden.utils.security.keys.SecureManager
 import java.util.Base64
 import java.util.Date
 import java.util.UUID
@@ -58,7 +56,7 @@ class RegisterScreenViewModel: ViewModel() {
 
 
         // Procecemos a encriptar el JSON y guardarlo
-        val encript = SecureJsonManager(context, GetAliasKey().getKey(KeyAlias.KeyToken))
+        val encript = SecureManager(context, GetAliasKey().getKey(KeyAlias.KeyToken))
 
         val jsonEncriptado = encript.encryptJson(jsonToken)
         encript.saveEncryptedFile("token.dat", jsonEncriptado)
