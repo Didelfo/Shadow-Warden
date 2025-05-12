@@ -40,23 +40,10 @@ class AddServerScreenViewModel(context: Context): ViewModel() {
 
     lateinit var nav:NavHostController
 
-    // Permisos camara
-    var cameraPermission by mutableStateOf(false)
 
 
 
-    @Composable
-    fun tienePermisos(context: Context){
-        var permisoConcedido by remember {
-            mutableStateOf(
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.CAMERA
-                ) == PackageManager.PERMISSION_GRANTED
-            )
-        }
-        cameraPermission = permisoConcedido
-    }
+
 
     @Composable
     fun escanearQR(){

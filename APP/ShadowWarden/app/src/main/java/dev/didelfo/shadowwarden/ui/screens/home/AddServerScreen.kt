@@ -2,6 +2,8 @@ package dev.didelfo.shadowwarden.ui.screens.home
 
 
 import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
@@ -40,7 +43,7 @@ fun AddServerScreen(navController: NavHostController, qr: String?) {
     // ViewModel
     val viewModel = AddServerScreenViewModel(context)
 
-    viewModel.nav = navController
+    AddServerManager.inicializarNavControler(navController)
 
     // Si tenemos un qr, tenemos que procesarlo y verificar que es el correcto
 
@@ -50,17 +53,10 @@ fun AddServerScreen(navController: NavHostController, qr: String?) {
     }
 
 
+    AddServerManager.pedirPermisoCamara(context)
 
-    viewModel.tienePermisos(context)
 
     viewModel.mostrarError()
-
-    // Permisos camara
-    val pedirPermisoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { concedido ->
-        viewModel.cameraPermission = concedido
-    }
 
     viewModel.escanearQR()
 
@@ -74,7 +70,7 @@ fun AddServerScreen(navController: NavHostController, qr: String?) {
         },
         content = { paddingValues ->
             viewCentralAddServer(
-                pedirPermisoLauncher,
+                context,
                 modifier = Modifier.padding(paddingValues),
                 viewModel
             )
@@ -115,7 +111,7 @@ private fun viewToolBarAddServer(
 
 @Composable
 private fun viewCentralAddServer(
-    pedirPermisoLauncher: ManagedActivityResultLauncher<String, Boolean>,
+    context: Context,
     modifier: Modifier = Modifier,
     viewModel: AddServerScreenViewModel
 ) {
@@ -129,8 +125,7 @@ private fun viewCentralAddServer(
         // Recuadro en el centro
         Surface(
             modifier = Modifier
-                .width(350.dp)
-                .height(500.dp),
+                .width(350.dp),
             shape = RoundedCornerShape(10.dp),
 //            border = BorderStroke(2.dp, Cian),
             color = AzulGrisElegante
@@ -140,11 +135,13 @@ private fun viewCentralAddServer(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                newcontenido(pedirPermisoLauncher,viewModel)
+                AddServerManager.viewWords()
+                AddServerManager.addView()
             }
         }
     }
 }
+
 
 
 @Composable
@@ -152,36 +149,10 @@ private fun newcontenido(
     pedirPermisoLauncher: ManagedActivityResultLauncher<String, Boolean>,
     viewModel: AddServerScreenViewModel
 ) {
-    // Supongo que estas variables están en tu ViewModel
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Icono centrado arriba
-        AddServerManager.getIconHead()
-
-        // Texto descriptivo
-        AddServerManager.getTextDescripcion()
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Tres iconos en horizontal
-        AddServerManager.getIconsStatus()
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Cuadro de texto (oculto según variable)
-        AddServerManager.getTextField()
-
-        // Botón final
-        Spacer(modifier = Modifier.height(20.dp))
-        AddServerManager.getButton()
-    }
+    AddServerManager.addView()
 }
 
-@Composable
-private fun genPalabras(){
 
-}
 
 @Composable
 private fun contenido(
@@ -227,13 +198,7 @@ private fun contenido(
         onClick = {
             // Escanear
             if (viewModel.textoBoton.equals("Escanear")) {
-                if (viewModel.cameraPermission) {
 
-                    viewModel.escanear = true
-
-                } else {
-                    pedirPermisoLauncher.launch(Manifest.permission.CAMERA)
-                }
             }
 
             if (viewModel.textoBoton.equals("Añadir")) {
