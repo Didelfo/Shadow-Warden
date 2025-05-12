@@ -5,7 +5,6 @@ import android.Manifest
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -13,7 +12,9 @@ import dev.didelfo.shadowwarden.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
+import dev.didelfo.shadowwarden.utils.manager.AddServerManager
 import dev.didelfo.shadowwarden.viewModel.AddServerScreenViewModel
 
 @Composable
@@ -128,7 +130,7 @@ private fun viewCentralAddServer(
         Surface(
             modifier = Modifier
                 .width(350.dp)
-                .height(200.dp),
+                .height(500.dp),
             shape = RoundedCornerShape(10.dp),
 //            border = BorderStroke(2.dp, Cian),
             color = AzulGrisElegante
@@ -138,9 +140,41 @@ private fun viewCentralAddServer(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                contenido(pedirPermisoLauncher,viewModel)
+                newcontenido(pedirPermisoLauncher,viewModel)
             }
         }
+    }
+}
+
+
+@Composable
+private fun newcontenido(
+    pedirPermisoLauncher: ManagedActivityResultLauncher<String, Boolean>,
+    viewModel: AddServerScreenViewModel
+) {
+    // Supongo que estas variables están en tu ViewModel
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Icono centrado arriba
+        AddServerManager.getIconHead()
+
+        // Texto descriptivo
+        AddServerManager.getTextDescripcion()
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Tres iconos en horizontal
+        AddServerManager.getIconsStatus()
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Cuadro de texto (oculto según variable)
+        AddServerManager.getTextField()
+
+        // Botón final
+        Spacer(modifier = Modifier.height(20.dp))
+        AddServerManager.getButton()
     }
 }
 
