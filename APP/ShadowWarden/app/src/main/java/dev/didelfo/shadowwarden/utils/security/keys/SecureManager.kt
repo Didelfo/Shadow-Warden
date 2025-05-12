@@ -85,4 +85,5 @@ class SecureManager(private val context: Context, private val keyAlias: String) 
         fileInputStream.close()
         return fileBytes
     }
+
 }

@@ -83,6 +83,10 @@ dependencies {
     // OKHTTP - Conexion WS
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
+    // BitcoinJ - BIP-39
+    implementation("org.bitcoinj:bitcoinj-core:0.17")
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
