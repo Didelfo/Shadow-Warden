@@ -213,7 +213,7 @@ object AddServerManager {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.key_generate_icon),
+                    painter = painterResource(R.drawable.key_icon),
                     contentDescription = "Icono",
                     tint = AzulVerdosoOscuro,
                     modifier = Modifier.size(32.dp)
