@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -85,6 +87,11 @@ dependencies {
 
     // BitcoinJ - BIP-39
     implementation("org.bitcoinj:bitcoinj-core:0.17")
+
+    // FireBase
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
 
 
     implementation(libs.androidx.core.ktx)

@@ -55,7 +55,6 @@ import dev.didelfo.shadowwarden.ui.theme.OpenSanNormal
 import dev.didelfo.shadowwarden.ui.theme.RojoCoral
 import dev.didelfo.shadowwarden.ui.theme.VerdeEsmeralda
 import dev.didelfo.shadowwarden.ui.theme.VerdeMenta
-import dev.didelfo.shadowwarden.utils.security.certificate.KeyCertificateTemp
 import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
 import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
 
@@ -80,15 +79,10 @@ object AddServerManager {
 
     // Varialbes TextField
     private var showTextFiel:Boolean = false
-    private var nameServer by mutableStateOf(" fgfg")
+    private var nameServer by mutableStateOf("")
 
     // Variables Button
     private var textButton:String = "Generar"
-
-    // Varialbe Mostrar vista palabras
-    private var showWords by mutableStateOf(false)
-    private var palabras: List<String> = listOf()
-
 
     // Permisos camara
     private var permisoCamara by mutableStateOf(false)
@@ -109,16 +103,10 @@ object AddServerManager {
         showTextFiel = false
         nameServer = ""
         textButton = "Generar"
-        showWords = false
-        palabras = listOf()
-        KeyCertificateTemp(GetAliasKey().getKey(KeyAlias.KeyEncripQR)).deleteTemporaryKey()
         permisoCamara = false
         verPermiso = false
     }
 
-    private fun generarPalabrasSeguridad(){
-        palabras = KeyCertificateTemp(GetAliasKey().getKey(KeyAlias.KeyEncripQR)).generateTemporaryKeyAndMnemonic()
-    }
 
     fun inicializarNavControler(nav:NavHostController){
         navController = nav
@@ -132,92 +120,6 @@ object AddServerManager {
 //         Funciones Composable
 //===========================================
 
-    // ------------ Mostrar Palabras ---------
-
-
-    @Composable
-    fun viewWords() {
-        if (showWords) {
-            generarPalabrasSeguridad()
-            // Lista de palabras de ejemplo (deberías obtenerlas del ViewModel)
-//            val palabras = listOf(
-//                "manzana", "banana", "naranja", "pera", "uva", "sandía",
-//                "limón", "mango", "kiwi", "fresa", "melón", "piña"
-//            )
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Título opcional
-                Text(
-                    text = "Palabras de Seguridad",
-                    color = Cian,
-                    fontFamily = OpenSanBold,
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                // Grid de 2 columnas con 6 filas
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.heightIn(max = 400.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        16.dp,
-                        Alignment.CenterHorizontally
-                    )
-                ) {
-                    items(palabras.size) { index ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.5f)
-                                .background(
-                                    color = VerdeMenta,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(8.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Text(
-                                text = "${index + 1}. ${palabras[index]}",
-                                color = AzulOscuroProfundo,
-                            )
-                        }
-                    }
-                }
-
-                // Botón en la parte inferior
-                Button(
-                    onClick = {
-                        statusHeadIconSecure = true
-                        icon1 = true
-                        textType = "QR"
-                        textButton = "Escanear"
-                        showWords = false
-                    },
-                    modifier = Modifier
-                        .width(150.dp)
-                        .height(40.dp)
-                        .background(VerdeEsmeralda, RoundedCornerShape(20.dp)),
-//                        .border(2.dp, color = Cian, RoundedCornerShape(20.dp)),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = VerdeEsmeralda,
-                        contentColor = VerdeEsmeralda
-                    )
-                ) {
-                    Text(
-                        text = "Siguiente",
-                        fontSize = 16.sp,
-                        fontFamily = OpenSanBold,
-                        color = AzulOscuroProfundo
-                    )
-                }
-            }
-        }
-    }
-
 
 
     // ------------ Add Server ---------
@@ -225,7 +127,6 @@ object AddServerManager {
     @Composable
     fun addView(){
         // Supongo que estas variables están en tu ViewModel
-        if (!showWords) {
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -251,7 +152,7 @@ object AddServerManager {
                 getButton()
                 Spacer(modifier = Modifier.height(5.dp))
             }
-        }
+
     }
 
     @Composable
@@ -312,7 +213,7 @@ object AddServerManager {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.generate_words),
+                    painter = painterResource(R.drawable.icon_key),
                     contentDescription = "Icono",
                     tint = AzulVerdosoOscuro,
                     modifier = Modifier.size(32.dp)
@@ -403,7 +304,7 @@ object AddServerManager {
             onClick = {
                 when (textButton){
                     "Generar" -> {
-                        showWords = true
+
                     }
                     "Escanear" -> {
                         if (permisoCamara){
