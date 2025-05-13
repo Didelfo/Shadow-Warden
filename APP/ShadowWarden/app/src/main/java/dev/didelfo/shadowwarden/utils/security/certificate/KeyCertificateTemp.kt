@@ -1,12 +1,14 @@
 package dev.didelfo.shadowwarden.utils.security.certificate
 
-import org.bitcoinj.crypto.MnemonicCode
-import java.security.MessageDigest
-import javax.crypto.KeyGenerator
+import java.security.KeyPairGenerator
+import java.security.KeyPair
 import java.security.KeyStore
+import java.security.PublicKey
+import javax.crypto.KeyGenerator
+import java.security.MessageDigest
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import java.security.PublicKey
+import org.bitcoinj.crypto.MnemonicCode
 
 class KeyCertificateTemp(private val keyAlias: String) {
 
@@ -22,7 +24,7 @@ class KeyCertificateTemp(private val keyAlias: String) {
     }
 
     private fun generateRSAKeyPairInKeyStore(): PublicKey {
-        val keyGenerator = KeyGenerator.getInstance(
+        val keyPairGenerator = KeyPairGenerator.getInstance(
             KeyProperties.KEY_ALGORITHM_RSA,
             "AndroidKeyStore"
         )
@@ -37,10 +39,10 @@ class KeyCertificateTemp(private val keyAlias: String) {
             .setUserAuthenticationRequired(false)
             .build()
 
-        keyGenerator.init(keyGenParameterSpec)
-        keyGenerator.generateKey()
+        keyPairGenerator.initialize(keyGenParameterSpec)
+        val keyPair: KeyPair = keyPairGenerator.generateKeyPair()
 
-        return getPublicKeyFromKeyStore()
+        return keyPair.public
     }
 
     private fun getPublicKeyFromKeyStore(): PublicKey {
@@ -54,7 +56,7 @@ class KeyCertificateTemp(private val keyAlias: String) {
     }
 
     private fun hashToMnemonic(hash: ByteArray): List<String> {
-        val entropy = hash.copyOfRange(0, 16) // 16 bytes = 128 bits para 12 palabras
+        val entropy = hash.copyOfRange(0, 16) // 128 bits para 12 palabras
         return MnemonicCode.INSTANCE.toMnemonic(entropy)
     }
 

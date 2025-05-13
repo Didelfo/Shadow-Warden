@@ -55,6 +55,9 @@ import dev.didelfo.shadowwarden.ui.theme.OpenSanNormal
 import dev.didelfo.shadowwarden.ui.theme.RojoCoral
 import dev.didelfo.shadowwarden.ui.theme.VerdeEsmeralda
 import dev.didelfo.shadowwarden.ui.theme.VerdeMenta
+import dev.didelfo.shadowwarden.utils.security.certificate.KeyCertificateTemp
+import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
+import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
 
 object AddServerManager {
 
@@ -62,8 +65,9 @@ object AddServerManager {
 //         Variables Fundamentales
 //===========================================
 
-    // NavControler
-    lateinit var navController: NavHostController
+    // Nav controler
+
+    private lateinit var navController: NavHostController
 
     // Varriables de Icono Head
     private var statusHeadIconSecure:Boolean = false
@@ -76,14 +80,14 @@ object AddServerManager {
 
     // Varialbes TextField
     private var showTextFiel:Boolean = false
-    private var nameServer by mutableStateOf("")
+    private var nameServer by mutableStateOf(" fgfg")
 
     // Variables Button
     private var textButton:String = "Generar"
 
     // Varialbe Mostrar vista palabras
     private var showWords by mutableStateOf(false)
-
+    private var palabras: List<String> = listOf()
 
 
     // Permisos camara
@@ -106,8 +110,14 @@ object AddServerManager {
         nameServer = ""
         textButton = "Generar"
         showWords = false
+        palabras = listOf()
+        KeyCertificateTemp(GetAliasKey().getKey(KeyAlias.KeyEncripQR)).deleteTemporaryKey()
         permisoCamara = false
         verPermiso = false
+    }
+
+    private fun generarPalabrasSeguridad(){
+        palabras = KeyCertificateTemp(GetAliasKey().getKey(KeyAlias.KeyEncripQR)).generateTemporaryKeyAndMnemonic()
     }
 
     fun inicializarNavControler(nav:NavHostController){
@@ -128,11 +138,12 @@ object AddServerManager {
     @Composable
     fun viewWords() {
         if (showWords) {
+            generarPalabrasSeguridad()
             // Lista de palabras de ejemplo (deberías obtenerlas del ViewModel)
-            val palabras = listOf(
-                "manzana", "banana", "naranja", "pera", "uva", "sandía",
-                "limón", "mango", "kiwi", "fresa", "melón", "piña"
-            )
+//            val palabras = listOf(
+//                "manzana", "banana", "naranja", "pera", "uva", "sandía",
+//                "limón", "mango", "kiwi", "fresa", "melón", "piña"
+//            )
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -459,17 +470,11 @@ object AddServerManager {
                     lanzarPermiso = true
                 }
             }
-        }
 
-        // Lanza la solicitud solo una vez
-        LaunchedEffect(lanzarPermiso) {
             if (lanzarPermiso) {
                 pedirPermisoLauncher.launch(Manifest.permission.CAMERA)
                 lanzarPermiso = false
             }
         }
     }
-
-
-
 }
