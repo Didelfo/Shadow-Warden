@@ -135,7 +135,6 @@ private fun viewCentralAddServer(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AddServerManager.viewWords()
                 AddServerManager.addView()
             }
         }
