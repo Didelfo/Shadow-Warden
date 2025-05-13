@@ -22,85 +22,66 @@ import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.RojoCoral
 import dev.didelfo.shadowwarden.ui.screens.utils.createDialog
 import dev.didelfo.shadowwarden.utils.json.JSONCreator
+import dev.didelfo.shadowwarden.utils.security.firstconection.FBManager
 
 
-class AddServerScreenViewModel(context: Context): ViewModel() {
-
-    // Interfaz grafica
-    var nombreServidor by mutableStateOf("")
-    var textoBoton by mutableStateOf("Escanear")
-
-    var context = context
-
-    // QR
-    var escanear by mutableStateOf(false)
-    var errorNombre by mutableStateOf(false)
-    var escaneado by mutableStateOf("")
+class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewModel() {
 
 
-    lateinit var nav:NavHostController
+//===========================================
+//         Variables Fundamentales
+//===========================================
+
+    val cont = context
+    val nav = nave
+
+    // Varriables de Icono Head
+    var statusHeadIconSecure:Boolean = false
+    var textType:String = "Clave"
+
+    // Variables iconos
+    var icon1:Boolean = false
+    var icon2:Boolean = false
+    var icon3:Boolean = false
+
+    // Varialbes TextField
+    var showTextFiel:Boolean = false
+    var nameServer by mutableStateOf("")
+
+    // Variables Button
+    var textButton:String = "Generar"
 
 
 
 
+//===========================================
+//         Funciones Logicas
+//===========================================
 
-
-    @Composable
-    fun escanearQR(){
-        if (escanear) nav.navigate(AppScreens.ScannerScreen.route)
+    fun reiniciarVars(){
+        statusHeadIconSecure = false
+        textType = "Clave"
+        icon1 = false
+        icon2 = false
+        icon3 = false
+        showTextFiel = false
+        nameServer = ""
+        textButton = "Generar"
     }
 
 
-    fun aniadir(){
-
-        if(nombreServidor.length > 32 || nombreServidor.isEmpty() || nombreServidor.equals("") || nombreServidor.equals(" ")){
-            errorNombre = true
-        } else {
-
-            val mgJSON = JSONCreator()
-            var servers: Servers = Servers(arrayListOf())
-
-            var qr = mgJSON.stringObjet(escaneado, QR::class.java)
-
-            var server:Server = Server(nombreServidor, qr.ip, qr.port)
-
-            if (mgJSON.exist(context, "servers.json")) {
-                // Traemos el json si existe, sino se creara
-                servers = mgJSON.loadObject(context, "servers.json", Servers::class.java)
-
-            }
-
-            // Añadimos el servidor
-            servers.listaServidores.add(server)
-
-            // Guardamos de nuevo el json
-            mgJSON.saveObject(context, servers,"servers.json" )
-
-            // Navegamos a la ventana
-            nav.navigate(AppScreens.HomeScreen.route)
-
+    fun generarClave(){
+        if (FBManager().generarLlave(cont)){
+            icon1 = true
         }
     }
 
 
-    @Composable
-    fun mostrarError(){
+//===========================================
+//         Funciones Composable
+//===========================================
 
-        if (errorNombre){
-            createDialog(
-                painterResource(R.drawable.close),
-                RojoCoral,
-                "Error",
-                RojoCoral,
-                "El nombre supera los caracteres permitidos o no esta relleno.",
-                "Aceptar",
-                {
-                    errorNombre = false
-                }
-            )
-        }
 
-    }
 
 
 

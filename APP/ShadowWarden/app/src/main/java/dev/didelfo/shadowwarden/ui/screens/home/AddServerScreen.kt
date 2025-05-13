@@ -1,22 +1,15 @@
 package dev.didelfo.shadowwarden.ui.screens.home
 
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import dev.didelfo.shadowwarden.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,36 +22,19 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.utils.manager.AddServerManager
+import dev.didelfo.shadowwarden.utils.security.firstconection.FBManager
 import dev.didelfo.shadowwarden.viewModel.AddServerScreenViewModel
 
 @Composable
 fun AddServerScreen(navController: NavHostController, qr: String?) {
+
     val context = LocalContext.current
+    val viewModel: AddServerScreenViewModel = AddServerScreenViewModel(context, navController)
 
-    // ViewModel
-    val viewModel = AddServerScreenViewModel(context)
-
-    AddServerManager.inicializarNavControler(navController)
-
-    // Si tenemos un qr, tenemos que procesarlo y verificar que es el correcto
-
-    if ((!qr.isNullOrEmpty()) && (!qr.equals("{qr}"))) {
-        viewModel.escaneado = qr
-        viewModel.textoBoton = "Añadir"
-    }
-
-
-    AddServerManager.pedirPermisoCamara(context)
-
-
-    viewModel.mostrarError()
-
-    viewModel.escanearQR()
+//--------------------- Top and central View --------------------
 
     Scaffold(
         containerColor = AzulOscuroProfundo,
@@ -70,13 +46,15 @@ fun AddServerScreen(navController: NavHostController, qr: String?) {
         },
         content = { paddingValues ->
             viewCentralAddServer(
-                context,
                 modifier = Modifier.padding(paddingValues),
                 viewModel
             )
         }
     )
 }
+
+
+// ----------- Tol bar ------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,9 +87,11 @@ private fun viewToolBarAddServer(
     )
 }
 
+
+// ---------- Central View -----------
+
 @Composable
 private fun viewCentralAddServer(
-    context: Context,
     modifier: Modifier = Modifier,
     viewModel: AddServerScreenViewModel
 ) {
@@ -135,7 +115,7 @@ private fun viewCentralAddServer(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AddServerManager.addView()
+                centralView(viewModel)
             }
         }
     }
@@ -143,66 +123,203 @@ private fun viewCentralAddServer(
 
 
 
+// ------------ Add Server ---------
+
 @Composable
-private fun newcontenido(
-    pedirPermisoLauncher: ManagedActivityResultLauncher<String, Boolean>,
+private fun centralView(
     viewModel: AddServerScreenViewModel
-) {
-    AddServerManager.addView()
+){
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Icono centrado arriba
+        Spacer(modifier = Modifier.height(5.dp))
+        getIconHead(viewModel)
+
+        // Texto descriptivo
+        getTextDescripcion(viewModel)
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Tres iconos en horizontal
+        getIconsStatus(viewModel)
+        Spacer(modifier = Modifier.height(5.dp))
+
+        // Cuadro de texto (oculto según variable)
+        getTextField(viewModel)
+
+        // Botón final
+        Spacer(modifier = Modifier.height(10.dp))
+        getButton(viewModel)
+        Spacer(modifier = Modifier.height(5.dp))
+    }
+
 }
 
-
+@Composable
+private fun getIconHead(viewModel: AddServerScreenViewModel) {
+    Icon(
+        painter =  if (viewModel.statusHeadIconSecure) {
+            painterResource(R.drawable.lock_close)
+        } else {
+            painterResource(R.drawable.lock_open)
+        },
+        contentDescription = "Back",
+        tint = if (viewModel.statusHeadIconSecure) {
+            VerdeEsmeralda
+        } else {
+            RojoCoral
+        },
+        modifier = Modifier.size(35.dp)
+    )
+}
 
 @Composable
-private fun contenido(
-    pedirPermisoLauncher: ManagedActivityResultLauncher<String, Boolean>,
-    viewModel: AddServerScreenViewModel
-) {
+private fun getTextDescripcion(viewModel: AddServerScreenViewModel){
     Text(
-        "Introduce el nombre del servidor:",
+        text =
+            when (viewModel.textType){
+                "Clave" -> "Genera la clave de seguridad."
+                "Comando" -> "Usa el comando /link en Minecraft"
+                "Nombre" -> "Introduce el nombre del servidor."
+                else -> ""
+            },
         color = VerdeMenta,
         fontSize = 16.sp,
-        textAlign = TextAlign.Left,
-        fontFamily = OpenSanNormal
-    )
-    Spacer(modifier = Modifier.height(10.dp))
+        fontFamily = OpenSanNormal,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.padding(vertical = 8.dp)
 
-    TextField(
-        value = viewModel.nombreServidor,
-        onValueChange = { viewModel.nombreServidor = it },
-        modifier = Modifier
-            .width(280.dp)
-            .height(48.dp)
-            .background(AzulVerdosoOscuro, RoundedCornerShape(16.dp))
-            .border(2.dp, Cian, RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(17.dp),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = AzulVerdosoOscuro,
-            unfocusedContainerColor = AzulVerdosoOscuro,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        singleLine = true,
-        textStyle = TextStyle(
-            fontSize = 14.sp,
-            fontFamily = OpenSanNormal,
-            color = VerdeMenta,
-            textAlign = TextAlign.Center,
-        ),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
     )
-    Spacer(modifier = Modifier.height(25.dp))
+}
 
+@Composable
+private fun getIconsStatus(viewModel: AddServerScreenViewModel){
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    color = if (viewModel.icon1) {
+                        VerdeEsmeralda
+                    } else {
+                        VerdeMenta
+                    },
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.key_icon),
+                contentDescription = "Icono",
+                tint = AzulVerdosoOscuro,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        Spacer(Modifier.width(15.dp))
+
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    color = if (viewModel.icon2) {
+                        VerdeEsmeralda
+                    } else {
+                        VerdeMenta
+                    },
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.qr),
+                contentDescription = "Icono",
+                tint = AzulVerdosoOscuro,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        Spacer(Modifier.width(15.dp))
+
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    color = if (viewModel.icon3) {
+                        VerdeEsmeralda
+                    } else {
+                        VerdeMenta
+                    },
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.rename),
+                contentDescription = "Icono",
+                tint = AzulVerdosoOscuro,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun getTextField(viewModel: AddServerScreenViewModel){
+    if (viewModel.showTextFiel){
+        TextField(
+            value = viewModel.nameServer,
+            onValueChange = { viewModel.nameServer = it },
+            modifier = Modifier
+                .width(280.dp)
+                .height(48.dp)
+                .background(AzulVerdosoOscuro, RoundedCornerShape(16.dp))
+                .border(2.dp, Cian, RoundedCornerShape(16.dp)),
+            shape = RoundedCornerShape(17.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = AzulVerdosoOscuro,
+                unfocusedContainerColor = AzulVerdosoOscuro,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            singleLine = true,
+            textStyle = TextStyle(
+                fontSize = 14.sp,
+                fontFamily = OpenSanNormal,
+                color = VerdeMenta,
+                textAlign = TextAlign.Center,
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
+    }
+}
+
+@Composable
+private fun getButton(viewModel: AddServerScreenViewModel){
     Button(
         onClick = {
-            // Escanear
-            if (viewModel.textoBoton.equals("Escanear")) {
+            when (viewModel.textButton){
+                "Generar" -> {
 
-            }
+                    viewModel.generarClave()
 
-            if (viewModel.textoBoton.equals("Añadir")) {
-                // Lógica para añadir
-                viewModel.aniadir()
+                }
+                "Escanear" -> {
+
+                }
+                "Nombrar" -> {
+
+                }
+                "Finalizar" -> {
+
+                }
+                else -> {}
             }
         },
         modifier = Modifier
@@ -217,9 +334,10 @@ private fun contenido(
         )
     ) {
         Text(
-            text = viewModel.textoBoton,
+            text = viewModel.textButton,
             fontSize = 16.sp,
             fontFamily = OpenSanBold
         )
     }
 }
+

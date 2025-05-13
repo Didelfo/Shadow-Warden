@@ -48,7 +48,6 @@ import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.utils.json.JSONCreator
-import dev.didelfo.shadowwarden.utils.manager.AddServerManager
 
 @Composable
 fun HomeScreen(navController: NavHostController){
@@ -70,7 +69,6 @@ fun HomeScreen(navController: NavHostController){
 
                 },
                 onAddClick = {
-                    AddServerManager.reiniciarVars()
                     navController.navigate(AppScreens.AddServerScreen.route)
                 }
             )

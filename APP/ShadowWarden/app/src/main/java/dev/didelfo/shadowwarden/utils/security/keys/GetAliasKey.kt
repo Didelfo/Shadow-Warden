@@ -7,7 +7,7 @@ class GetAliasKey() {
 
         return when (alias){
             KeyAlias.KeyToken -> "ShadowWardenTokenKey"
-            KeyAlias.KeyEncripQR -> "ShadowWardenKeyEncripQR"
+            KeyAlias.KeyEncripCertificado -> "ShadowWardenKeyEncripCertificate"
         }
     }
 
