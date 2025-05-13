@@ -3,6 +3,7 @@ package dev.didelfo.shadowwarden.ui.screens.utils
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -36,7 +37,8 @@ fun createDialog(
             Icon(
                 painter = icono,
                 contentDescription = "dasdasd",
-                tint = colorIcono
+                tint = colorIcono,
+                modifier = Modifier.size(25.dp)
             )
         },
         title = {
