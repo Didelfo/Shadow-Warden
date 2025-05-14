@@ -2,7 +2,6 @@ package dev.didelfo.shadowWarden.manager.inventory.invs.SMS;
 
 
 import dev.didelfo.shadowWarden.ShadowWarden;
-import dev.didelfo.shadowWarden.manager.connections.qr.QRGenerator;
 import dev.didelfo.shadowWarden.manager.message.MessageType;
 import java.util.HashMap;
 import java.util.List;
@@ -68,7 +67,6 @@ public class SMS_StaffMenu {
         Server server = Bukkit.getServer();
         datos.put("ip", server.getIp());
         datos.put("port", server.getPort());
-        QRGenerator.giveQRMap(p, datos);
     }
 }
 

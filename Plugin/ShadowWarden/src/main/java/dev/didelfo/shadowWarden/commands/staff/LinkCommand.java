@@ -1,18 +1,20 @@
-package dev.didelfo.shadowWarden.commands;
+package dev.didelfo.shadowWarden.commands.staff;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
+import dev.didelfo.shadowWarden.manager.connections.firebase.FireBase;
 import dev.didelfo.shadowWarden.manager.inventory.AllMenus;
+import dev.didelfo.shadowWarden.manager.message.MessageType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class ReloadCommand implements CommandExecutor {
+public class LinkCommand implements CommandExecutor {
 
     private ShadowWarden plugin;
 
-    public ReloadCommand(ShadowWarden pl){
+    public LinkCommand(ShadowWarden pl){
         this.plugin = pl;
     }
 
@@ -22,10 +24,15 @@ public class ReloadCommand implements CommandExecutor {
         if (!(sender instanceof Player)){
             return true;
         }
-
         Player p = (Player) sender;
 
-        plugin.reloadConfig();
+        if (!p.hasPermission("shadowwardem.staff.link")){
+            plugin.getMsgManager().showMessageNoPermission(p, MessageType.Staff);
+            return true;
+        }
+
+        new FireBase(plugin).link(p.getUniqueId().toString(), p);
+
 
         return true;
     }
