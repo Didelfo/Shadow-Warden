@@ -1,28 +1,16 @@
 package dev.didelfo.shadowwarden.viewModel
 
-import dev.didelfo.shadowwarden.R
-import android.content.pm.PackageManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
-import android.Manifest
 import android.content.Context
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.painterResource
+import android.util.Log
 import androidx.navigation.NavHostController
-import dev.didelfo.shadowwarden.config.servers.QR
-import dev.didelfo.shadowwarden.config.servers.Server
-import dev.didelfo.shadowwarden.config.servers.Servers
-import dev.didelfo.shadowwarden.ui.navigation.AppScreens
-import dev.didelfo.shadowwarden.ui.theme.RojoCoral
-import dev.didelfo.shadowwarden.ui.screens.utils.createDialog
-import dev.didelfo.shadowwarden.utils.json.JSONCreator
 import dev.didelfo.shadowwarden.utils.security.firstconection.FBManager
+import dev.didelfo.shadowwarden.utils.security.firstconection.KeyManager
+import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
+import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
 
 
 class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewModel() {
@@ -36,21 +24,32 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
     val nav = nave
 
     // Varriables de Icono Head
-    var statusHeadIconSecure:Boolean = false
-    var textType:String = "Clave"
+    var statusHeadIconSecure by mutableStateOf(false)
+    var textType by mutableStateOf("Clave")
 
     // Variables iconos
-    var icon1:Boolean = false
-    var icon2:Boolean = false
-    var icon3:Boolean = false
+    var icon1 by mutableStateOf(false)
+    var icon2 by mutableStateOf(false)
+    var icon3 by mutableStateOf(false)
 
     // Varialbes TextField
-    var showTextFiel:Boolean = false
+    var showTextFiel by mutableStateOf(false)
     var nameServer by mutableStateOf("")
 
     // Variables Button
-    var textButton:String = "Generar"
+    var textButton by mutableStateOf("Generar")
 
+    // Variable activar loading
+    var loadingViewStatus by mutableStateOf(false)
+
+    // Variables Alerts
+    var AlertGeneracionClaveCorrecta by mutableStateOf(false)
+    var AlertGeneracionClaveExiste by mutableStateOf(false)
+    var AlertGeneracionClaveError by mutableStateOf(false)
+
+    var AlertBorrarVerificacionCorrecta by mutableStateOf(false)
+    var AlertBorrarVerificacionNoEncontrado by mutableStateOf(false)
+    var AlertBorrarVerificacionError by mutableStateOf(false)
 
 
 
@@ -67,19 +66,73 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
         showTextFiel = false
         nameServer = ""
         textButton = "Generar"
+        // Borramos la llave ya creado para que cambie en la siguiente creacion
+        KeyManager(cont, GetAliasKey().getKey(KeyAlias.KeyEncripCertificado)).deleteKey()
     }
 
 
-    fun generarClave(){
-        if (FBManager().generarLlave(cont)){
-            icon1 = true
+    fun generarClave() {
+        loadingViewStatus = true
+        FBManager().generarLlave(cont) { success, alreadyExists, error ->
+            when {
+                success -> {
+                    // Caso 1: Todo bien - pasar al siguiente paso
+                    AlertGeneracionClaveCorrecta = true
+                    changeStatusVerific()
+
+                }
+                alreadyExists -> {
+                    // Caso 2: Mostrar diálogo preguntando si desea cancelar
+                    AlertGeneracionClaveExiste = true
+                }
+                error != null -> {
+                    // Caso 3: Mostrar error
+                    AlertGeneracionClaveError = true
+
+                }
+            }
+            loadingViewStatus = false
         }
+    }
+
+    fun borrarClave(){
+        Log.d("prueba", "borrar clave ejecutado")
+        loadingViewStatus = true
+        FBManager().borrarRegistro(cont) { success, notFound, error ->
+            when {
+                success -> {
+                    // Registro borrado exitosamente
+                    AlertBorrarVerificacionCorrecta = true
+                    reiniciarVars()
+                }
+                notFound -> {
+                    // El registro no existía
+                    AlertBorrarVerificacionNoEncontrado = true
+                }
+                error != null -> {
+                    // Ocurrió un error
+                    AlertBorrarVerificacionError = true
+                }
+            }
+
+            loadingViewStatus = false
+
+        }
+
     }
 
 
 //===========================================
 //         Funciones Composable
 //===========================================
+
+    fun changeStatusVerific(){
+        icon1 = true
+        statusHeadIconSecure = true
+        textType = "Comando"
+        textButton = "Verificar"
+
+    }
 
 
 

@@ -1,8 +1,7 @@
 package dev.didelfo.shadowwarden.ui.screens.home
 
 
-import android.content.Context
-import androidx.activity.compose.ManagedActivityResultLauncher
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -24,8 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
+import dev.didelfo.shadowwarden.ui.screens.utils.createDialogInfo
+import dev.didelfo.shadowwarden.ui.screens.utils.createDialogOpti
+import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.utils.security.firstconection.FBManager
 import dev.didelfo.shadowwarden.viewModel.AddServerScreenViewModel
 
 @Composable
@@ -33,6 +34,8 @@ fun AddServerScreen(navController: NavHostController, qr: String?) {
 
     val context = LocalContext.current
     val viewModel: AddServerScreenViewModel = AddServerScreenViewModel(context, navController)
+
+
 
 //--------------------- Top and central View --------------------
 
@@ -119,6 +122,10 @@ private fun viewCentralAddServer(
             }
         }
     }
+
+    // Pantalla de carga
+    loadingView(viewModel.loadingViewStatus)
+
 }
 
 
@@ -134,6 +141,10 @@ private fun centralView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+
+        // Alertas segun lo que pase
+        getAlerts(viewModel)
+
         // Icono centrado arriba
         Spacer(modifier = Modifier.height(5.dp))
         getIconHead(viewModel)
@@ -181,7 +192,7 @@ private fun getTextDescripcion(viewModel: AddServerScreenViewModel){
         text =
             when (viewModel.textType){
                 "Clave" -> "Genera la clave de seguridad."
-                "Comando" -> "Usa el comando /link en Minecraft"
+                "Comando" -> "Usa el comando /link en Minecraft. Cuando obtengas la verificación pulse \"Verificar\"."
                 "Nombre" -> "Introduce el nombre del servidor."
                 else -> ""
             },
@@ -238,7 +249,7 @@ private fun getIconsStatus(viewModel: AddServerScreenViewModel){
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(R.drawable.qr),
+                painter = painterResource(R.drawable.command),
                 contentDescription = "Icono",
                 tint = AzulVerdosoOscuro,
                 modifier = Modifier.size(32.dp)
@@ -306,11 +317,10 @@ private fun getButton(viewModel: AddServerScreenViewModel){
         onClick = {
             when (viewModel.textButton){
                 "Generar" -> {
-
                     viewModel.generarClave()
-
+                    Log.d("prueba", "click")
                 }
-                "Escanear" -> {
+                "Verificar" -> {
 
                 }
                 "Nombrar" -> {
@@ -341,3 +351,96 @@ private fun getButton(viewModel: AddServerScreenViewModel){
     }
 }
 
+
+@Composable
+private fun getAlerts(viewModel: AddServerScreenViewModel){
+
+    // Generacion de clave Correcta
+    if (viewModel.AlertGeneracionClaveCorrecta) {
+        createDialogInfo(
+            painterResource(R.drawable.check),
+            VerdeEsmeralda,
+            "Generado",
+            VerdeEsmeralda,
+            "Clave generada con exito, puede pasar al siguiente paso",
+            "Siguiente",
+            { viewModel.AlertGeneracionClaveCorrecta = false }
+        )
+    }
+
+    // Generacion de clave Existe
+    if (viewModel.AlertGeneracionClaveExiste){
+        createDialogOpti(
+            painterResource(R.drawable.info),
+            Cian,
+            "Advertencia",
+            Cian,
+            "Actualmente ya hay un proceso de verificación en marcha, ¿Desea cancelarlo?",
+            "Si",
+            "No",
+            {
+                viewModel.borrarClave()
+                viewModel.AlertGeneracionClaveExiste = false
+
+
+            },
+            {
+                viewModel.changeStatusVerific()
+                viewModel.AlertGeneracionClaveExiste = false
+            }
+        )
+    }
+
+    // Generacion de clave Error
+    if (viewModel.AlertGeneracionClaveError) {
+        createDialogInfo(
+            painterResource(R.drawable.close),
+            RojoCoral,
+            "Error",
+            RojoCoral,
+            "Se ha producido un error.",
+            "Volver",
+            { viewModel.AlertGeneracionClaveError = false }
+        )
+    }
+
+    // Exito Borrar Registro
+    if (viewModel.AlertBorrarVerificacionCorrecta){
+        createDialogInfo(
+            painterResource(R.drawable.check),
+            VerdeEsmeralda,
+            "Exito",
+            VerdeEsmeralda,
+            "Se ha borrado correctamente.",
+            "Siguiente",
+            {
+                viewModel.AlertBorrarVerificacionCorrecta = false
+            }
+        )
+    }
+
+    // Valor no encontrado al borrar Registro
+    if (viewModel.AlertBorrarVerificacionNoEncontrado){
+        createDialogInfo(
+            painterResource(R.drawable.info),
+            RojoCoral,
+            "No encontrado",
+            RojoCoral,
+            "No se ha encontrado este registro",
+            "Volver",
+            { viewModel.AlertBorrarVerificacionNoEncontrado = false }
+        )
+    }
+    // Error al borrar Registro
+    if (viewModel.AlertBorrarVerificacionError){
+        createDialogInfo(
+            painterResource(R.drawable.close),
+            RojoCoral,
+            "Error",
+            RojoCoral,
+            "Se ha producido un error al borrar",
+            "Volver",
+            { viewModel.AlertBorrarVerificacionError = false }
+        )
+    }
+}

@@ -13,10 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -39,7 +35,7 @@ import dev.didelfo.shadowwarden.R
 import dev.didelfo.shadowwarden.connection.MC.MinecraftApi
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.ui.screens.utils.createDialog
+import dev.didelfo.shadowwarden.ui.screens.utils.createDialogInfo
 import dev.didelfo.shadowwarden.viewModel.RegisterScreenViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -237,7 +233,7 @@ fun mostrarDialogs(
 
     if (viewModel.showDialogInfo) {
 
-        createDialog(
+        createDialogInfo(
             painterResource(R.drawable.info),
             Cian,
             "Información",
@@ -254,7 +250,7 @@ fun mostrarDialogs(
 
     if (viewModel.showDialogPremium) {
 
-        createDialog(
+        createDialogInfo(
             painterResource(R.drawable.close),
             RojoCoral,
             "Error",
@@ -272,7 +268,7 @@ fun mostrarDialogs(
 
     if (viewModel.showDialogVerificado) {
 
-        createDialog(
+        createDialogInfo(
             painterResource(R.drawable.check),
             VerdeEsmeralda,
             "Verificado",
