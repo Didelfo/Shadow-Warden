@@ -66,6 +66,7 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
         showTextFiel = false
         nameServer = ""
         textButton = "Generar"
+
         // Borramos la llave ya creado para que cambie en la siguiente creacion
         KeyManager(cont, GetAliasKey().getKey(KeyAlias.KeyEncripCertificado)).deleteKey()
     }
