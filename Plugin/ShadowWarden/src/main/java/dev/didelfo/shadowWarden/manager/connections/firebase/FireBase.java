@@ -1,14 +1,22 @@
 package dev.didelfo.shadowWarden.manager.connections.firebase;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import dev.didelfo.shadowWarden.ShadowWarden;
 import dev.didelfo.shadowWarden.manager.message.MessageType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import dev.didelfo.shadowWarden.security.certificate.CertificateManager;
+import okhttp3.*;
 import org.bukkit.block.data.type.Fire;
 import org.bukkit.entity.Player;
+import org.json.simple.JSONObject;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 public class FireBase {
 
@@ -25,9 +33,55 @@ public class FireBase {
 //        Metodo Principal
 // ==============================
 
-    public void link(String uuid, Player p){
+    public void link(Player p){
+        plugin.getExecutor().execute(() -> {
 
-        plugin.getMsgManager().showMessage(p, MessageType.Staff, "Existe: " + existeUUID(uuidLimpia(uuid)));;
+            plugin.getMsgManager().showMessage(p, MessageType.Staff, "Comenzando el linkeo....");
+
+            String uuidMojan = uuidMojan(p);
+            // Comprobamos que existe el registro y alguien con esta uuid esta intentando vincular este servidor
+            if (existeUUID(uuidMojan)){
+
+                // Ahora que tenemos seguro que existe generamos un par de llaves aqui.
+                ServerKey key = new ServerKey();
+                key.generateKeyPair();
+
+                try {
+                    // Desciframos la llave
+                    byte[] publickeyBytes = Base64.getDecoder().decode(obtenerKeym(uuidMojan));
+                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publickeyBytes);
+                    KeyFactory keyFactory = KeyFactory.getInstance("EC");
+
+                    // Obtenemos la clave compartida
+                    byte[] shareKey = key.generateSharedSecret(keyFactory.generatePublic(keySpec));
+
+                    // Generamos el archivo que encriptaremos
+                    ArchivoPasar archivo = new ArchivoPasar(
+                            plugin.getConfig().getString("websocket.ip"),
+                            plugin.getConfig().getInt("websocket.port"),
+                            new CertificateManager(plugin).getCertificateAsString()
+                    );
+
+                    String archivotxt = archivo.toJson();
+
+                    String archivoEncrip = key.encryptText(shareKey, archivotxt);
+
+                    String keys = Base64.getEncoder().encodeToString(key.getPublicKey().getEncoded());
+
+                    actualizarArchivoYKeys(uuidMojan, archivoEncrip, keys);
+
+
+                    plugin.getMsgManager().showMessage(p, MessageType.Staff, "Linkeado con exito. Continua en la app.");
+
+                } catch (Exception e) {
+                    plugin.getMsgManager().showMessage(p, MessageType.Staff, "Error");
+                    throw new RuntimeException(e);
+                }
+            } else {
+                plugin.getMsgManager().showMessage(p, MessageType.Staff, "No hay ninguna solicitud activa.");
+            }
+        });
+
 
     }
 
@@ -35,30 +89,97 @@ public class FireBase {
 //        Metodos consultas
 // ==============================
 
-    private static boolean existeUUID(String uuid){
+    // Comprobar que existe un registro con esta uuid
+    private boolean existeUUID(String uuid){
         String url = FIREBASE_URL + uuid + ".json";
         Request request = new Request.Builder().url(url).get().build();
 
         try (Response response = client.newCall(request).execute()) {
             String responseBody = response.body().string();
-            return !responseBody.equals("null"); // Si no existe, Firebase devuelve "null"
+            plugin.getLogger().info(responseBody);
+            plugin.getLogger().info(uuid);
+            return !responseBody.equals("null"); // null sino
+        } catch (IOException e) {
+            plugin.getLogger().info("Error existe UUID");
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Obtener el la key del movil
+    private static String obtenerKeym(String uuid) {
+        String url = FIREBASE_URL + uuid + "/keym.json";
+        Request request = new Request.Builder().url(url).get().build();
+
+        try (Response response = client.newCall(request).execute()) {
+            String responseBody = response.body().string();
+            if (responseBody.equals("null")) {
+                throw new RuntimeException("UUID no existe o no tiene 'keym'");
+            }
+            // Elimina las comillas del JSON
+            return responseBody.replaceAll("\"", "");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Actualizar datos
+    private static void actualizarArchivoYKeys(String uuid, String archivo, String keys) {
+        String url = FIREBASE_URL + uuid + ".json";
+
+        JsonObject updates = new JsonObject();
+        updates.addProperty("archivo", archivo);
+        updates.addProperty("keys", keys);
+
+        RequestBody body = RequestBody.create(
+                updates.toString(),
+                MediaType.parse("application/json")
+        );
+
+        Request request = new Request.Builder()
+                .url(url)
+                .patch(body)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("Error al actualizar: " + response.body().string());
+            }
+            System.out.println("Actualizado correctamente");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
 
+    private String uuidMojan(Player p){
+        String url = "https://api.mojang.com/users/profiles/minecraft/";
+        OkHttpClient client1 = new OkHttpClient();
 
-// ==============================
-//        Metodos complementarios
-// ==============================
 
+        Request request = new Request.Builder()
+                .url(url + p.getName())
+                .get()
+                .build();
 
-    private String uuidLimpia(String uuid){
-        return uuid.replaceAll("-", "");
+        try (Response response = client1.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                if (response.code() == 404) {
+                    return null;
+                }
+                throw new IOException("Error en la API: " + response.code());
+            }
+
+            String responseBody = response.body().string();
+            if (responseBody.isEmpty()) {
+                return null;
+            }
+
+            UserAPIMc user = new UserAPIMc().fromJson(responseBody);
+
+            return user.getId();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-
-
-
-
 }

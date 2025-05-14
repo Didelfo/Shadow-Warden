@@ -7,6 +7,8 @@ import javax.net.ssl.SSLContext;
 import java.io.*;
 import java.nio.file.*;
 import java.security.*;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
@@ -17,7 +19,7 @@ public class CertificateManager {
     private String keystorePassword;
     private final String alias = "shadowwarden";
 
-    public CertificateManager(ShadowWarden pl) throws Exception {
+    public CertificateManager(ShadowWarden pl)  {
 
         this.plugin = pl;
         this.keystorePassword = pl.getConfig().getString("websocket.pass");
@@ -28,7 +30,11 @@ public class CertificateManager {
 
         this.keystoreFile = new File(folder, "wss_keystore.jks");
         if (!keystoreFile.exists()) {
-            generateSelfSignedCertificate();
+            try {
+                generateSelfSignedCertificate();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -62,14 +68,29 @@ public class CertificateManager {
         return context;
     }
 
-    public String getCertificateAsString() throws Exception {
-        KeyStore ks = KeyStore.getInstance("JKS");
+    public String getCertificateAsString() {
         try (FileInputStream fis = new FileInputStream(keystoreFile)) {
-            ks.load(fis, keystorePassword.toCharArray());
-        }
+            KeyStore ks = null;
+            ks = KeyStore.getInstance("JKS");
 
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        return Base64.getEncoder().encodeToString(cert.getEncoded());
+            ks.load(fis, keystorePassword.toCharArray());
+
+
+            X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+            return Base64.getEncoder().encodeToString(cert.getEncoded());
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (CertificateEncodingException e) {
+            throw new RuntimeException(e);
+        } catch (CertificateException e) {
+            throw new RuntimeException(e);
+        } catch (KeyStoreException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

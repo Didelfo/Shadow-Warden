@@ -31,7 +31,7 @@ public class LinkCommand implements CommandExecutor {
             return true;
         }
 
-        new FireBase(plugin).link(p.getUniqueId().toString(), p);
+        new FireBase(plugin).link(p);
 
 
         return true;
