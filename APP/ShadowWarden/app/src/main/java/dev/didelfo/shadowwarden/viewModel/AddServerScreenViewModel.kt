@@ -51,6 +51,10 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
     var AlertBorrarVerificacionNoEncontrado by mutableStateOf(false)
     var AlertBorrarVerificacionError by mutableStateOf(false)
 
+    var AlertExisteDatosExito by mutableStateOf(false)
+    var AlertExisteDatosNoEncontrado by mutableStateOf(false)
+    var AlertExisteDatosError by mutableStateOf(false)
+
 
 
 //===========================================
@@ -79,7 +83,7 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
                 success -> {
                     // Caso 1: Todo bien - pasar al siguiente paso
                     AlertGeneracionClaveCorrecta = true
-                    changeStatusVerific()
+                    changeStatusExist()
 
                 }
                 alreadyExists -> {
@@ -97,7 +101,6 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
     }
 
     fun borrarClave(){
-        Log.d("prueba", "borrar clave ejecutado")
         loadingViewStatus = true
         FBManager().borrarRegistro(cont) { success, notFound, error ->
             when {
@@ -117,17 +120,43 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
             }
 
             loadingViewStatus = false
-
         }
-
     }
 
+
+    fun obtenerDatosEncriptados() {
+        loadingViewStatus = true
+        FBManager().obtenerDatosEncriptados(cont) { success, archivo, keys, error ->
+            when {
+                success -> {
+                    // Datos obtenidos correctamente (archivo y keys no son null aquí)
+//                    AlertDatosObtenidosCorrectamente = true
+//                    procesarDatosEncriptados(archivo!!, keys!!)
+                }
+                error != null -> {
+                    // Manejar diferentes tipos de errores
+                    when {
+                        error.message?.contains("están vacíos") == true -> {
+                            AlertExisteDatosNoEncontrado = true
+                        }
+                        error.message?.contains("No se encontró el registro") == true -> {
+                            AlertExisteDatosNoEncontrado = true
+                        }
+                        else -> {
+                            AlertExisteDatosError = true
+                        }
+                    }
+                }
+            }
+            loadingViewStatus = false
+        }
+    }
 
 //===========================================
 //         Funciones Composable
 //===========================================
 
-    fun changeStatusVerific(){
+    fun changeStatusExist(){
         icon1 = true
         statusHeadIconSecure = true
         textType = "Comando"

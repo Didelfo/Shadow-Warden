@@ -110,5 +110,54 @@ class FBManager {
     }
 
 
+    // Obtener los datos cifrados del servidor
+    fun obtenerDatosEncriptados(
+        context: Context,
+        callback: (success: Boolean, archivo: String?, keys: String?, error: Exception?) -> Unit
+    ) {
+        try {
+            val json = JSONCreator().loadObject(context, "user.json", User::class.java)
+            val databaseRef = conectar().reference.child(json.uuid)
+
+            databaseRef.get().addOnCompleteListener { task ->
+                when {
+                    task.isSuccessful -> {
+                        val snapshot = task.result
+                        if (snapshot.exists()) {
+                            val archivo = snapshot.child("archivo").getValue(String::class.java)
+                            val keys = snapshot.child("keys").getValue(String::class.java)
+
+                            when {
+                                archivo.isNullOrEmpty() || keys.isNullOrEmpty() -> {
+                                    val camposFaltantes = mutableListOf<String>()
+                                    if (archivo.isNullOrEmpty()) camposFaltantes.add("archivo")
+                                    if (keys.isNullOrEmpty()) camposFaltantes.add("keys")
+
+                                    callback(
+                                        false,
+                                        null,
+                                        null,
+                                        Exception("Los siguientes campos están vacíos: ${camposFaltantes.joinToString(", ")}")
+                                    )
+                                }
+                                else -> {
+                                    callback(true, archivo, keys, null)
+                                }
+                            }
+                        } else {
+                            callback(false, null, null, Exception("No se encontró el registro para la UUID: ${json.uuid}"))
+                        }
+                    }
+                    else -> {
+                        callback(false, null, null, task.exception ?: Exception("Error al leer la base de datos"))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            callback(false, null, null, e)
+        }
+    }
+
+
 
 }

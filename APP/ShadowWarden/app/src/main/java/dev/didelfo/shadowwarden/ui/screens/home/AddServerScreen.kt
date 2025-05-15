@@ -318,7 +318,6 @@ private fun getButton(viewModel: AddServerScreenViewModel){
             when (viewModel.textButton){
                 "Generar" -> {
                     viewModel.generarClave()
-                    Log.d("prueba", "click")
                 }
                 "Verificar" -> {
 
@@ -355,6 +354,8 @@ private fun getButton(viewModel: AddServerScreenViewModel){
 @Composable
 private fun getAlerts(viewModel: AddServerScreenViewModel){
 
+    // ------------ Primer paso ----------------
+
     // Generacion de clave Correcta
     if (viewModel.AlertGeneracionClaveCorrecta) {
         createDialogInfo(
@@ -385,7 +386,7 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
 
             },
             {
-                viewModel.changeStatusVerific()
+                viewModel.changeStatusExist()
                 viewModel.AlertGeneracionClaveExiste = false
             }
         )
@@ -403,6 +404,8 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
             { viewModel.AlertGeneracionClaveError = false }
         )
     }
+
+    // ------------- Segundo Paso -----------------
 
     // Exito Borrar Registro
     if (viewModel.AlertBorrarVerificacionCorrecta){
@@ -443,4 +446,52 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
             { viewModel.AlertBorrarVerificacionError = false }
         )
     }
+
+    // ------------- Tercer Paso -------------------
+
+    // Exito al obtener datos
+    if (viewModel.AlertExisteDatosExito){
+        createDialogInfo(
+            painterResource(R.drawable.check),
+            VerdeEsmeralda,
+            "Exito",
+            VerdeEsmeralda,
+            "Se han obtenido los datos correctamente",
+            "Siguiente",
+            {
+                viewModel.AlertExisteDatosExito = false
+            }
+        )
+    }
+
+    // No se encuentra
+    if (viewModel.AlertExisteDatosNoEncontrado){
+        createDialogInfo(
+            painterResource(R.drawable.close),
+            RojoCoral,
+            "No encontrado",
+            RojoCoral,
+            "Los datos no existe o no se han encontrado, asegurate de usar el comando \"/link\"",
+            "Volver",
+            {
+                viewModel.AlertExisteDatosNoEncontrado = false
+            }
+        )
+    }
+
+    // No se encuentra
+    if (viewModel.AlertExisteDatosError){
+        createDialogInfo(
+            painterResource(R.drawable.close),
+            RojoCoral,
+            "Error",
+            RojoCoral,
+            "Se ha producido un error vuelva a intentarlo.",
+            "Volver",
+            {
+                viewModel.AlertExisteDatosError = false
+            }
+        )
+    }
+
 }

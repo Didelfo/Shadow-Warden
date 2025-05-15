@@ -21,9 +21,7 @@ class KeyManager(private val context: Context, private val alias: String) {
         load(null)
     }
 
-    /**
-     * Genera un par de claves EC (ECDSA para firma o ECDH para acuerdo de clave).
-     */
+    // Generamos la clave
     fun generateKeyPair() {
         if (!keyStore.containsAlias(alias)) {
             val keyPairGenerator = KeyPairGenerator.getInstance(
@@ -44,18 +42,13 @@ class KeyManager(private val context: Context, private val alias: String) {
         }
     }
 
-    /**
-     * Obtiene la clave pública para enviar al servidor.
-     */
+    // obtener clave publica
     fun getPublicKey(): PublicKey {
         return keyStore.getCertificate(alias)?.publicKey
             ?: throw IllegalStateException("No existe la clave para el alias: $alias")
     }
 
-    /**
-     * Genera el secreto compartido ECDH (32 bytes para P-256).
-     * ¡Asegúrate de que el servidor usa el mismo método!
-     */
+    // Generar clave compartida
     fun generateSharedSecret(serverPublicKey: PublicKey): ByteArray {
         val privateKeyEntry = keyStore.getEntry(alias, null) as? KeyStore.PrivateKeyEntry
             ?: throw IllegalStateException("No existe la clave privada para el alias: $alias")
@@ -66,43 +59,46 @@ class KeyManager(private val context: Context, private val alias: String) {
         }.generateSecret().copyOf(32) // 32 bytes para AES-256
     }
 
-    /**
-     * Descifra un archivo usando AES-GCM con el secreto compartido.
-     * @param encryptedFile Archivo con formato: [IV (12 bytes)][datos cifrados].
-     */
+
+
+    // Desencriptar string
     @Throws(IOException::class)
-    fun decryptFile(sharedSecret: ByteArray, encryptedFile: File): String {
-        if (!encryptedFile.exists()) {
-            throw IOException("El archivo cifrado no existe")
+    fun decryptString(sharedSecret: ByteArray, encryptedString: String): String {
+        val encryptedBytes = try {
+            android.util.Base64.decode(encryptedString, android.util.Base64.DEFAULT)
+        } catch (e: IllegalArgumentException) {
+            throw IOException("Formato Base64 inválido", e)
         }
 
-        return encryptedFile.inputStream().use { inputStream ->
-            // Leer IV (12 bytes para GCM)
-            val iv = ByteArray(12).also {
-                if (inputStream.read(it) != it.size) {
-                    throw IOException("IV incompleto (se esperaban 12 bytes)")
-                }
-            }
+        if (encryptedBytes.size < 12) {
+            throw IOException("Datos cifrados incompletos (no contienen IV)")
+        }
 
-            // Leer datos cifrados (resto del archivo)
-            val encryptedData = inputStream.readBytes()
+        // Separar IV (12 bytes para GCM) y los datos cifrados
+        val iv = encryptedBytes.copyOfRange(0, 12)
+        val encryptedData = encryptedBytes.copyOfRange(12, encryptedBytes.size)
 
-            // Configurar AES-GCM
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding").apply {
+        // Configurar AES-GCM
+        val cipher = try {
+            Cipher.getInstance("AES/GCM/NoPadding").apply {
                 init(
                     Cipher.DECRYPT_MODE,
                     SecretKeySpec(sharedSecret, "AES"),
                     GCMParameterSpec(128, iv)
                 )
             }
+        } catch (e: Exception) {
+            throw IOException("Error al inicializar el cifrado", e)
+        }
 
+        return try {
             String(cipher.doFinal(encryptedData), StandardCharsets.UTF_8)
+        } catch (e: Exception) {
+            throw IOException("Error al descifrar los datos", e)
         }
     }
 
-    /**
-     * Elimina la clave del KeyStore (opcional, para limpieza).
-     */
+    // Elimina la clave del KeyStore (opcional, para limpieza)
     fun deleteKey() {
         if (keyStore.containsAlias(alias)) {
             keyStore.deleteEntry(alias)
