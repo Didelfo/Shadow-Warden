@@ -5,15 +5,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import android.content.Context
+import android.util.Base64
 import android.util.Log
 import androidx.navigation.NavHostController
+import com.google.gson.Gson
+import dev.didelfo.shadowwarden.config.servers.Server
+import dev.didelfo.shadowwarden.config.servers.ServerEncrip
 import dev.didelfo.shadowwarden.utils.security.firstconection.FBManager
 import dev.didelfo.shadowwarden.utils.security.firstconection.KeyManager
 import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
 import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
+import java.security.KeyFactory
+import java.security.spec.X509EncodedKeySpec
 
 
-class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewModel() {
+class AddServerScreenViewModel(context: Context, nave: NavHostController) : ViewModel() {
 
 
 //===========================================
@@ -55,13 +61,15 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
     var AlertExisteDatosNoEncontrado by mutableStateOf(false)
     var AlertExisteDatosError by mutableStateOf(false)
 
+    // Variable servidor desencriptado
+    lateinit var serverEn: ServerEncrip
 
 
 //===========================================
 //         Funciones Logicas
 //===========================================
 
-    fun reiniciarVars(){
+    fun reiniciarVars() {
         statusHeadIconSecure = false
         textType = "Clave"
         icon1 = false
@@ -75,6 +83,7 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
         KeyManager(cont, GetAliasKey().getKey(KeyAlias.KeyEncripCertificado)).deleteKey()
     }
 
+    // ----------------- Generamos la llave ------------------------------
 
     fun generarClave() {
         loadingViewStatus = true
@@ -86,10 +95,12 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
                     changeStatusExist()
 
                 }
+
                 alreadyExists -> {
                     // Caso 2: Mostrar diálogo preguntando si desea cancelar
                     AlertGeneracionClaveExiste = true
                 }
+
                 error != null -> {
                     // Caso 3: Mostrar error
                     AlertGeneracionClaveError = true
@@ -100,7 +111,9 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
         }
     }
 
-    fun borrarClave(){
+    // --------------------------- Borramos para cancelar el proceso ----------------------------------
+
+    fun borrarClave() {
         loadingViewStatus = true
         FBManager().borrarRegistro(cont) { success, notFound, error ->
             when {
@@ -109,10 +122,12 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
                     AlertBorrarVerificacionCorrecta = true
                     reiniciarVars()
                 }
+
                 notFound -> {
                     // El registro no existía
                     AlertBorrarVerificacionNoEncontrado = true
                 }
+
                 error != null -> {
                     // Ocurrió un error
                     AlertBorrarVerificacionError = true
@@ -123,25 +138,29 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
         }
     }
 
+    // ------------------------ Obtenemos los daots del servidor -----------------------------
 
-    fun obtenerDatosEncriptados() {
+    fun obtenerDatosDesencriptar() {
         loadingViewStatus = true
         FBManager().obtenerDatosEncriptados(cont) { success, archivo, keys, error ->
             when {
                 success -> {
                     // Datos obtenidos correctamente (archivo y keys no son null aquí)
-//                    AlertDatosObtenidosCorrectamente = true
-//                    procesarDatosEncriptados(archivo!!, keys!!)
+                    procesarDatosEncriptados(keys.toString(), archivo.toString())
+
                 }
+
                 error != null -> {
                     // Manejar diferentes tipos de errores
                     when {
                         error.message?.contains("están vacíos") == true -> {
                             AlertExisteDatosNoEncontrado = true
                         }
+
                         error.message?.contains("No se encontró el registro") == true -> {
                             AlertExisteDatosNoEncontrado = true
                         }
+
                         else -> {
                             AlertExisteDatosError = true
                         }
@@ -152,11 +171,40 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
         }
     }
 
+    // Aqui procesamos los datos
+
+    private fun procesarDatosEncriptados(keys: String, archivo: String) {
+
+        // Le quitamos el base64
+        val bytes = Base64.decode(keys, Base64.NO_WRAP)
+
+        // 2. Crear especificación de clave X509
+        val keySpec = X509EncodedKeySpec(bytes)
+
+        // 3. Obtener KeyFactory para el algoritmo y le ponemos el tipo qu ele pusismos en java
+        val keyFactory = KeyFactory.getInstance("EC")
+
+        val keyPublicaServidor = keyFactory.generatePublic(keySpec)
+
+        // Ahora que tenemos la llave publica calculamos la compartida
+        val keymanager = KeyManager(cont, GetAliasKey().getKey(KeyAlias.KeyEncripCertificado))
+        val llaveCompartida = keymanager.generateSharedSecret(keyPublicaServidor)
+
+        // Ahora desciframos el string del archivo que contiene la informacion encriptada
+
+        val archivoDesencriptado = keymanager.decryptString(llaveCompartida, archivo)
+        serverEn = Gson().fromJson(archivoDesencriptado, ServerEncrip::class.java)
+
+        AlertExisteDatosExito = true
+        changeStatusVerific()
+    }
+
+
 //===========================================
 //         Funciones Composable
 //===========================================
 
-    fun changeStatusExist(){
+    fun changeStatusExist() {
         icon1 = true
         statusHeadIconSecure = true
         textType = "Comando"
@@ -164,8 +212,12 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController): ViewM
 
     }
 
-
-
+    private fun changeStatusVerific(){
+        icon2 = true
+        showTextFiel = true
+        textType = "Nombre"
+        textButton = "Finalizar"
+    }
 
 
 }

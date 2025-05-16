@@ -193,7 +193,7 @@ private fun getTextDescripcion(viewModel: AddServerScreenViewModel){
             when (viewModel.textType){
                 "Clave" -> "Genera la clave de seguridad."
                 "Comando" -> "Usa el comando /link en Minecraft. Cuando obtengas la verificación pulse \"Verificar\"."
-                "Nombre" -> "Introduce el nombre del servidor."
+                "Nombre" -> "Introduce el nombre con el que deseas guardar el servidor."
                 else -> ""
             },
         color = VerdeMenta,
@@ -320,10 +320,7 @@ private fun getButton(viewModel: AddServerScreenViewModel){
                     viewModel.generarClave()
                 }
                 "Verificar" -> {
-
-                }
-                "Nombrar" -> {
-
+                    viewModel.obtenerDatosDesencriptar()
                 }
                 "Finalizar" -> {
 

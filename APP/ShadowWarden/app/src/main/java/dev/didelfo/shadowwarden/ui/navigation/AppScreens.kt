@@ -1,7 +1,5 @@
 package dev.didelfo.shadowwarden.ui.navigation
 
-import dev.didelfo.shadowwarden.config.servers.QR
-
 sealed class AppScreens(val route:String) {
 
 // ----------------------------------
