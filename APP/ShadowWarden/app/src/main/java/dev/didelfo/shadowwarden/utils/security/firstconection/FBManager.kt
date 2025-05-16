@@ -2,18 +2,14 @@ package dev.didelfo.shadowwarden.utils.security.firstconection
 
 import android.content.Context
 import android.util.Base64
-import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.app
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
-import com.google.gson.Gson
 import dev.didelfo.shadowwarden.config.user.User
 import dev.didelfo.shadowwarden.utils.json.JSONCreator
 import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
 import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
-import dev.didelfo.shadowwarden.utils.security.keys.SecureManager
-import dev.didelfo.shadowwarden.viewModel.AddServerScreenViewModel
 
 class FBManager {
 

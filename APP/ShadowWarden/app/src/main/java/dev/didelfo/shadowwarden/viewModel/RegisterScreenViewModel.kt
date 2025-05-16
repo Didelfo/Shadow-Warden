@@ -12,7 +12,7 @@ import dev.didelfo.shadowwarden.connection.MC.MinecraftUUIDResponse
 import dev.didelfo.shadowwarden.utils.json.JSONCreator
 import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
 import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
-import dev.didelfo.shadowwarden.utils.security.keys.SecureManager
+import dev.didelfo.shadowwarden.utils.json.JsonEncripter
 import java.util.Base64
 import java.util.Date
 import java.util.UUID
@@ -56,7 +56,7 @@ class RegisterScreenViewModel: ViewModel() {
 
 
         // Procecemos a encriptar el JSON y guardarlo
-        val encript = SecureManager(context, GetAliasKey().getKey(KeyAlias.KeyToken))
+        val encript = JsonEncripter(context, GetAliasKey().getKey(KeyAlias.KeyToken))
 
         val jsonEncriptado = encript.encryptJson(jsonToken)
         encript.saveEncryptedFile("token.dat", jsonEncriptado)
