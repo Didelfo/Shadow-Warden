@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.google.gson.Gson
 import dev.didelfo.shadowwarden.config.servers.Server
 import dev.didelfo.shadowwarden.config.servers.Servers
 import dev.didelfo.shadowwarden.config.user.User
@@ -48,6 +49,10 @@ import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.utils.json.JSONCreator
+import dev.didelfo.shadowwarden.utils.json.JsonEncripter
+import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
+import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
+import java.io.File
 
 @Composable
 fun HomeScreen(navController: NavHostController){
@@ -118,8 +123,14 @@ fun HomeScreen(navController: NavHostController){
 
 // Conseguir todos los servidores del json
 private fun getServers(context: Context): ArrayList<Server> {
-    if (JSONCreator().exist(context, "servers.json")){
-        return JSONCreator().loadObject(context, "servers.json", Servers::class.java).listaServidores
+
+    if (File(context.filesDir, "servers.dat").exists()){
+
+        val jsonEncrip = JsonEncripter(context, GetAliasKey().getKey(KeyAlias.KeyServerEncrip))
+
+        val jsonString: String = jsonEncrip.decryptJson(jsonEncrip.readEncryptedFile("servers.dat"))
+
+        return Gson().fromJson(jsonString, Servers::class.java).listaServidores
     } else {
         return ArrayList<Server>()
     }

@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.viewModel
+package dev.didelfo.shadowwarden.ui.viewModel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -6,15 +6,17 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import android.content.Context
 import android.util.Base64
-import android.util.Log
 import androidx.navigation.NavHostController
 import com.google.gson.Gson
 import dev.didelfo.shadowwarden.config.servers.Server
 import dev.didelfo.shadowwarden.config.servers.ServerEncrip
+import dev.didelfo.shadowwarden.config.servers.Servers
+import dev.didelfo.shadowwarden.utils.json.JsonEncripter
 import dev.didelfo.shadowwarden.utils.security.firstconection.FBManager
 import dev.didelfo.shadowwarden.utils.security.firstconection.KeyManager
 import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
 import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
+import java.io.File
 import java.security.KeyFactory
 import java.security.spec.X509EncodedKeySpec
 
@@ -60,6 +62,9 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
     var AlertExisteDatosExito by mutableStateOf(false)
     var AlertExisteDatosNoEncontrado by mutableStateOf(false)
     var AlertExisteDatosError by mutableStateOf(false)
+
+    var AlertaGuardadoExitoso by mutableStateOf(false)
+    var AlertaGuardadoError by mutableStateOf(false)
 
     // Variable servidor desencriptado
     lateinit var serverEn: ServerEncrip
@@ -198,6 +203,45 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
         AlertExisteDatosExito = true
         changeStatusVerific()
     }
+
+
+    // ------------------------ Guardamos los datos del servidor encriptados -----------------------------
+
+
+    fun guardarServidor(){
+        loadingViewStatus = true
+        if (!nameServer.isEmpty()){
+
+            // Creamos el servidor con el nombre
+            val server: Server = Server(nameServer, serverEn.ip, serverEn.port, serverEn.certificado)
+
+            val json = JsonEncripter(cont, GetAliasKey().getKey(KeyAlias.KeyServerEncrip))
+
+            var servers: Servers = Servers(arrayListOf())
+
+            // Leemos el archivo ya existente, sino existe se crea
+            if (File(cont.filesDir, "servers.dat").exists()){
+                val  s = json.readEncryptedFile("servers.dat")
+                 servers = Gson().fromJson(json.decryptJson(s), Servers::class.java)
+            }
+
+            // Lo añadimos a la lista de servidores
+            servers.listaServidores.add(server)
+
+            // Guardamos el archivo con el servidor añadido
+            json.saveEncryptedFile("servers.dat", json.encryptJson(Gson().toJson(servers)))
+
+            loadingViewStatus = false
+            AlertaGuardadoExitoso = true
+        } else {
+            loadingViewStatus = false
+            AlertaGuardadoError = true
+        }
+
+
+
+    }
+
 
 
 //===========================================

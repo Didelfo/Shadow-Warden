@@ -36,7 +36,7 @@ import dev.didelfo.shadowwarden.connection.MC.MinecraftApi
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.ui.screens.utils.createDialogInfo
-import dev.didelfo.shadowwarden.viewModel.RegisterScreenViewModel
+import dev.didelfo.shadowwarden.ui.viewModel.RegisterScreenViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

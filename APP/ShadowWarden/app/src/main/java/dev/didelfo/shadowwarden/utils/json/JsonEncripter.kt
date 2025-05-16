@@ -80,6 +80,9 @@ class JsonEncripter(private val context: Context, private val keyAlias: String) 
 
     // Leer el archivo cifrado
     fun readEncryptedFile(fileName: String): ByteArray {
+
+
+
         val fileInputStream = context.openFileInput(fileName)
         val fileBytes = fileInputStream.readBytes()
         fileInputStream.close()

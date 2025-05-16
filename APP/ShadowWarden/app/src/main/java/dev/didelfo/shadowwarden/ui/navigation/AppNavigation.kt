@@ -31,12 +31,8 @@ fun AppNavigation() {
 //           Add Server
 // ----------------------------------
 
-        composable(route = AppScreens.AddServerScreen.route){ backStackEntry ->
-            val qr = backStackEntry.arguments?.getString("qr")
-            AddServerScreen(navController, qr)
-        }
-        composable(route = AppScreens.ScannerScreen.route){
-            ScannerScreen(navController)
+        composable(route = AppScreens.AddServerScreen.route){
+            AddServerScreen(navController)
         }
 
 

@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.viewModel
+package dev.didelfo.shadowwarden.ui.viewModel
 
 import android.content.Context
 import androidx.compose.runtime.getValue

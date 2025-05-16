@@ -1,7 +1,6 @@
 package dev.didelfo.shadowwarden.ui.screens.home
 
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -27,10 +26,10 @@ import dev.didelfo.shadowwarden.ui.screens.utils.createDialogInfo
 import dev.didelfo.shadowwarden.ui.screens.utils.createDialogOpti
 import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.viewModel.AddServerScreenViewModel
+import dev.didelfo.shadowwarden.ui.viewModel.AddServerScreenViewModel
 
 @Composable
-fun AddServerScreen(navController: NavHostController, qr: String?) {
+fun AddServerScreen(navController: NavHostController) {
 
     val context = LocalContext.current
     val viewModel: AddServerScreenViewModel = AddServerScreenViewModel(context, navController)
@@ -323,7 +322,7 @@ private fun getButton(viewModel: AddServerScreenViewModel){
                     viewModel.obtenerDatosDesencriptar()
                 }
                 "Finalizar" -> {
-
+                    viewModel.guardarServidor()
                 }
                 else -> {}
             }
@@ -490,5 +489,42 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
             }
         )
     }
+
+
+    // ------------- Cuarto Paso Guardar -------------------
+
+    // Se guarda correctamente
+    if (viewModel.AlertaGuardadoExitoso){
+        createDialogInfo(
+            painterResource(R.drawable.check),
+            VerdeEsmeralda,
+            "Exito",
+            VerdeEsmeralda,
+            "Se ha guardado correctamente.",
+            "Finalizar",
+            {
+                viewModel.borrarClave() // Borra el registro de nuestra base de datos
+                viewModel.nav.navigate(AppScreens.HomeScreen.route) // Navegamos a la pantalla inicial
+                viewModel.AlertaGuardadoExitoso = false
+            }
+        )
+    }
+
+    if (viewModel.AlertaGuardadoError){
+        createDialogInfo(
+            painterResource(R.drawable.close),
+            RojoCoral,
+            "Error",
+            RojoCoral,
+            "Error al guardar. Asegurese de rellenar el campo de texto.",
+            "Volver",
+            {
+                viewModel.AlertaGuardadoError = false
+            }
+        )
+    }
+
+
+
 
 }
