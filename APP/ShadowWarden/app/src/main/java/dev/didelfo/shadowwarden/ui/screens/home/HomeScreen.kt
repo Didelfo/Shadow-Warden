@@ -1,6 +1,7 @@
 package dev.didelfo.shadowwarden.ui.screens.home
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -8,11 +9,9 @@ import dev.didelfo.shadowwarden.R
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
-import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,9 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -33,10 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -44,19 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.google.gson.Gson
 import dev.didelfo.shadowwarden.config.servers.Server
-import dev.didelfo.shadowwarden.config.servers.Servers
-import dev.didelfo.shadowwarden.config.user.User
-import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.ui.screens.utils.createDialogOpti
-import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.ui.viewModel.HomeScreenViewModel
-import dev.didelfo.shadowwarden.utils.json.JSONCreator
-import dev.didelfo.shadowwarden.utils.json.JsonEncripter
-import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
-import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
 import java.io.File
 
 @SuppressLint("UnrememberedMutableState")
@@ -71,13 +54,13 @@ fun HomeScreen(navController: NavHostController){
         topBar = {
             ToolBar(
                 title = "Servidores",
-                user = viewModel.user,
                 onImageClick = {
 
                 },
                 onAddClick = {
                     navController.navigate(AppScreens.AddServerScreen.route)
-                }
+                },
+                viewModel
             )
         },
 
@@ -107,9 +90,9 @@ fun HomeScreen(navController: NavHostController){
 @Composable
 private fun ToolBar(
     title: String,
-    user: User,
     onImageClick: () -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    viewModel: HomeScreenViewModel
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -125,17 +108,31 @@ private fun ToolBar(
         ),
         navigationIcon = {
             IconButton(onClick = onImageClick) {
-                val imageRequest = ImageRequest.Builder(LocalContext.current)
-                    .data(user.url)
-                    .crossfade(true)
-                    .build()
 
-                Image(
-                    painter = rememberAsyncImagePainter(imageRequest),
-                    contentDescription = "User avatar",
-                    modifier = Modifier
-                        .size(52.dp)
-                )
+                if (viewModel.file.exists()){
+
+                    val painter = rememberAsyncImagePainter(
+                        ImageRequest.Builder(viewModel.cont)
+                            .data(Uri.fromFile(viewModel.file))
+                            .crossfade(true)
+                            .build()
+                    )
+
+                    Image(
+                        painter = painter,
+                        contentDescription = "User avatar",
+                        modifier = Modifier
+                            .size(52.dp)
+                    )
+
+                } else {
+                 Icon(
+                     painter = painterResource(R.drawable.creeper),
+                     contentDescription = "sin skin",
+                     tint = VerdeEsmeralda,
+                     modifier = Modifier.size(52.dp)
+                 )
+                }
             }
         },
         actions = {

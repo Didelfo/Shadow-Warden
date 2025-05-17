@@ -39,8 +39,8 @@ fun logic(nav: NavHostController){
 
     LaunchedEffect(Unit) {
 
-        delay(2000)
-
+        delay(1000)
+        nav.popBackStack()
         if (JSONCreator().exist(context, "token.dat")){
             nav.navigate(AppScreens.HomeScreen.route)
         } else {

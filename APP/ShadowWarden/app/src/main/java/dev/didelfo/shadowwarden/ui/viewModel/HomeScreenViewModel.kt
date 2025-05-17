@@ -33,6 +33,7 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
     var showMenuDelete by mutableStateOf(false)
 
 
+    var file by mutableStateOf(File(cont.filesDir, "skin.png"))
 
 
 //===========================================
