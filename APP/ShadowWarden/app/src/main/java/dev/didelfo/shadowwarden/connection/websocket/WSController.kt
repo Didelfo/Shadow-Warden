@@ -1,56 +1,75 @@
 package dev.didelfo.shadowwarden.connection.websocket
 
+import android.util.Log
 import dev.didelfo.shadowwarden.config.servers.Server
 import okhttp3.*
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import java.io.ByteArrayInputStream
+import javax.net.ssl.SSLContext
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.util.Base64
+import javax.net.ssl.*
 
 object WSController {
 
-    private val client = OkHttpClient()
+    private var client = OkHttpClient()
     private var webSocket: WebSocket? = null
     private var currentServerUrl: String? = null
+    private var currentCertificate: String? = null
 
-    // WebSocketListener para manejar los eventos de WebSocket
+
+// ==================================================
+//           Funcionamiento princripal del WS
+// ==================================================
+
     private val webSocketListener = object : WebSocketListener() {
 
         override fun onOpen(webSocket: WebSocket, response: Response) {
-            println("Conexión WebSocket abierta con el servidor: $currentServerUrl")
-            webSocket.send("Hola, servidor!")  // Mensaje inicial
-            this@WSController.webSocket = webSocket // Guardamos la referencia al WebSocket
+            this@WSController.webSocket = webSocket
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
-            println("Mensaje recibido: $text")
+            Log.d("prueba", text)
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-            println("Error en la conexión: ${t.message}")
+            Log.d("prueba", t.message.toString())
         }
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-            println("Conexión cerrada: $reason")
+            Log.d("prueba", "Cerrado por: ${reason}")
         }
-
     }
 
-    // Iniciar la conexión WebSocket con una URL dinámica
-    fun startConnection(server: Server) {
 
-        val serverUrl = "ws://${server.ip}:${server.port}"
+// ========================================
+//         Metodos de control
+// ========================================
 
-        if (serverUrl != currentServerUrl) {
-            // Si la URL es diferente, cambiamos la URL actual y cerramos la conexión anterior si existe
-            closeConnection()  // Cerrar cualquier conexión previa
-            currentServerUrl = serverUrl  // Actualizamos la URL del servidor
 
-            // Creamos una nueva solicitud WebSocket con la URL proporcionada
-            val request = Request.Builder()
-                .url(serverUrl)  // Usamos la URL proporcionada
-                .build()
+    fun connect(server: Server) {
 
-            // Iniciamos la nueva conexión
-            client.newWebSocket(request, webSocketListener)
+        // Url de conexion
+        val serverUrl = "wss://${server.ip}:${server.port}"
+
+        if (serverUrl != currentServerUrl || server.certificate != currentCertificate) {
+            closeConnection()
+            currentServerUrl = serverUrl
+            currentCertificate = server.certificate
+
+            try {
+                client = createSecureClient(server.certificate, server.ip)
+
+                val request = Request.Builder()
+                    .url(serverUrl)
+                    .build()
+
+                webSocket = client.newWebSocket(request, webSocketListener)
+            } catch (e: Exception) {
+                Log.d("prueba", "error al conectar: ${e.message.toString()}")
+            }
         }
     }
 
@@ -61,9 +80,9 @@ object WSController {
 
     // Cerrar la conexión WebSocket de forma controlada
     fun closeConnection() {
-        webSocket?.close(1000, "Cierre solicitado")  // Cerrar la conexión con un código y motivo
-        webSocket = null  // Limpiar la referencia al WebSocket
-        currentServerUrl = null  // Limpiar la URL actual
+        webSocket?.close(1000, "Cierre solicitado")
+        webSocket = null
+        currentServerUrl = null
     }
 
     // Verificar si la conexión está abierta
@@ -74,5 +93,44 @@ object WSController {
     // Obtener la URL del servidor actual
     fun getCurrentServerUrl(): String? {
         return currentServerUrl
+    }
+
+
+// ========================================
+//         Metodos para certificado
+// ========================================
+
+    private fun createSecureClient(base64Cert: String, ip: String): OkHttpClient {
+        val certificate = parseCertificate(base64Cert)
+        val trustManager = createPinningTrustManager(certificate)
+
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, arrayOf(trustManager), null)
+
+        return OkHttpClient.Builder()
+            .sslSocketFactory(sslContext.socketFactory, trustManager)
+            .hostnameVerifier { hostname, _ ->
+                hostname.equals(ip, ignoreCase = true)
+            }
+            .build()
+    }
+
+    private fun parseCertificate(base64Cert: String): X509Certificate {
+        val bytes = Base64.getDecoder().decode(base64Cert)
+        val factory = CertificateFactory.getInstance("X.509")
+        return factory.generateCertificate(ByteArrayInputStream(bytes)) as X509Certificate
+    }
+
+    private fun createPinningTrustManager(cert: X509Certificate): X509TrustManager {
+        return object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+            override fun getAcceptedIssuers() = arrayOf(cert)
+
+            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {
+                if (!chain.any { it.encoded.contentEquals(cert.encoded) }) {
+                    throw SSLException("Certificado del servidor no coincide con el esperado")
+                }
+            }
+        }
     }
 }

@@ -89,25 +89,11 @@ fun HomeScreen(navController: NavHostController){
                     loading = true
 
                     // Intentamos conectar
-//                    WSController.startConnection(server)
-
-                    //-----------
-                    // Pureba eliminar
-
-                    navController.navigate(AppScreens.ServerHomeScreen.route)
-
-
-                    //------------
+                    WSController.connect(server)
+                    WSController.sendMessage("Movil conectado con exito")
 
                     // quitamos la pantalla de carga
                     loading = false
-
-                    // Navegamos segun se conecte
-                    if (WSController.isConnected()) {
-                        navController.navigate(AppScreens.RegisterScreen)
-                    } else {
-
-                    }
                 }
             )
         }
