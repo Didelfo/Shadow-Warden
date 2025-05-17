@@ -96,7 +96,9 @@ fun createDialogOpti(
     colorTitulo: Color,
     texto: String,
     boton1: String,
+    color1: Color,
     boton2: String,
+    color2: Color,
     onClick1: () -> Unit,
     onClick2: () -> Unit
 ){
@@ -133,7 +135,7 @@ fun createDialogOpti(
                     onClick = { onClick1() },
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = VerdeEsmeralda
+                        containerColor = color1
                     )
                 ) {
                     Text(
@@ -149,7 +151,7 @@ fun createDialogOpti(
                     onClick = { onClick2() },
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = RojoCoral
+                        containerColor = color2
                     )
                 ) {
                     Text(

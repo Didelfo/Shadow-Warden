@@ -374,7 +374,9 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
             Cian,
             "Actualmente ya hay un proceso de verificación en marcha, ¿Desea cancelarlo?",
             "Si",
+            VerdeEsmeralda,
             "No",
+            RojoCoral,
             {
                 viewModel.borrarClave()
                 viewModel.AlertGeneracionClaveExiste = false
