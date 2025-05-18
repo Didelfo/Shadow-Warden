@@ -38,6 +38,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import dev.didelfo.shadowwarden.config.servers.Server
 import dev.didelfo.shadowwarden.ui.screens.utils.createDialogOpti
+import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.ui.viewModel.HomeScreenViewModel
 import java.io.File
@@ -74,6 +75,8 @@ fun HomeScreen(navController: NavHostController){
                 },
                 viewModel
             )
+
+            loadingView(viewModel.loadingScreen)
         }
     )
 

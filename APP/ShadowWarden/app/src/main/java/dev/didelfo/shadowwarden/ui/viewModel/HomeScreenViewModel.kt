@@ -66,8 +66,11 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
     }
 
     fun conectar(server:Server){
-        // Intentamos conectar
+
+        // Conectamos el servidor
         WSController.connect(server)
+
+
         WSController.sendMessage("Movil conectado con exito")
     }
 

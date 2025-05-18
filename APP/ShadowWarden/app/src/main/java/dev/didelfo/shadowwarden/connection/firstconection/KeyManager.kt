@@ -1,8 +1,9 @@
-package dev.didelfo.shadowwarden.utils.security.firstconection
+package dev.didelfo.shadowwarden.connection.firstconection
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.util.Base64
 import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -65,7 +66,7 @@ class KeyManager(private val context: Context, private val alias: String) {
     @Throws(IOException::class)
     fun decryptString(sharedSecret: ByteArray, encryptedString: String): String {
         val encryptedBytes = try {
-            android.util.Base64.decode(encryptedString, android.util.Base64.DEFAULT)
+            Base64.decode(encryptedString, Base64.DEFAULT)
         } catch (e: IllegalArgumentException) {
             throw IOException("Formato Base64 inválido", e)
         }
@@ -97,6 +98,32 @@ class KeyManager(private val context: Context, private val alias: String) {
             throw IOException("Error al descifrar los datos", e)
         }
     }
+
+    // Encriptar
+    @Throws(IOException::class)
+    fun encryptString(sharedSecret: ByteArray, plainText: String): String {
+        // Generar IV aleatorio (12 bytes recomendado para GCM)
+        val iv = ByteArray(12) { (Math.random() * 256).toInt().toByte() }
+
+        Cipher.getInstance("AES/GCM/NoPadding").apply {
+            init(
+                Cipher.ENCRYPT_MODE,
+                SecretKeySpec(sharedSecret, "AES"),
+                GCMParameterSpec(128, iv)
+            )
+        }.run {
+            val cipherText = doFinal(plainText.toByteArray(StandardCharsets.UTF_8))
+
+            // Combinamos IV + datos cifrados y los codificamos en Base64
+            val combined = ByteArray(iv.size + cipherText.size).apply {
+                System.arraycopy(iv, 0, this, 0, iv.size)
+                System.arraycopy(cipherText, 0, this, iv.size, cipherText.size)
+            }
+
+            return Base64.encodeToString(combined, Base64.NO_WRAP)
+        }
+    }
+
 
     // Elimina la clave del KeyStore (opcional, para limpieza)
     fun deleteKey() {

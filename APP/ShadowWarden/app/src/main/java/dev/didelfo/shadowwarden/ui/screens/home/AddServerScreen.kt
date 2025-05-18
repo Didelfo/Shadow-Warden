@@ -191,7 +191,8 @@ private fun getTextDescripcion(viewModel: AddServerScreenViewModel){
         text =
             when (viewModel.textType){
                 "Clave" -> "Genera la clave de seguridad."
-                "Comando" -> "Usa el comando /link en Minecraft. Cuando obtengas la verificación pulse \"Verificar\"."
+                "Comando" -> "Usa el comando \"/link\" en Minecraft. Cuando obtengas la verificación pulse \"Verificar\"."
+                "Comando2" -> "Usa el comando \"/verificar\" en Minecraft para confirmar la cuenta. "
                 "Nombre" -> "Introduce el nombre con el que deseas guardar el servidor."
                 else -> ""
             },
@@ -232,7 +233,7 @@ private fun getIconsStatus(viewModel: AddServerScreenViewModel){
             )
         }
 
-        Spacer(Modifier.width(15.dp))
+        Spacer(Modifier.width(5.dp))
 
         Box(
             modifier = Modifier
@@ -255,13 +256,36 @@ private fun getIconsStatus(viewModel: AddServerScreenViewModel){
             )
         }
 
-        Spacer(Modifier.width(15.dp))
+        Spacer(Modifier.width(5.dp))
 
         Box(
             modifier = Modifier
                 .size(48.dp)
                 .background(
                     color = if (viewModel.icon3) {
+                        VerdeEsmeralda
+                    } else {
+                        VerdeMenta
+                    },
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.check),
+                contentDescription = "Icono",
+                tint = AzulVerdosoOscuro,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        Spacer(Modifier.width(5.dp))
+
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    color = if (viewModel.icon4) {
                         VerdeEsmeralda
                     } else {
                         VerdeMenta
@@ -320,6 +344,9 @@ private fun getButton(viewModel: AddServerScreenViewModel){
                 }
                 "Verificar" -> {
                     viewModel.obtenerDatosDesencriptar()
+                }
+                "Confirmar" -> {
+
                 }
                 "Finalizar" -> {
                     viewModel.guardarServidor()

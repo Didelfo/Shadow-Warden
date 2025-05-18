@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.utils.security.firstconection
+package dev.didelfo.shadowwarden.connection.firstconection
 
 import android.content.Context
 import android.util.Base64
@@ -151,6 +151,41 @@ class FBManager {
             }
         } catch (e: Exception) {
             callback(false, null, null, e)
+        }
+    }
+
+
+    // Cambiamos los datos del archivo para mandar el token jeje
+    fun actualizarArchivo(
+        context: Context,
+        nuevoArchivo: String,
+        callback: (success: Boolean, error: Exception?) -> Unit
+    ) {
+        val json = JSONCreator().loadObject(context, "user.json", User::class.java)
+        try {
+            val databaseRef = conectar().reference.child(json.uuid)
+
+            // Verificar si el nodo existe antes de intentar modificarlo
+            databaseRef.get().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    if (task.result.exists()) {
+                        // Actualizar solo el campo "archivo"
+                        databaseRef.child("archivo").setValue(nuevoArchivo)
+                            .addOnSuccessListener {
+                                callback(true, null)
+                            }
+                            .addOnFailureListener { error ->
+                                callback(false, error)
+                            }
+                    } else {
+                        callback(false, Exception("No se encontró el registro con la UUID: ${json.uuid}"))
+                    }
+                } else {
+                    callback(false, task.exception ?: Exception("Error al acceder a la base de datos"))
+                }
+            }
+        } catch (e: Exception) {
+            callback(false, e)
         }
     }
 

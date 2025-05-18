@@ -11,9 +11,11 @@ import com.google.gson.Gson
 import dev.didelfo.shadowwarden.config.servers.Server
 import dev.didelfo.shadowwarden.config.servers.ServerEncrip
 import dev.didelfo.shadowwarden.config.servers.Servers
+import dev.didelfo.shadowwarden.config.user.Tokeen
 import dev.didelfo.shadowwarden.utils.json.JsonEncripter
-import dev.didelfo.shadowwarden.utils.security.firstconection.FBManager
-import dev.didelfo.shadowwarden.utils.security.firstconection.KeyManager
+import dev.didelfo.shadowwarden.connection.firstconection.FBManager
+import dev.didelfo.shadowwarden.connection.firstconection.KeyManager
+import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.utils.security.keys.GetAliasKey
 import dev.didelfo.shadowwarden.utils.security.keys.KeyAlias
 import java.io.File
@@ -39,6 +41,7 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
     var icon1 by mutableStateOf(false)
     var icon2 by mutableStateOf(false)
     var icon3 by mutableStateOf(false)
+    var icon4 by mutableStateOf(false)
 
     // Varialbes TextField
     var showTextFiel by mutableStateOf(false)
@@ -196,12 +199,27 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
         val llaveCompartida = keymanager.generateSharedSecret(keyPublicaServidor)
 
         // Ahora desciframos el string del archivo que contiene la informacion encriptada
-
         val archivoDesencriptado = keymanager.decryptString(llaveCompartida, archivo)
         serverEn = Gson().fromJson(archivoDesencriptado, ServerEncrip::class.java)
 
-        AlertExisteDatosExito = true
-        changeStatusVerific()
+        // Procedemos a usar la misma clave para la informacion del "archivo" y pasar nuestro token
+        // cifrado para guardarlo de manera segura.
+        val encripToken = JsonEncripter(cont, GetAliasKey().getKey(KeyAlias.KeyToken))
+        val token: Tokeen = Gson().fromJson(encripToken.decryptJson(encripToken.readEncryptedFile("token.dat")), Tokeen::class.java)
+
+        val tokenEncrip = keymanager.encryptString(llaveCompartida, token.token)
+
+        val fbManager = FBManager().actualizarArchivo(cont,tokenEncrip) {success, error ->
+            if (success){
+                AlertExisteDatosExito = true
+                changeStatusVerific()
+            } else {
+                AlertExisteDatosError = true
+                borrarClave()
+                nav.popBackStack()
+                nav.navigate(AppScreens.HomeScreen.route)
+            }
+        }
     }
 
 
@@ -237,15 +255,11 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
             loadingViewStatus = false
             AlertaGuardadoError = true
         }
-
-
-
     }
 
 
-
 //===========================================
-//         Funciones Composable
+//         Funciones cambios visuales
 //===========================================
 
     fun changeStatusExist() {
@@ -258,10 +272,7 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
 
     private fun changeStatusVerific(){
         icon2 = true
-        showTextFiel = true
-        textType = "Nombre"
-        textButton = "Finalizar"
+        textType = "Comando2"
+        textButton = "Confirmar"
     }
-
-
 }
