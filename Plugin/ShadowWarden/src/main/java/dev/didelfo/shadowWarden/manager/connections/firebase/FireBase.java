@@ -114,7 +114,7 @@ public class FireBase {
                         // Guardamos el token en la base de datos
                         bdEncrip.connect();
 
-                        // Comprobamos si existe ya este registro 
+                        // Comprobamos si existe ya este registro
                         if (bdEncrip.getAllTokens().contains(p.getName())){
                             plugin.getMsgManager().showMessage(p, MessageType.Staff, "Esta cuenta ya esta registrada");
                             bdEncrip.close();

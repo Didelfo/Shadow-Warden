@@ -2,6 +2,7 @@ package dev.didelfo.shadowWarden;
 
 import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
 import dev.didelfo.shadowWarden.commands.staff.StaffMenuCommand;
+import dev.didelfo.shadowWarden.commands.staff.VerificarCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventLogger;
@@ -77,6 +78,7 @@ public final class ShadowWarden extends JavaPlugin {
     private void initializeCommands(ShadowWarden pl){
         pl.getCommand("staffmenu").setExecutor(new StaffMenuCommand(pl));
         pl.getCommand("link").setExecutor(new LinkCommand(pl));
+        pl.getCommand("verificar").setExecutor(new VerificarCommand(pl));
     }
 
     // Inicializador de lisener
