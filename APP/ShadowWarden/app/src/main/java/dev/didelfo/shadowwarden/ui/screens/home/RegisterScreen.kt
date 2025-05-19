@@ -34,8 +34,8 @@ import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.R
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.ui.screens.utils.createDialogInfo
-import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
+import dev.didelfo.shadowwarden.ui.screens.components.createDialogInfo
+import dev.didelfo.shadowwarden.ui.screens.components.loadingView
 import dev.didelfo.shadowwarden.ui.viewModel.RegisterScreenViewModel
 
 @Composable

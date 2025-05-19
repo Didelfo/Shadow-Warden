@@ -36,12 +36,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import dev.didelfo.shadowwarden.config.servers.Server
-import dev.didelfo.shadowwarden.ui.screens.utils.createDialogOpti
-import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
+import dev.didelfo.shadowwarden.localfiles.Server
+import dev.didelfo.shadowwarden.ui.screens.components.createDialogOpti
+import dev.didelfo.shadowwarden.ui.screens.components.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.ui.viewModel.HomeScreenViewModel
-import java.io.File
 
 @SuppressLint("UnrememberedMutableState")
 @Composable

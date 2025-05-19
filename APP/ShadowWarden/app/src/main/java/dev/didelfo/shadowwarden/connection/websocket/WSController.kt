@@ -1,7 +1,7 @@
 package dev.didelfo.shadowwarden.connection.websocket
 
 import android.util.Log
-import dev.didelfo.shadowwarden.config.servers.Server
+import dev.didelfo.shadowwarden.localfiles.Server
 import okhttp3.*
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener

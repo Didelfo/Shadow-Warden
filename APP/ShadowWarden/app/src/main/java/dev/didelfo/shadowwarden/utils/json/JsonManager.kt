@@ -6,22 +6,16 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 
-class JSONCreator {
+class JsonManager {
 
     private val gson = Gson()
 
-    /**
-     * Guarda un objeto en el almacenamiento interno como JSON.
-     */
     fun <T> saveObject(context: Context, obj: T, fileName: String) {
         val file = File(context.filesDir, fileName)
         val jsonString = gson.toJson(obj)
         FileWriter(file).use { it.write(jsonString) }
     }
 
-    /**
-     * Carga un objeto desde el almacenamiento interno.
-     */
     fun <T> loadObject(context: Context, fileName: String, clazz: Class<T>): T {
         val file = File(context.filesDir, fileName)
         //if (!file.exists()) return null
@@ -31,9 +25,6 @@ class JSONCreator {
         }
     }
 
-    /**
-     * Elimina un archivo del almacenamiento interno.
-     */
     fun deleteFile(context: Context, fileName: String): Boolean {
         val file = File(context.filesDir, fileName)
         return file.delete()
@@ -44,7 +35,8 @@ class JSONCreator {
         return file.exists()
     }
 
-    fun <T> stringObjet(json: String, clazz:Class<T>):T = gson.fromJson(json, clazz)
+    fun <T> stringToObjet(json: String, clazz:Class<T>):T = gson.fromJson(json, clazz)
 
+    fun objetToString(obj: Any): String = gson.toJson(obj)
 
 }

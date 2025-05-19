@@ -1,10 +1,9 @@
-package dev.didelfo.shadowwarden.connection.firstconection
+package dev.didelfo.shadowwarden.security.keys
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.security.KeyPairGenerator
@@ -16,7 +15,7 @@ import javax.crypto.KeyAgreement
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-class KeyManager(private val context: Context, private val alias: String) {
+class KeyManagerKeyStore(private val context: Context, private val alias: String) {
 
     private val keyStore = KeyStore.getInstance("AndroidKeyStore").apply {
         load(null)

@@ -1,6 +1,5 @@
-package dev.didelfo.shadowwarden.ui.screens.utils
+package dev.didelfo.shadowwarden.ui.screens.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,8 +21,6 @@ import dev.didelfo.shadowwarden.ui.theme.AzulOscuroProfundo
 import dev.didelfo.shadowwarden.ui.theme.AzulVerdosoOscuro
 import dev.didelfo.shadowwarden.ui.theme.OpenSanBold
 import dev.didelfo.shadowwarden.ui.theme.OpenSanNormal
-import dev.didelfo.shadowwarden.ui.theme.RojoCoral
-import dev.didelfo.shadowwarden.ui.theme.VerdeEsmeralda
 import dev.didelfo.shadowwarden.ui.theme.VerdeMenta
 
 @Composable

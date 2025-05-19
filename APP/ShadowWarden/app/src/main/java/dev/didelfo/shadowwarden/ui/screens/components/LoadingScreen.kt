@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.screens.utils
+package dev.didelfo.shadowwarden.ui.screens.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn

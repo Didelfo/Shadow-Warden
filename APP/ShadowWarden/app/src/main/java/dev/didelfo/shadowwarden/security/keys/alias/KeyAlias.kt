@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.utils.security.keys
+package dev.didelfo.shadowwarden.security.keys.alias
 
 enum class KeyAlias {
     KeyToken,

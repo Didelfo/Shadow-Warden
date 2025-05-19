@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.utils.security.E2EE
+package dev.didelfo.shadowwarden.security.E2EE
 
 
 import java.security.*

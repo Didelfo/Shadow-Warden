@@ -22,11 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
-import dev.didelfo.shadowwarden.ui.screens.utils.createDialogInfo
-import dev.didelfo.shadowwarden.ui.screens.utils.createDialogOpti
-import dev.didelfo.shadowwarden.ui.screens.utils.loadingView
+import dev.didelfo.shadowwarden.ui.screens.components.createDialogInfo
+import dev.didelfo.shadowwarden.ui.screens.components.createDialogOpti
+import dev.didelfo.shadowwarden.ui.screens.components.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.ui.viewModel.AddServerScreenViewModel
+import dev.didelfo.shadowwarden.ui.viewModel.AddServerStatus
 
 @Composable
 fun AddServerScreen(navController: NavHostController) {
@@ -188,14 +189,7 @@ private fun getIconHead(viewModel: AddServerScreenViewModel) {
 @Composable
 private fun getTextDescripcion(viewModel: AddServerScreenViewModel){
     Text(
-        text =
-            when (viewModel.textType){
-                "Clave" -> "Genera la clave de seguridad."
-                "Comando" -> "Usa el comando \"/link\" en Minecraft. Cuando obtengas la verificación pulse \"Verificar\"."
-                "Comando2" -> "Usa el comando \"/verificar\" en Minecraft para confirmar la cuenta. "
-                "Nombre" -> "Introduce el nombre con el que deseas guardar el servidor."
-                else -> ""
-            },
+        text = viewModel.textGuia,
         color = VerdeMenta,
         fontSize = 16.sp,
         fontFamily = OpenSanNormal,
@@ -338,21 +332,7 @@ private fun getTextField(viewModel: AddServerScreenViewModel){
 private fun getButton(viewModel: AddServerScreenViewModel){
     Button(
         onClick = {
-            when (viewModel.textButton){
-                "Generar" -> {
-                    viewModel.generarClave()
-                }
-                "Verificar" -> {
-                    viewModel.obtenerDatosDesencriptar()
-                }
-                "Confirmar" -> {
-
-                }
-                "Finalizar" -> {
-                    viewModel.guardarServidor()
-                }
-                else -> {}
-            }
+            viewModel.pulsarBoton()
         },
         modifier = Modifier
             .width(150.dp)
@@ -411,7 +391,7 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
 
             },
             {
-                viewModel.changeStatusExist()
+                viewModel.cambiarEstado(AddServerStatus.ComandoLink)
                 viewModel.AlertGeneracionClaveExiste = false
             }
         )
@@ -430,7 +410,7 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
         )
     }
 
-    // ------------- Segundo Paso -----------------
+    // ------------- Primer Paso Borrar -----------------
 
     // Exito Borrar Registro
     if (viewModel.AlertBorrarVerificacionCorrecta){
@@ -447,18 +427,6 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
         )
     }
 
-    // Valor no encontrado al borrar Registro
-    if (viewModel.AlertBorrarVerificacionNoEncontrado){
-        createDialogInfo(
-            painterResource(R.drawable.info),
-            RojoCoral,
-            "No encontrado",
-            RojoCoral,
-            "No se ha encontrado este registro",
-            "Volver",
-            { viewModel.AlertBorrarVerificacionNoEncontrado = false }
-        )
-    }
     // Error al borrar Registro
     if (viewModel.AlertBorrarVerificacionError){
         createDialogInfo(
@@ -472,7 +440,7 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
         )
     }
 
-    // ------------- Tercer Paso -------------------
+    // ------------- Segundo Paso -------------------
 
     // Exito al obtener datos
     if (viewModel.AlertExisteDatosExito){
@@ -520,6 +488,44 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
     }
 
 
+    // -------- Tercer paso Verificar cuenta -----------------
+
+    // Si el HMAC es el mismo que el servidor
+    if (viewModel.AlertaCuentaVerificada){
+        createDialogInfo(
+            painterResource(R.drawable.check),
+            VerdeEsmeralda,
+            "Exito",
+            VerdeEsmeralda,
+            "Se ha verificado correctamente",
+            "Siguiente",
+            {
+                viewModel.cambiarEstado(AddServerStatus.PonerNombre)
+            }
+        )
+    }
+
+    // Si el HMAC no coincide
+    if (viewModel.AlertaCuentaError){
+        createDialogInfo(
+            painterResource(R.drawable.close),
+            RojoCoral,
+            "Error",
+            RojoCoral,
+            "Se ha producido un error con la validacion intentalo de nuevo",
+            "Salir",
+            {
+                viewModel.borrarClave() // Borra el registro de nuestra base de datos
+                viewModel.cambiarEstado(AddServerStatus.Incial)
+                viewModel.nav.popBackStack()
+                viewModel.nav.navigate(AppScreens.HomeScreen.route) // Navegamos a la pantalla inicial
+                viewModel.AlertaCuentaError = false
+            }
+        )
+    }
+
+
+
     // ------------- Cuarto Paso Guardar -------------------
 
     // Se guarda correctamente
@@ -552,8 +558,4 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
             }
         )
     }
-
-
-
-
 }
