@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 
-public class ServerKey {
+public class KeyTemporalFireBase {
     private final String keyAlgorithm = "EC";
     private final String curveName = "secp256r1";
     private final String keyAgreementAlgorithm = "ECDH";
@@ -20,7 +20,7 @@ public class ServerKey {
 
     private KeyPair keyPair;
 
-    public ServerKey(){}
+    public KeyTemporalFireBase(){}
 
     //Genera un par de claves EC temporal en memoria
     public void generateKeyPair() {

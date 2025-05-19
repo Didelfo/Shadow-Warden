@@ -9,11 +9,13 @@ import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.manager.message.MessageType;
 import dev.didelfo.shadowWarden.security.certificate.CertificateManager;
 import dev.didelfo.shadowWarden.security.hmac.HmacUtil;
+import dev.didelfo.shadowWarden.utils.ToolManager;
 import okhttp3.*;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.security.KeyFactory;
+import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
@@ -42,17 +44,15 @@ public class FireBase {
             if (existeUUID(uuidMojan)){
 
                 // Ahora que tenemos seguro que existe generamos un par de llaves aqui.
-                ServerKey key = new ServerKey();
+                KeyTemporalFireBase key = new KeyTemporalFireBase();
                 key.generateKeyPair();
 
                 try {
                     // Desciframos la llave
-                    byte[] publickeyBytes = Base64.getDecoder().decode(obtenerKeym(uuidMojan));
-                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publickeyBytes);
-                    KeyFactory keyFactory = KeyFactory.getInstance("EC");
+                    PublicKey keyMovil = new ToolManager().publicKeyBase64ToPublicKey(obtenerKeym(uuidMojan));
 
                     // Obtenemos la clave compartida
-                    byte[] shareKey = key.generateSharedSecret(keyFactory.generatePublic(keySpec));
+                    byte[] shareKey = key.generateSharedSecret(keyMovil);
 
                     // Generamos el archivo que encriptaremos
                     ArchivoPasar archivo = new ArchivoPasar(
@@ -65,7 +65,7 @@ public class FireBase {
 
                     String archivoEncrip = key.encryptText(shareKey, archivotxt);
 
-                    String keys = Base64.getEncoder().encodeToString(key.getPublicKey().getEncoded());
+                    String keys = new ToolManager().publicKeyToBase64(key.getPublicKey());
 
                     actualizarArchivoYKeys(uuidMojan, archivoEncrip, keys);
 
@@ -83,8 +83,7 @@ public class FireBase {
     }
 
     // Metodo para obtener el token
-
-    public synchronized void verificar(Player p){
+    public void verificar(Player p){
         plugin.getExecutor().execute(() -> {
 
             plugin.getMsgManager().showMessage(p, MessageType.Staff, "Comenzando la verificación....");
@@ -93,58 +92,19 @@ public class FireBase {
             // Comprobamos que existe el registro y alguien con esta uuid esta intentando vincular este servidor
             if (existeUUID(uuidMojan)){
                 // Ahora que tenemos seguro que existe generamos un par de llaves aqui.
-                ServerKey key = new ServerKey();
+                KeyTemporalFireBase key = new KeyTemporalFireBase();
                 key.generateKeyPair();
 
                 try {
-                    // Desciframos la llave
-                    byte[] publickeyBytes = Base64.getDecoder().decode(obtenerKeym(uuidMojan));
-                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publickeyBytes);
-                    KeyFactory keyFactory = KeyFactory.getInstance("EC");
-
                     // Obtenemos la clave compartida
-                    byte[] shareKey = key.generateSharedSecret(keyFactory.generatePublic(keySpec));
-
-                    String desencriptado = key.decryptText(shareKey, obtenerArchivo(uuidMojan));
-
-                    if (verificarToken(desencriptado, uuidMojan)){
-                        // Obtenemos la base de datos con la que guardaremos el token
-                        EncryptedDatabase bdEncrip = new EncryptedDatabase(plugin);
-
-                        // Guardamos el token en la base de datos
-                        bdEncrip.connect();
-
-                        // Comprobamos si existe ya este registro
-                        if (bdEncrip.getAllTokens().contains(p.getName())){
-                            plugin.getMsgManager().showMessage(p, MessageType.Staff, "Esta cuenta ya esta registrada");
-                            bdEncrip.close();
-                        } else {
-
-                            bdEncrip.insertToken(uuidMojan, p, desencriptado);
-                            bdEncrip.close();
-
-                            // Conesguimos el HMAC
-                            String nonce = HmacUtil.generateNonce();
-                            String hmac = HmacUtil.generateHmac(desencriptado, shareKey, nonce);
-
-                            String archivo = new Gson().toJson(new ArchivoHMAC(hmac, nonce));
-
-                            String archivoEncrip = key.encryptText(shareKey, archivo);
+                    byte[] shareKey = key.generateSharedSecret(new ToolManager().publicKeyBase64ToPublicKey(obtenerKeym(uuidMojan)));
 
 
-                            // Ahora actualizamos los archivos y pasamos el HMAC para verificar en el movil
-                            actualizarArchivoYKeys(
-                                    uuidMojan,
-                                    archivoEncrip,
-                                    Base64.getEncoder().encodeToString(key.getPublicKey().getEncoded())
-                            );
+                    // Seguir depurar apartir de aqui, metodos para obtener el token, pensar para usar 2 veces el mismo
+                    // mismo comando /link dos veces por ejemplo si hay token usar verificar y si token esta vacio usar link
 
 
-                            plugin.getMsgManager().showMessage(p, MessageType.Staff, "Verificado con exito. Continua en la app.");
-                        }
-                    } else {
-                        plugin.getMsgManager().showMessage(p, MessageType.Staff, "Tu token no es valido.");
-                    }
+
                 } catch (Exception e) {
                     plugin.getMsgManager().showMessage(p, MessageType.Staff, "Error");
                     throw new RuntimeException(e);
@@ -175,18 +135,6 @@ public class FireBase {
         }
     }
 
-    // Verificar el token
-    private boolean verificarToken(String tokenBase64, String uuid){
-        byte[] decodedBytes = Base64.getDecoder().decode(tokenBase64);
-        String token = new String(decodedBytes);
-
-        if (token.startsWith(uuid)){
-            return  true;
-        } else {
-            return  false;
-        }
-    }
-
     // Obtener el la key del movil
     private static String obtenerKeym(String uuid) {
         String url = FIREBASE_URL + uuid + "/keym.json";
@@ -201,23 +149,6 @@ public class FireBase {
             return responseBody.replaceAll("\"", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    // Obtener el token de archivo
-    private String obtenerArchivo(String uuid) {
-        String url = FIREBASE_URL + uuid + "/archivo.json";
-        Request request = new Request.Builder().url(url).get().build();
-
-        try (Response response = client.newCall(request).execute()) {
-            String responseBody = response.body().string();
-            if (responseBody.equals("null")) {
-                throw new RuntimeException("UUID no existe o no tiene 'archivo'");
-            }
-            // Elimina las comillas del JSON
-            return responseBody.replaceAll("\"", "");
-        } catch (IOException e) {
-            throw new RuntimeException("Error al obtener el archivo de Firebase", e);
         }
     }
 
