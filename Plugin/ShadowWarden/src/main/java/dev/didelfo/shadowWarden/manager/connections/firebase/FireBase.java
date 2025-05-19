@@ -3,18 +3,17 @@ package dev.didelfo.shadowWarden.manager.connections.firebase;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dev.didelfo.shadowWarden.ShadowWarden;
+import dev.didelfo.shadowWarden.manager.connections.firebase.component.ArchivoHMAC;
+import dev.didelfo.shadowWarden.manager.connections.firebase.component.ArchivoPasar;
+import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.manager.message.MessageType;
 import dev.didelfo.shadowWarden.security.certificate.CertificateManager;
+import dev.didelfo.shadowWarden.security.hmac.HmacUtil;
 import okhttp3.*;
-import org.bukkit.block.data.type.Fire;
 import org.bukkit.entity.Player;
-import org.json.simple.JSONObject;
 
 import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
@@ -81,8 +80,79 @@ public class FireBase {
                 plugin.getMsgManager().showMessage(p, MessageType.Staff, "No hay ninguna solicitud activa.");
             }
         });
+    }
+
+    // Metodo para obtener el token
+
+    public synchronized void verificar(Player p){
+        plugin.getExecutor().execute(() -> {
+
+            plugin.getMsgManager().showMessage(p, MessageType.Staff, "Comenzando la verificación....");
+
+            String uuidMojan = uuidMojan(p);
+            // Comprobamos que existe el registro y alguien con esta uuid esta intentando vincular este servidor
+            if (existeUUID(uuidMojan)){
+                // Ahora que tenemos seguro que existe generamos un par de llaves aqui.
+                ServerKey key = new ServerKey();
+                key.generateKeyPair();
+
+                try {
+                    // Desciframos la llave
+                    byte[] publickeyBytes = Base64.getDecoder().decode(obtenerKeym(uuidMojan));
+                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publickeyBytes);
+                    KeyFactory keyFactory = KeyFactory.getInstance("EC");
+
+                    // Obtenemos la clave compartida
+                    byte[] shareKey = key.generateSharedSecret(keyFactory.generatePublic(keySpec));
+
+                    String desencriptado = key.decryptText(shareKey, obtenerArchivo(uuidMojan));
+
+                    if (verificarToken(desencriptado, uuidMojan)){
+                        // Obtenemos la base de datos con la que guardaremos el token
+                        EncryptedDatabase bdEncrip = new EncryptedDatabase(plugin);
+
+                        // Guardamos el token en la base de datos
+                        bdEncrip.connect();
+
+                        // Comprobamos si existe ya este registro 
+                        if (bdEncrip.getAllTokens().contains(p.getName())){
+                            plugin.getMsgManager().showMessage(p, MessageType.Staff, "Esta cuenta ya esta registrada");
+                            bdEncrip.close();
+                        } else {
+
+                            bdEncrip.insertToken(uuidMojan, p, desencriptado);
+                            bdEncrip.close();
+
+                            // Conesguimos el HMAC
+                            String nonce = HmacUtil.generateNonce();
+                            String hmac = HmacUtil.generateHmac(desencriptado, shareKey, nonce);
+
+                            String archivo = new Gson().toJson(new ArchivoHMAC(hmac, nonce));
+
+                            String archivoEncrip = key.encryptText(shareKey, archivo);
 
 
+                            // Ahora actualizamos los archivos y pasamos el HMAC para verificar en el movil
+                            actualizarArchivoYKeys(
+                                    uuidMojan,
+                                    archivoEncrip,
+                                    Base64.getEncoder().encodeToString(key.getPublicKey().getEncoded())
+                            );
+
+
+                            plugin.getMsgManager().showMessage(p, MessageType.Staff, "Verificado con exito. Continua en la app.");
+                        }
+                    } else {
+                        plugin.getMsgManager().showMessage(p, MessageType.Staff, "Tu token no es valido.");
+                    }
+                } catch (Exception e) {
+                    plugin.getMsgManager().showMessage(p, MessageType.Staff, "Error");
+                    throw new RuntimeException(e);
+                }
+            } else {
+                plugin.getMsgManager().showMessage(p, MessageType.Staff, "No hay ninguna solicitud activa.");
+            }
+        });
     }
 
 // ==============================
@@ -105,6 +175,18 @@ public class FireBase {
         }
     }
 
+    // Verificar el token
+    private boolean verificarToken(String tokenBase64, String uuid){
+        byte[] decodedBytes = Base64.getDecoder().decode(tokenBase64);
+        String token = new String(decodedBytes);
+
+        if (token.startsWith(uuid)){
+            return  true;
+        } else {
+            return  false;
+        }
+    }
+
     // Obtener el la key del movil
     private static String obtenerKeym(String uuid) {
         String url = FIREBASE_URL + uuid + "/keym.json";
@@ -119,6 +201,23 @@ public class FireBase {
             return responseBody.replaceAll("\"", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    // Obtener el token de archivo
+    private String obtenerArchivo(String uuid) {
+        String url = FIREBASE_URL + uuid + "/archivo.json";
+        Request request = new Request.Builder().url(url).get().build();
+
+        try (Response response = client.newCall(request).execute()) {
+            String responseBody = response.body().string();
+            if (responseBody.equals("null")) {
+                throw new RuntimeException("UUID no existe o no tiene 'archivo'");
+            }
+            // Elimina las comillas del JSON
+            return responseBody.replaceAll("\"", "");
+        } catch (IOException e) {
+            throw new RuntimeException("Error al obtener el archivo de Firebase", e);
         }
     }
 

@@ -22,7 +22,7 @@ public class CertificateManager {
     public CertificateManager(ShadowWarden pl)  {
 
         this.plugin = pl;
-        this.keystorePassword = pl.getConfig().getString("websocket.pass");
+        this.keystorePassword = pl.getConfig().getString("passMaestral");
 
         File folder = new File(plugin.getDataFolder(), "security");
 

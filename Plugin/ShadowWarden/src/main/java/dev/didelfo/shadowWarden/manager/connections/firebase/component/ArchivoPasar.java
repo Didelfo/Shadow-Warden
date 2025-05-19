@@ -1,4 +1,4 @@
-package dev.didelfo.shadowWarden.manager.connections.firebase;
+package dev.didelfo.shadowWarden.manager.connections.firebase.component;
 
 import com.google.gson.Gson;
 

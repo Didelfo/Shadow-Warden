@@ -75,4 +75,38 @@ public class ServerKey {
 
         return Base64.getEncoder().encodeToString(outputStream.toByteArray());
     }
+
+    // Metodo desencriptar
+    public String decryptText(byte[] sharedSecret, String encryptedString) throws IOException {
+        byte[] encryptedData;
+
+        try {
+            encryptedData = Base64.getDecoder().decode(encryptedString);
+        } catch (IllegalArgumentException e) {
+            throw new IOException("Error al decodificar Base64", e);
+        }
+
+        if (encryptedData.length < ivLength) {
+            throw new IOException("Datos cifrados incompletos (no contiene IV válido)");
+        }
+
+        // Separar IV y datos cifrados
+        byte[] iv = Arrays.copyOfRange(encryptedData, 0, ivLength);
+        byte[] cipherText = Arrays.copyOfRange(encryptedData, ivLength, encryptedData.length);
+
+        try {
+            Cipher cipher = Cipher.getInstance(cipherAlgorithm);
+            cipher.init(
+                    Cipher.DECRYPT_MODE,
+                    new SecretKeySpec(sharedSecret, "AES"),
+                    new GCMParameterSpec(gcmTagLength, iv)
+            );
+
+            byte[] decryptedBytes = cipher.doFinal(cipherText);
+            return new String(decryptedBytes, StandardCharsets.UTF_8);
+
+        } catch (GeneralSecurityException e) {
+            throw new IOException("Error al desencriptar los datos", e);
+        }
+    }
 }
