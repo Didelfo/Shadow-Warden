@@ -2,7 +2,6 @@ package dev.didelfo.shadowWarden;
 
 import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
 import dev.didelfo.shadowWarden.commands.staff.StaffMenuCommand;
-import dev.didelfo.shadowWarden.commands.staff.VerificarCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventLogger;
