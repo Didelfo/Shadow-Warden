@@ -7,8 +7,8 @@ import java.util.ArrayList;
 
 public class ClientWebSocket {
     // Variables
-    private String publicKeyServer;
-    private String publicKeyMovil;
+    private String publicKeyServer = "";
+    private String publicKeyMovil = "";
 
 
     public ClientWebSocket(){}
