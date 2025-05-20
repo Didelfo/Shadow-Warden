@@ -1,7 +1,10 @@
 package dev.didelfo.shadowwarden.connection.websocket
 
 import android.util.Log
+import dev.didelfo.shadowwarden.connection.websocket.components.ClientWebSocket
 import dev.didelfo.shadowwarden.localfiles.Server
+import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
+import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import okhttp3.*
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -18,6 +21,9 @@ object WSController {
     private var webSocket: WebSocket? = null
     private var currentServerUrl: String? = null
     private var currentCertificate: String? = null
+    private var cliente: ClientWebSocket = ClientWebSocket()
+    private var t = ToolManager()
+
 
 
 // ==================================================
@@ -27,11 +33,18 @@ object WSController {
     private val webSocketListener = object : WebSocketListener() {
 
         override fun onOpen(webSocket: WebSocket, response: Response) {
-            this@WSController.webSocket = webSocket
+//            this@WSController.webSocket = webSocket
+            EphemeralKeyStore.clearKeys()
+            EphemeralKeyStore.generateKeyPair()
+            cliente.publicKeyMovil = t.publicKeyToBase64(checkNotNull(EphemeralKeyStore.getPublicKey()))
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
-            Log.d("prueba", text)
+            if (cliente.publicKeyServer.isBlank()){
+                cliente.publicKeyServer = text
+                Log.d("prueba", "clave recivida del servidor: ${text}")
+                sendMessage(cliente.publicKeyMovil)
+            }
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {

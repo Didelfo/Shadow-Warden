@@ -20,7 +20,7 @@ object EphemeralKeyStore {
     }
 
     // Generar par de claves ECDH
-    private fun generateKeyPair() {
+    fun generateKeyPair() {
         clearKeys() // Limpiar claves anteriores
         val keyPairGenerator = KeyPairGenerator.getInstance("EC")
         val ecGenParameterSpec = ECGenParameterSpec("secp521r1")
