@@ -19,13 +19,6 @@ commands:
     permission: shadowwardem.staff.link
     permisssion-message: No tienes permiso para usar este comando
 
-  verificar:
-    description: Comando para verificar la cuenta
-    usage: /verificar
-    permission: shadowwardem.staff.link
-    permisssion-message: No tienes permiso para usar este comando
-
-
 permissions:
 
   # =============================

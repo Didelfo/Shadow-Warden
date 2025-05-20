@@ -31,7 +31,7 @@ public class LinkCommand implements CommandExecutor {
             return true;
         }
 
-        new FireBase(plugin).link(p);
+        new FireBase(plugin).verificacionSelector(p);
 
 
         return true;

@@ -9,6 +9,8 @@ import java.util.Base64;
 
 public class ToolManager {
 
+    // -------------- PublicKey -----------------------
+
     public PublicKey publicKeyBase64ToPublicKey(String base64) {
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(base64));
         KeyFactory keyFactory = null;
@@ -23,4 +25,16 @@ public class ToolManager {
     public String publicKeyToBase64(PublicKey key){
         return Base64.getEncoder().encodeToString(key.getEncoded());
     }
+
+    // ------------------------ Base64 ---------------------------
+
+    public String base64ToString(String base64) {
+         return new String(Base64.getDecoder().decode(base64));
+    }
+
+    public String stringToBase64(String texto){
+        return Base64.getEncoder().encodeToString(texto.getBytes());
+    }
+
+
 }

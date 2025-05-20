@@ -78,7 +78,6 @@ public final class ShadowWarden extends JavaPlugin {
     private void initializeCommands(ShadowWarden pl){
         pl.getCommand("staffmenu").setExecutor(new StaffMenuCommand(pl));
         pl.getCommand("link").setExecutor(new LinkCommand(pl));
-        pl.getCommand("verificar").setExecutor(new VerificarCommand(pl));
     }
 
     // Inicializador de lisener

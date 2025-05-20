@@ -14,15 +14,17 @@ public class HmacUtil {
     private static final String HASH_ALGORITHM = "SHA-256";
     private static final int NONCE_BYTE_SIZE = 16; // 128 bits
 
+    public HmacUtil() {}
+
     //Calcula SHA-256 del token decodificado desde Base64
-    private static byte[] getTokenHash(String tokenBase64) throws Exception {
+    private byte[] getTokenHash(String tokenBase64) throws Exception {
         byte[] tokenBytes = Base64.getDecoder().decode(tokenBase64);
         MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
         return digest.digest(tokenBytes);
     }
 
     // Genera una firma HMAC-SHA256 de: tokenHash + nonce
-    public static String generateHmac(String tokenBase64, byte[] secretKeyBytes, String nonce) throws Exception {
+    public String generateHmac(String tokenBase64, byte[] secretKeyBytes, String nonce) throws Exception {
         byte[] tokenHash = getTokenHash(tokenBase64);
 
         Mac mac = Mac.getInstance(HMAC_ALGORITHM);
@@ -37,12 +39,12 @@ public class HmacUtil {
     }
 
      // Verifica si dos firmas HMAC coinciden
-     public static boolean verifyHmac(String calculatedSignature, String receivedSignature) {
+     public boolean verifyHmac(String calculatedSignature, String receivedSignature) {
         return calculatedSignature.equals(receivedSignature);
     }
 
      //Genera un nonce aleatorio de tamaño fijo (NONCE_BYTE_SIZE bytes)
-    public static String generateNonce() {
+    public String generateNonce() {
         SecureRandom random = new SecureRandom();
         byte[] nonce = new byte[NONCE_BYTE_SIZE];
         random.nextBytes(nonce);
