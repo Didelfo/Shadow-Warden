@@ -1,22 +1,22 @@
 package dev.didelfo.shadowWarden.manager.connections.websocket;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
+import dev.didelfo.shadowWarden.manager.connections.websocket.components.ClientWebSocket;
 import dev.didelfo.shadowWarden.security.certificate.CertificateManager;
+import dev.didelfo.shadowWarden.utils.ToolManager;
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
-
 import java.net.InetSocketAddress;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WSServer extends WebSocketServer {
-
+    private ToolManager t = new ToolManager();
     private ShadowWarden plugin;
-    private final CopyOnWriteArraySet<WebSocket> clients = new CopyOnWriteArraySet<>();
+    private final Map<WebSocket, ClientWebSocket> clients = new ConcurrentHashMap<>();
 
     public WSServer(ShadowWarden pl, int port){
         super(new InetSocketAddress(port));
@@ -34,17 +34,18 @@ public class WSServer extends WebSocketServer {
 
 
     @Override
-    public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-        plugin.getLogger().info("[Movil] -> Conectado");
+    public void onOpen(WebSocket con, ClientHandshake clientHandshake) {
+        clients.put(con, new ClientWebSocket(t.publicKeyToBase64(plugin.getE2ee().getPublicKey())));
+        con.send(clients.get(con).getToSend());
     }
 
     @Override
-    public void onClose(WebSocket webSocket, int i, String s, boolean b) {
+    public void onClose(WebSocket con, int i, String s, boolean b) {
         plugin.getLogger().info("[Movil] -> Desconectado");
     }
 
     @Override
-    public void onMessage(WebSocket webSocket, String s) {
+    public void onMessage(WebSocket con, String s) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 player.sendMessage("[Movil] -> " + s);
@@ -55,7 +56,7 @@ public class WSServer extends WebSocketServer {
     }
 
     @Override
-    public void onError(WebSocket webSocket, Exception e) {
+    public void onError(WebSocket con, Exception e) {
 
     }
 
