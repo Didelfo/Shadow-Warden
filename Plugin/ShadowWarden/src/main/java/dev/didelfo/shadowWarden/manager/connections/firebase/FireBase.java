@@ -63,7 +63,7 @@ public class FireBase {
 
                 try {
                     // Desciframos la llave
-                    PublicKey keyMovil = t.publicKeyBase64ToPublicKey(obtenerKeym(uuidMojan));
+                    PublicKey keyMovil = t.publicKeyBase64ToPublicKey(obtenerCampo(uuidMojan, "keym"));
 
                     // Obtenemos la clave compartida
                     byte[] shareKey = key.generateSharedSecret(keyMovil);
@@ -79,16 +79,15 @@ public class FireBase {
 
                     String archivoEncrip = key.encryptText(shareKey, archivotxt);
 
-                    String keys = t.publicKeyToBase64(key.getPublicKey());
+                    actualizarCampo(uuidMojan, "keys", t.publicKeyToBase64(key.getPublicKey()));
 
-                    actualizarArchivoYKeys(uuidMojan, archivoEncrip, keys);
-
+                    // SE ejequtoa hasta aqui
+                    actualizarCampo(uuidMojan, "archivo", t.stringToBase64(archivoEncrip));
 
                     plugin.getMsgManager().showMessage(p, MessageType.Staff, "Linkeado con exito. Continua en la app.");
 
                 } catch (Exception e) {
                     plugin.getMsgManager().showMessage(p, MessageType.Staff, "Error");
-                    throw new RuntimeException(e);
                 }
             } else {
                 plugin.getMsgManager().showMessage(p, MessageType.Staff, "No hay ninguna solicitud activa.");
@@ -110,13 +109,13 @@ public class FireBase {
 
                 try {
                     // Obtenemos la clave compartida
-                    byte[] shareKey = key.generateSharedSecret(t.publicKeyBase64ToPublicKey(obtenerKeym(uuidMojan)));
+                    byte[] shareKey = key.generateSharedSecret(t.publicKeyBase64ToPublicKey(obtenerCampo(uuidMojan, "keym")));
 
                     // Actualizamos la clave del servidor
-                    actualizarKeys(uuidMojan, t.publicKeyToBase64(key.getPublicKey()));
+                    actualizarCampo(uuidMojan, "keys", t.publicKeyToBase64(key.getPublicKey()));
 
                     // Obtenemos el token
-                    String token = key.decryptText(shareKey, obtenerToken(uuidMojan));
+                    String token = key.decryptText(shareKey, obtenerCampo(uuidMojan, "token"));
 
                     // Vamos a verificar si el token es correcto usando la uuid
                     if (comprobarToken(token, uuidMojan)){
@@ -133,7 +132,8 @@ public class FireBase {
                         String hmacEncrip = key.encryptText(shareKey, hmac);
 
                         // Actualizamos el hmac y none en la base de datos
-                        actualizarHmacYNonce(uuidMojan, hmacEncrip, nonce);
+                        actualizarCampo(uuidMojan, "hmac", hmacEncrip);
+                        actualizarCampo(uuidMojan, "nonce", nonce);
 
                         // Informamos al usuario
                         plugin.getMsgManager().showMessage(p, MessageType.Staff, "Validación exitosa. Continue en la App.");
@@ -166,36 +166,6 @@ public class FireBase {
         }
     }
 
-
-    // Actualiza los campos hmac y nonce de un usuario en Firebase.
-    public static void actualizarHmacYNonce(String uuid, String hmac, String nonce) {
-        String url = FIREBASE_URL + uuid + ".json";
-
-        // Crear el objeto JSON con las actualizaciones
-        JsonObject updates = new JsonObject();
-        updates.addProperty("hmac", hmac);
-        updates.addProperty("nonce", nonce);
-
-        RequestBody body = RequestBody.create(
-                updates.toString(),
-                MediaType.parse("application/json")
-        );
-
-        Request request = new Request.Builder()
-                .url(url)
-                .patch(body)  // Usamos PATCH para actualizar solo estos campos
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new RuntimeException("Error al actualizar: " + response.body().string());
-            }
-            System.out.println("HMAC y Nonce actualizados correctamente");
-        } catch (IOException e) {
-            throw new RuntimeException("Error de conexión: " + e.getMessage());
-        }
-    }
-
     // Comprobar que existe un registro con esta uuid
     private boolean existeUUID(String uuid){
         String url = FIREBASE_URL + uuid + ".json";
@@ -203,39 +173,39 @@ public class FireBase {
 
         try (Response response = client.newCall(request).execute()) {
             String responseBody = response.body().string();
-            plugin.getLogger().info(responseBody);
-            plugin.getLogger().info(uuid);
             return !responseBody.equals("null"); // null sino
         } catch (IOException e) {
-            plugin.getLogger().info("Error existe UUID");
             throw new RuntimeException(e);
         }
     }
 
-    // Obtener el la key del movil
-    private static String obtenerKeym(String uuid) {
-        String url = FIREBASE_URL + uuid + "/keym.json";
+    // Método para obtener el valor de un campo específico
+    private static String obtenerCampo(String uuid, String campo) {
+        String url = FIREBASE_URL + uuid + "/" + campo + ".json";
         Request request = new Request.Builder().url(url).get().build();
 
         try (Response response = client.newCall(request).execute()) {
             String responseBody = response.body().string();
-            if (responseBody.equals("null")) {
-                throw new RuntimeException("UUID no existe o no tiene 'keym'");
+
+            // Firebase devuelve "null" como string si el campo no existe
+            if (responseBody == null || responseBody.equals("null")) {
+                return null;
             }
-            // Elimina las comillas del JSON
-            return responseBody.replaceAll("\"", "");
+
+            // Elimina las comillas del JSON si las hay
+            return responseBody.replaceAll("\"", "").trim();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al obtener el campo '" + campo + "': " + e.getMessage());
         }
     }
 
-    // Actualizar Keys
-    public static void actualizarKeys(String uuid, String keys) {
-        String url = FIREBASE_URL + uuid + "/keys.json";
+    // Metodo actualizar campos
+    private static void actualizarCampo(String uuid, String campo, String valor) {
+        String url = FIREBASE_URL + uuid + ".json";  // Nota: Cambiado para apuntar al nodo principal
 
-        // Crear el cuerpo de la petición (solo actualiza 'keys')
+        // Crear un objeto JSON con el campo a actualizar
         JsonObject update = new JsonObject();
-        update.addProperty("keys", keys);
+        update.addProperty(campo, valor);
 
         RequestBody body = RequestBody.create(
                 update.toString(),
@@ -244,63 +214,35 @@ public class FireBase {
 
         Request request = new Request.Builder()
                 .url(url)
-                .patch(body)  // Usa PATCH para no sobrescribir otros campos
+                .patch(body)  // Usa PATCH para actualizar solo el campo especificado
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new RuntimeException("Error al actualizar 'keys': " + response.body().string());
+                throw new RuntimeException("Error al actualizar '" + campo + "': " + response.body().string());
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error de conexión: " + e.getMessage());
+            throw new RuntimeException("Error al actualizar '" + campo + "': " + e.getMessage(), e);
         }
     }
+
 
     // Obtener el token
     public static String obtenerToken(String uuid) {
         String url = FIREBASE_URL + uuid + "/token.json";
         Request request = new Request.Builder().url(url).get().build();
-
         try (Response response = client.newCall(request).execute()) {
             String responseBody = response.body().string();
 
             // Firebase devuelve "null" como string si el campo no existe
-            if (responseBody.equals("null") || responseBody.trim().isEmpty()) {
-                return null;  // Token vacío o inexistente
+            if (responseBody == null || responseBody.trim().isEmpty() || responseBody.equals("\"\"")) {
+                return null;
             }
 
-            // Elimina comillas JSON si las hay
-            return responseBody.replaceAll("\"", "");
+            // Elimina las comillas del JSON
+            return responseBody.replaceAll("\"", "").trim(); // Elimina espacios extra
         } catch (IOException e) {
             throw new RuntimeException("Error al obtener token: " + e.getMessage());
-        }
-    }
-
-    // Actualizar datos
-    private static void actualizarArchivoYKeys(String uuid, String archivo, String keys) {
-        String url = FIREBASE_URL + uuid + ".json";
-
-        JsonObject updates = new JsonObject();
-        updates.addProperty("archivo", archivo);
-        updates.addProperty("keys", keys);
-
-        RequestBody body = RequestBody.create(
-                updates.toString(),
-                MediaType.parse("application/json")
-        );
-
-        Request request = new Request.Builder()
-                .url(url)
-                .patch(body)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new RuntimeException("Error al actualizar: " + response.body().string());
-            }
-            System.out.println("Actualizado correctamente");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
