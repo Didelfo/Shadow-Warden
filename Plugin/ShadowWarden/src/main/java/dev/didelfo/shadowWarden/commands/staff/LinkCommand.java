@@ -45,11 +45,13 @@ public class LinkCommand implements CommandExecutor {
             KeyTemporalFireBase k = new KeyTemporalFireBase();
             claves.put(p.getUniqueId().toString(), k);
             new FireBase(plugin).verificacionSelector(p, k);
-        }
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            claves.remove(p.getUniqueId().toString());
-        }, 20L * 120); // 120 segundos
+            // Luego de 60 segundos borra las claves
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                claves.remove(p.getUniqueId().toString());
+                plugin.getMsgManager().showMessage(p, MessageType.Staff, "Claves caducadas");
+            }, 20L * 60); // 60 segundos
+        }
 
         return true;
     }
