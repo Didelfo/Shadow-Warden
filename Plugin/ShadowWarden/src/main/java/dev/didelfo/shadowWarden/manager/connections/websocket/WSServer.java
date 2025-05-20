@@ -36,7 +36,7 @@ public class WSServer extends WebSocketServer {
     @Override
     public void onOpen(WebSocket con, ClientHandshake clientHandshake) {
         clients.put(con, new ClientWebSocket(t.publicKeyToBase64(plugin.getE2ee().getPublicKey())));
-        con.send(clients.get(con).getToSend());
+        con.send(clients.get(con).getPublicKeyServer());
     }
 
     @Override
@@ -46,13 +46,10 @@ public class WSServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket con, String s) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            Bukkit.getOnlinePlayers().forEach(player -> {
-                player.sendMessage("[Movil] -> " + s);
-            });
-        });
-
-
+        ClientWebSocket cli = clients.get(con);
+        if (cli.getPublicKeyMovil().isBlank()){
+            cli.setPublicKeyMovil(s);
+        }
     }
 
     @Override

@@ -9,29 +9,29 @@ public class ClientWebSocket {
     // Variables
     private String publicKeyServer;
     private String publicKeyMovil;
-    private byte[] shareKey;
-    private boolean verific;
-    private String hmac;
-    private ArrayList<String> permission;
-    private SybscriptionType suscripcion;
-    private OperationsInitial operation;
+
+
+    public ClientWebSocket(){}
 
     public ClientWebSocket(String publickeyserver){
         this.publicKeyServer = publickeyserver;
-        this.suscripcion = SybscriptionType.Initial;
-        this.operation = OperationsInitial.sendKeyPublicServerToMovil;
     }
 
-
-    public String getToSend(){
-        ClientMenssage m = new ClientMenssage();
-        m.setKeyPubicServer(publicKeyServer);
-        m.setSuscripcion(suscripcion.name());
-        m.setOperation(operation.name());
-
-        return new Gson().toJson(m);
+    public String getPublicKeyServer() {
+        return publicKeyServer;
     }
 
+    public void setPublicKeyServer(String publicKeyServer) {
+        this.publicKeyServer = publicKeyServer;
+    }
+
+    public String getPublicKeyMovil() {
+        return publicKeyMovil;
+    }
+
+    public void setPublicKeyMovil(String publicKeyMovil) {
+        this.publicKeyMovil = publicKeyMovil;
+    }
 }
 
 
