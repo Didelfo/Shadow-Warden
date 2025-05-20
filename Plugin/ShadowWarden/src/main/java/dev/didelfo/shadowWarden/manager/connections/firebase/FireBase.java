@@ -35,21 +35,21 @@ public class FireBase {
 //        Metodo Principal
 // ==============================
 
-    public void verificacionSelector(Player p){
+    public void verificacionSelector(Player p, KeyTemporalFireBase keyManager){
         String uuidMojan = uuidMojan(p);
 
         // Reutilizamos el comando /link parara cuadno no hay token usar una funcion
         // y ucando si hay token usar otra
 
         if (obtenerToken(uuidMojan) == null) {
-            link(p, uuidMojan);
+            link(p, uuidMojan, keyManager);
         } else {
-            verificar(p, uuidMojan);
+            verificar(p, uuidMojan, keyManager);
         }
     }
 
 
-    private void link(Player p, String uuidMojan){
+    private void link(Player p, String uuidMojan, KeyTemporalFireBase keyManager){
         plugin.getExecutor().execute(() -> {
 
             plugin.getMsgManager().showMessage(p, MessageType.Staff, "Comenzando el linkeo....");
@@ -58,15 +58,15 @@ public class FireBase {
             if (existeUUID(uuidMojan)){
 
                 // Ahora que tenemos seguro que existe generamos un par de llaves aqui.
-                KeyTemporalFireBase key = new KeyTemporalFireBase();
-                key.generateKeyPair();
+
+                keyManager.generateKeyPair();
 
                 try {
                     // Desciframos la llave
                     PublicKey keyMovil = t.publicKeyBase64ToPublicKey(obtenerCampo(uuidMojan, "keym"));
 
                     // Obtenemos la clave compartida
-                    byte[] shareKey = key.generateSharedSecret(keyMovil);
+                    byte[] shareKey = keyManager.generateSharedSecret(keyMovil);
 
                     // Generamos el archivo que encriptaremos
                     ArchivoPasar archivo = new ArchivoPasar(
@@ -77,9 +77,9 @@ public class FireBase {
 
                     String archivotxt = archivo.toJson();
 
-                    String archivoEncrip = key.encryptText(shareKey, archivotxt);
+                    String archivoEncrip = keyManager.encryptText(shareKey, archivotxt);
 
-                    actualizarCampo(uuidMojan, "keys", t.publicKeyToBase64(key.getPublicKey()));
+                    actualizarCampo(uuidMojan, "keys", t.publicKeyToBase64(keyManager.getPublicKey()));
 
                     // SE ejequtoa hasta aqui
                     actualizarCampo(uuidMojan, "archivo", archivoEncrip);
@@ -96,7 +96,7 @@ public class FireBase {
     }
 
     // Metodo para obtener el token
-    private void verificar(Player p, String uuidMojan){
+    private void verificar(Player p, String uuidMojan, KeyTemporalFireBase keyManager){
         plugin.getExecutor().execute(() -> {
 
             plugin.getMsgManager().showMessage(p, MessageType.Staff, "Comenzando la verificación....");
@@ -104,18 +104,14 @@ public class FireBase {
             // Comprobamos que existe el registro y alguien con esta uuid esta intentando vincular este servidor
             if (existeUUID(uuidMojan)){
                 // Ahora que tenemos seguro que existe generamos un par de llaves aqui.
-                KeyTemporalFireBase key = new KeyTemporalFireBase();
-                key.generateKeyPair();
 
                 try {
                     // Obtenemos la clave compartida
-                    byte[] shareKey = key.generateSharedSecret(t.publicKeyBase64ToPublicKey(obtenerCampo(uuidMojan, "keym")));
+                    byte[] shareKey = keyManager.generateSharedSecret(t.publicKeyBase64ToPublicKey(obtenerCampo(uuidMojan, "keym")));
 
-                    // Actualizamos la clave del servidor
-                    actualizarCampo(uuidMojan, "keys", t.publicKeyToBase64(key.getPublicKey()));
 
-                    // Obtenemos el token
-                    String token = key.decryptText(shareKey, obtenerCampo(uuidMojan, "token"));
+                    // Obtenemos el token esta en base64 el token
+                    String token = keyManager.decryptText(shareKey, obtenerCampo(uuidMojan, "token"));
 
                     // Vamos a verificar si el token es correcto usando la uuid
                     if (comprobarToken(token, uuidMojan)){
@@ -129,7 +125,7 @@ public class FireBase {
                         // Si el token es correcto procedemos a generar nuestro HMAC
                         String nonce = hmacTool.generateNonce();
                         String hmac = hmacTool.generateHmac(token, shareKey, nonce);
-                        String hmacEncrip = key.encryptText(shareKey, hmac);
+                        String hmacEncrip = keyManager.encryptText(shareKey, hmac);
 
                         // Actualizamos el hmac y none en la base de datos
                         actualizarCampo(uuidMojan, "hmac", hmacEncrip);
@@ -158,8 +154,8 @@ public class FireBase {
 
     // Metodo para comprobar si el token es validdo
     private boolean comprobarToken(String token, String uuid){
-//        String tokenPlano = t.base64ToString(token);
-        if (token.startsWith(uuid)){
+        String tokenPlano = t.base64ToString(token);
+        if (tokenPlano.startsWith(uuid)){
             return true;
         } else {
             return false;
