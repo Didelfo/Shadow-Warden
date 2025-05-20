@@ -504,6 +504,7 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
             "Siguiente",
             {
                 viewModel.cambiarEstado(AddServerStatus.PonerNombre)
+                viewModel.AlertaCuentaVerificada = false
             }
         )
     }

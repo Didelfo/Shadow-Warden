@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.key
 import androidx.navigation.NavHostController
 import com.google.gson.Gson
@@ -144,7 +145,7 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
                 icon3 = true
                 textGuia =
                     "UIntroduce el nombre con el que deseas guardar el servidor."
-                showTextFiel = false
+                showTextFiel = true
                 nameServer = ""
                 textButton = "Finalizar"
                 statusProccess = AddServerStatus.PonerNombre
@@ -294,9 +295,9 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
             encripToken.decryptJson(encripToken.readEncryptedFile("token.dat")),
             Tokeen::class.java
         )
-        val tokenString = ToolManager().base64ToString(token.token)
+//        val tokenString = ToolManager().base64ToString(token.token)
 
-        val tokenEncrip = keymanager.encryptString(llaveCompartida, tokenString)
+        val tokenEncrip = keymanager.encryptString(llaveCompartida, token.token)
 
         FBManager(cont).actualizarCampo("token", tokenEncrip) { success, error ->
             if (success){
@@ -325,32 +326,37 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
             if (error == null && !valor.isNullOrEmpty()) {
                 keys = valor
             } else {
+                Log.d("prueba", "obtener keys")
                 AlertaCuentaError = true
             }
-        }
 
-        FBManager(cont).obtenerCampo("hmac", String::class.java){valor, error ->
-            if (error == null && !valor.isNullOrEmpty()) {
-                hmac = valor
-            } else {
-                AlertaCuentaError = true
+            FBManager(cont).obtenerCampo("hmac", String::class.java){valor, error ->
+                if (error == null && !valor.isNullOrEmpty()) {
+                    hmac = valor
+                } else {
+                    Log.d("prueba", "obtener hmac")
+                    AlertaCuentaError = true
+                }
+
+                FBManager(cont).obtenerCampo("nonce", String::class.java){valor, error ->
+                    if (error == null && !valor.isNullOrEmpty()) {
+                        nonce = valor
+                    } else {
+                        Log.d("prueba", "obtener nonce")
+                        AlertaCuentaError = true
+                    }
+
+                    if (!keys.isEmpty() && !hmac.isEmpty() && !nonce.isEmpty()) {
+                        Log.d("prueba", "antes procesar nonce")
+                        procesarHMAC(keys, hmac, nonce)
+                    } else {
+                        Log.d("prueba", "campos vacios")
+                        AlertaCuentaError = true
+                    }
+
+                }
             }
         }
-
-        FBManager(cont).obtenerCampo("nonce", String::class.java){valor, error ->
-            if (error == null && !valor.isNullOrEmpty()) {
-                nonce = valor
-            } else {
-                AlertaCuentaError = true
-            }
-        }
-
-        if (!keys.isEmpty() && !hmac.isEmpty() && !nonce.isEmpty()) {
-            procesarHMAC(keys, hmac, nonce)
-        } else {
-            AlertaCuentaError = true
-        }
-
         loadingViewStatus = false
     }
 
@@ -372,8 +378,10 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
         val hmacMovil = HmacHelper().generateHmac(token, keyShare, nonce)
 
         if (HmacHelper().verifyHmac(hmacMovil, hmacServidor)) {
+            Log.d("prueba", "Hmac verificado")
             AlertaCuentaVerificada = true
         } else {
+            Log.d("prueba", "Hmac No verificado")
             AlertaCuentaError = false
         }
     }
