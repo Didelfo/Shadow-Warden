@@ -82,7 +82,7 @@ public class FireBase {
                     actualizarCampo(uuidMojan, "keys", t.publicKeyToBase64(key.getPublicKey()));
 
                     // SE ejequtoa hasta aqui
-                    actualizarCampo(uuidMojan, "archivo", t.stringToBase64(archivoEncrip));
+                    actualizarCampo(uuidMojan, "archivo", archivoEncrip);
 
                     plugin.getMsgManager().showMessage(p, MessageType.Staff, "Linkeado con exito. Continua en la app.");
 
@@ -144,7 +144,7 @@ public class FireBase {
 
                 } catch (Exception e) {
                     plugin.getMsgManager().showMessage(p, MessageType.Staff, "Error");
-                    throw new RuntimeException(e);
+                    plugin.getLogger().severe(e.getMessage());
                 }
             } else {
                 plugin.getMsgManager().showMessage(p, MessageType.Staff, "No hay ninguna solicitud activa.");
@@ -158,8 +158,8 @@ public class FireBase {
 
     // Metodo para comprobar si el token es validdo
     private boolean comprobarToken(String token, String uuid){
-        String tokenPlano = t.base64ToString(token);
-        if (tokenPlano.startsWith(uuid)){
+//        String tokenPlano = t.base64ToString(token);
+        if (token.startsWith(uuid)){
             return true;
         } else {
             return false;
