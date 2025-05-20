@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import android.content.Context
+import androidx.compose.runtime.key
 import androidx.navigation.NavHostController
 import com.google.gson.Gson
 import dev.didelfo.shadowwarden.localfiles.Server
@@ -243,32 +244,30 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
 
     fun obtenerDatosDesencriptar() {
         loadingViewStatus = true
-        FBManager(cont).obtenerDatosEncriptados { success, archivo, keys, error ->
-            when {
-                success -> {
-                    // Datos obtenidos correctamente (archivo y keys no son null aquí)
-                    procesarDatosEncriptados(keys.toString(), archivo.toString())
 
-                }
+        var keys = ""
+        var archivo = ""
 
-                error != null -> {
-                    // Manejar diferentes tipos de errores
-                    when {
-                        error.message?.contains("están vacíos") == true -> {
-                            AlertExisteDatosNoEncontrado = true
-                        }
-
-                        error.message?.contains("No se encontró el registro") == true -> {
-                            AlertExisteDatosNoEncontrado = true
-                        }
-
-                        else -> {
-                            AlertExisteDatosError = true
-                        }
-                    }
-                }
+        FBManager(cont).obtenerCampo("keys",String::class.java) { valor, error ->
+            if (error == null && !valor.isNullOrEmpty()) {
+                keys = valor
+            } else {
+                AlertBorrarVerificacionError = true
             }
-            loadingViewStatus = false
+
+            FBManager(cont).obtenerCampo("archivo",String::class.java) { valor, error ->
+                if (error == null && !valor.isNullOrEmpty()) {
+                    archivo = valor
+                } else {
+                    AlertBorrarVerificacionError = true
+                }
+
+                if (!keys.isEmpty() && !archivo.isEmpty()){
+                    procesarDatosEncriptados(keys, archivo)
+                }
+
+                loadingViewStatus = false
+            }
         }
     }
 
@@ -298,8 +297,8 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
 
         val tokenEncrip = keymanager.encryptString(llaveCompartida, token.token)
 
-        FBManager(cont).actualizarToken(tokenEncrip) { success, error ->
-            if (success) {
+        FBManager(cont).actualizarCampo("token", tokenEncrip) { success, error ->
+            if (success){
                 AlertExisteDatosExito = true
                 cambiarEstado(AddServerStatus.ComandoVerificar)
             } else {
@@ -317,22 +316,40 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
     fun comprobarVerificacion() {
         loadingViewStatus = true
 
-        FBManager(cont).obtenerDatosSeguridad { keys, hmac, nonce, error ->
-            when {
-                error != null -> {
-                    AlertaCuentaError = true
-                }
+        var keys = ""
+        var hmac = ""
+        var nonce = ""
 
-                else -> {
-                    // Ambos valores están disponibles y no vacíos
-                    if (keys != null && hmac != null && nonce != null) {
-                        procesarHMAC(keys, hmac, nonce)
-                    } else {
-                        AlertaCuentaError = true
-                    }
-                }
+        FBManager(cont).obtenerCampo("keys", String::class.java){valor, error ->
+            if (error == null && !valor.isNullOrEmpty()) {
+                keys = valor
+            } else {
+                AlertaCuentaError = true
             }
         }
+
+        FBManager(cont).obtenerCampo("hmac", String::class.java){valor, error ->
+            if (error == null && !valor.isNullOrEmpty()) {
+                hmac = valor
+            } else {
+                AlertaCuentaError = true
+            }
+        }
+
+        FBManager(cont).obtenerCampo("nonce", String::class.java){valor, error ->
+            if (error == null && !valor.isNullOrEmpty()) {
+                nonce = valor
+            } else {
+                AlertaCuentaError = true
+            }
+        }
+
+        if (!keys.isEmpty() && !hmac.isEmpty() && !nonce.isEmpty()) {
+            procesarHMAC(keys, hmac, nonce)
+        } else {
+            AlertaCuentaError = true
+        }
+
         loadingViewStatus = false
     }
 

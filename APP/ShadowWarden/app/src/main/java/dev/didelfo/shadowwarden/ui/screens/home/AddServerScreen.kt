@@ -368,7 +368,10 @@ private fun getAlerts(viewModel: AddServerScreenViewModel){
             VerdeEsmeralda,
             "Clave generada con exito, puede pasar al siguiente paso",
             "Siguiente",
-            { viewModel.AlertGeneracionClaveCorrecta = false }
+            {
+                viewModel.cambiarEstado(AddServerStatus.ComandoLink)
+                viewModel.AlertGeneracionClaveCorrecta = false
+            }
         )
     }
 

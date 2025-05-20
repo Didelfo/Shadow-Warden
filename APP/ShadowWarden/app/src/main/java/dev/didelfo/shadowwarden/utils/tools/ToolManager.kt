@@ -9,30 +9,24 @@ import dev.didelfo.shadowwarden.utils.json.JsonEncripter
 import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.spec.X509EncodedKeySpec
-import android.util.Base64
+import java.util.Base64
 import dev.didelfo.shadowwarden.localfiles.User
 import dev.didelfo.shadowwarden.utils.json.JsonManager
 
 class ToolManager {
 
-    fun stringToBase64(string: String): String{
-        return Base64.encodeToString(string.toByteArray(), Base64.NO_WRAP)
+    fun stringToBase64(string: String): String {
+        return Base64.getEncoder().encodeToString(string.toByteArray())
     }
 
     fun publicKeyToBase64(publicKey: PublicKey): String {
-        return Base64.encodeToString(publicKey.encoded, Base64.NO_WRAP)
+        return Base64.getEncoder().encodeToString(publicKey.encoded)
     }
 
     fun publicKeyBase64ToPublicKey(keyPublickBase64: String): PublicKey {
-        // Le quitamos el base64
-        val bytes = android.util.Base64.decode(keyPublickBase64, android.util.Base64.NO_WRAP)
-
-        // 2. Crear especificación de clave X509
+        val bytes = Base64.getDecoder().decode(keyPublickBase64)
         val keySpec = X509EncodedKeySpec(bytes)
-
-        // 3. Obtener KeyFactory para el algoritmo y le ponemos el tipo qu ele pusismos en java
         val keyFactory = KeyFactory.getInstance("EC")
-
         return keyFactory.generatePublic(keySpec)
     }
 

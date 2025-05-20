@@ -77,6 +77,39 @@ class FBManager(context: Context) {
         }
     }
 
+    // Método genérico para actualizar cualquier tipo de campo
+    fun <T> actualizarCampo(campo: String, valor: T, callback: (success: Boolean, error: Exception?) -> Unit) {
+        try {
+            conectar().reference.child(user.uuid).child(campo)
+                .setValue(valor)
+                .addOnSuccessListener {
+                    callback(true, null)
+                }
+                .addOnFailureListener { e ->
+                    callback(false, e)
+                }
+        } catch (e: Exception) {
+            callback(false, e)
+        }
+    }
+
+    // Método genérico para obtener cualquier tipo de campo
+    fun <T> obtenerCampo(campo: String, clase: Class<T>, callback: (valor: T?, error: Exception?) -> Unit) {
+        try {
+            conectar().reference.child(user.uuid).child(campo)
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    val valor = snapshot.getValue(clase)
+                    callback(valor, null)
+                }
+                .addOnFailureListener { e ->
+                    callback(null, e)
+                }
+        } catch (e: Exception) {
+            callback(null, e)
+        }
+    }
+
     fun borrarRegistro(callback: (success: Boolean, error: Exception?) -> Unit) {
         try {
             val databaseRef = conectar().reference.child(user.uuid)
@@ -94,109 +127,6 @@ class FBManager(context: Context) {
         } catch (e: Exception) {
             // Error en operaciones síncronas
             callback(false, e)
-        }
-    }
-
-
-    // Obtener los datos cifrados del servidor
-    fun obtenerDatosEncriptados(
-        callback: (success: Boolean, archivo: String?, keys: String?, error: Exception?) -> Unit
-    ) {
-        try {
-            val databaseRef = conectar().reference.child(user.uuid)
-
-            databaseRef.get().addOnCompleteListener { task ->
-                when {
-                    task.isSuccessful -> {
-                        val snapshot = task.result
-                        if (snapshot.exists()) {
-                            val archivo = snapshot.child("archivo").getValue(String::class.java)
-                            val keys = snapshot.child("keys").getValue(String::class.java)
-
-                            when {
-                                archivo.isNullOrEmpty() || keys.isNullOrEmpty() -> {
-                                    val camposFaltantes = mutableListOf<String>()
-                                    if (archivo.isNullOrEmpty()) camposFaltantes.add("archivo")
-                                    if (keys.isNullOrEmpty()) camposFaltantes.add("keys")
-
-                                    callback(
-                                        false,
-                                        null,
-                                        null,
-                                        Exception("Los siguientes campos están vacíos: ${camposFaltantes.joinToString(", ")}")
-                                    )
-                                }
-                                else -> {
-                                    callback(true, archivo, keys, null)
-                                }
-                            }
-                        } else {
-                            callback(false, null, null, Exception("No se encontró el registro para la UUID: ${user.uuid}"))
-                        }
-                    }
-                    else -> {
-                        callback(false, null, null, task.exception ?: Exception("Error al leer la base de datos"))
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            callback(false, null, null, e)
-        }
-    }
-
-
-    // Ponemos el token en el reggistro
-    fun actualizarToken(
-        token: String,
-        callback: (success: Boolean, error: Exception?) -> Unit
-    ) {
-        try {
-            conectar().reference.child(user.uuid).child("token")
-                .setValue(token)
-                .addOnSuccessListener {
-                    // Éxito al guardar
-                    callback(true, null)
-                }
-                .addOnFailureListener { error ->
-                    // Error al guardar
-                    callback(false, error)
-                }
-        } catch (e: Exception) {
-            // Error en operaciones síncronas
-            callback(false, e)
-        }
-    }
-
-    fun obtenerDatosSeguridad(callback: (keys: String?, hmac: String?, nonce: String?, error: Exception?) -> Unit) {
-        try {
-            val databaseRef = conectar().reference.child(user.uuid)
-
-            databaseRef.get().addOnCompleteListener { task ->
-                when {
-                    task.isSuccessful -> {
-                        val snapshot = task.result
-                        if (snapshot.exists()) {
-                            val keys = snapshot.child("keys").getValue(String::class.java) ?: ""
-                            val hmac = snapshot.child("hmac").getValue(String::class.java) ?: ""
-                            val nonce = snapshot.child("nonce").getValue(String::class.java) ?: ""
-
-                            when {
-                                keys.isBlank() || hmac.isBlank() || nonce.isBlank() ->
-                                    callback(null, null, null, Exception("Algunos datos de seguridad están incompletos"))
-                                else ->
-                                    callback(keys, hmac, nonce, null)
-                            }
-                        } else {
-                            callback(null, null, null, Exception("No se encontró el registro"))
-                        }
-                    }
-                    else -> {
-                        callback(null, null, null, task.exception ?: Exception("Error al leer los datos"))
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            callback(null, null, null, e)
         }
     }
 

@@ -3,7 +3,7 @@ package dev.didelfo.shadowwarden.security.keys
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Base64
+import java.util.Base64
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.security.KeyPairGenerator
@@ -65,7 +65,7 @@ class KeyManagerKeyStore(private val context: Context, private val alias: String
     @Throws(IOException::class)
     fun decryptString(sharedSecret: ByteArray, encryptedString: String): String {
         val encryptedBytes = try {
-            Base64.decode(encryptedString, Base64.DEFAULT)
+            Base64.getDecoder().decode(encryptedString)
         } catch (e: IllegalArgumentException) {
             throw IOException("Formato Base64 inválido", e)
         }
@@ -119,7 +119,8 @@ class KeyManagerKeyStore(private val context: Context, private val alias: String
                 System.arraycopy(cipherText, 0, this, iv.size, cipherText.size)
             }
 
-            return Base64.encodeToString(combined, Base64.NO_WRAP)
+            return Base64.getEncoder().encodeToString(combined);
+
         }
     }
 
