@@ -294,8 +294,9 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
             encripToken.decryptJson(encripToken.readEncryptedFile("token.dat")),
             Tokeen::class.java
         )
+        val tokenString = ToolManager().base64ToString(token.token)
 
-        val tokenEncrip = keymanager.encryptString(llaveCompartida, token.token)
+        val tokenEncrip = keymanager.encryptString(llaveCompartida, tokenString)
 
         FBManager(cont).actualizarCampo("token", tokenEncrip) { success, error ->
             if (success){

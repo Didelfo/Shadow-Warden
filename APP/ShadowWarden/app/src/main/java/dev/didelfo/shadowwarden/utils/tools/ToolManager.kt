@@ -19,6 +19,10 @@ class ToolManager {
         return Base64.getEncoder().encodeToString(string.toByteArray())
     }
 
+    fun base64ToString(base64String: String): String {
+        return String(Base64.getDecoder().decode(base64String))
+    }
+
     fun publicKeyToBase64(publicKey: PublicKey): String {
         return Base64.getEncoder().encodeToString(publicKey.encoded)
     }
