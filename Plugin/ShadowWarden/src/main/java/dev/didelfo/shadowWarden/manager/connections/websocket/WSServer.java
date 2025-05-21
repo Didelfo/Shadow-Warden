@@ -35,8 +35,13 @@ public class WSServer extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket con, ClientHandshake clientHandshake) {
-        clients.put(con, new ClientWebSocket(t.publicKeyToBase64(plugin.getE2ee().getPublicKey())));
-        con.send(clients.get(con).getPublicKeyServer());
+        // Cuando se abre la conexion lo guardamos de esta manera
+        if (!clients.containsKey(con)) {
+            clients.put(con, new ClientWebSocket(t.publicKeyToBase64(plugin.getE2ee().getPublicKey())));
+            con.send(clients.get(con).getPublicKeyServer());
+        } else {
+            clients.remove(con);
+        }
     }
 
     @Override
@@ -47,9 +52,14 @@ public class WSServer extends WebSocketServer {
     @Override
     public void onMessage(WebSocket con, String s) {
         ClientWebSocket cli = clients.get(con);
-        if (cli.getPublicKeyMovil().isBlank()){
+        // Primer mensaje recibido para la primera conexion a cara perro
+        if (!cli.getCifrado()){
             cli.setPublicKeyMovil(s);
+            cli.setCifrado(true);
+            plugin.getLogger().info("Mensaje recibido: " + s); // Borrar debug
         }
+
+
     }
 
     @Override

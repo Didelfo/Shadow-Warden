@@ -9,6 +9,7 @@ public class ClientWebSocket {
     // Variables
     private String publicKeyServer = "";
     private String publicKeyMovil = "";
+    private Boolean cifrado = false;
 
 
     public ClientWebSocket(){}
@@ -31,6 +32,14 @@ public class ClientWebSocket {
 
     public void setPublicKeyMovil(String publicKeyMovil) {
         this.publicKeyMovil = publicKeyMovil;
+    }
+
+    public Boolean getCifrado() {
+        return cifrado;
+    }
+
+    public void setCifrado(Boolean cifrado) {
+        this.cifrado = cifrado;
     }
 }
 
