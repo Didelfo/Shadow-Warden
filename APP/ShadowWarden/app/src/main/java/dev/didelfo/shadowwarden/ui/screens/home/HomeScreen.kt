@@ -66,6 +66,7 @@ fun HomeScreen(navController: NavHostController){
 
         content = { paddingValues ->
 
+            loadingView(viewModel.loadingScreen)
             ServersRecyclerView(
                 servers = viewModel.servers,
                 modifier = Modifier.padding(paddingValues),
@@ -74,8 +75,7 @@ fun HomeScreen(navController: NavHostController){
                 },
                 viewModel
             )
-
-            loadingView(viewModel.loadingScreen)
+//            loadingView(viewModel.loadingScreen)
         }
     )
 

@@ -14,6 +14,7 @@ import dev.didelfo.shadowwarden.utils.json.JsonManager
 import dev.didelfo.shadowwarden.utils.json.JsonEncripter
 import dev.didelfo.shadowwarden.security.keys.alias.GetAliasKey
 import dev.didelfo.shadowwarden.security.keys.alias.KeyAlias
+import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import java.io.File
 
 class HomeScreenViewModel(contex:Context): ViewModel() {
@@ -26,6 +27,7 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
     // Varialbles usables
     var servers: ArrayList<Server> by mutableStateOf(ArrayList<Server>())
     val user:User = JsonManager().loadObject(cont, "user.json", User::class.java)
+    val t: ToolManager = ToolManager()
 
     // Variables de mostrar
     var loadingScreen by mutableStateOf(false)
@@ -67,11 +69,18 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
 
     fun conectar(server:Server){
 
+        // Ponemos pantalla de carga
+        loadingScreen = true
+
         // Conectamos el servidor
         WSController.connect(server)
 
+        WSController.sendAndWait(mensaje)
 
-        WSController.sendMessage("Movil conectado con exito")
+        // resto de codigo ejecutado despues de recibir la respuesta.
+
+
+
     }
 
 

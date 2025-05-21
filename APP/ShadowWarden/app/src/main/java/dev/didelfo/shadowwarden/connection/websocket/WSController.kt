@@ -2,8 +2,10 @@ package dev.didelfo.shadowwarden.connection.websocket
 
 import android.util.Log
 import dev.didelfo.shadowwarden.connection.websocket.components.ClientWebSocket
+import dev.didelfo.shadowwarden.connection.websocket.components.MessageWS
 import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
+import dev.didelfo.shadowwarden.utils.json.JsonManager
 import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import okhttp3.*
 import okhttp3.WebSocket
@@ -14,6 +16,13 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.Base64
 import javax.net.ssl.*
+import java.util.*
+import kotlinx.coroutines.*
+import java.util.concurrent.TimeoutException
+import kotlin.coroutines.resumeWithException
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.io.IOException
 
 object WSController {
 
@@ -22,6 +31,7 @@ object WSController {
     private var currentServerUrl: String? = null
     private var currentCertificate: String? = null
     private var cliente: ClientWebSocket = ClientWebSocket()
+    private val pendingRequests = mutableMapOf<String, CancellableContinuation<MessageWS>>()
     private var t = ToolManager()
 
 
@@ -33,9 +43,7 @@ object WSController {
     private val webSocketListener = object : WebSocketListener() {
 
         override fun onOpen(webSocket: WebSocket, response: Response) {
-//            this@WSController.webSocket = webSocket
             cliente.publicKeyMovil = t.publicKeyToBase64(checkNotNull(EphemeralKeyStore.getPublicKey()))
-            Log.d("prueba", "clave generada: ${cliente.publicKeyMovil}")
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
@@ -44,11 +52,20 @@ object WSController {
                 cliente.publicKeyServer = text
                 sendMessage(cliente.publicKeyMovil)
                 cliente.cifrado = true
-                Log.d("prueba", "clave recivida del servidor: ${text}")
+            } else {
+
+                val mensajeRecibido = JsonManager().stringToObjet(text, MessageWS::class.java)
+                val id = mensajeRecibido.id
+
+                // Si tiene una ID lo trataremos como una peticion que esta esperando respuesta,
+                // sino tiene ID lo vamos a interpretar como un mensaje normal
+                if (id.isNotEmpty()){
+
+//                    pendingRequests[id]?.resume(mensajeRecibido)
+                    pendingRequests[id]?.resumeWith(Result.success(mensajeRecibido))
+                    pendingRequests.remove(id)
+                } // falta poner else
             }
-            Log.d("prueba", "cifrado: ${cliente.cifrado}")
-            Log.d("prueba", "keyMovil: ${cliente.publicKeyMovil}")
-            Log.d("prueba", "keyServer: ${cliente.publicKeyServer}")
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
@@ -56,7 +73,10 @@ object WSController {
         }
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-            Log.d("prueba", "Cerrado por: ${reason}")
+            pendingRequests.values.forEach { cont ->
+                cont.resumeWithException(IOException("Conexión cerrada: $reason"))
+            }
+            pendingRequests.clear()
         }
     }
 
@@ -96,7 +116,9 @@ object WSController {
 
     // Enviar un mensaje a través de WebSocket (asegúrate de que la conexión esté abierta)
     fun sendMessage(message: String) {
-        webSocket?.send(message) ?: println("WebSocket no está conectado")
+        if (!cliente.cifrado) {
+            webSocket?.send(message) ?: println("WebSocket no está conectado")
+        } /// poner else
     }
 
     // Cerrar la conexión WebSocket de forma controlada
@@ -104,6 +126,37 @@ object WSController {
         webSocket?.close(1000, "Cierre solicitado")
         webSocket = null
         currentServerUrl = null
+    }
+
+    // Metodo de mandar y esperar respuesta
+    suspend fun sendAndWaitResponse(data: MessageWS): MessageWS {
+        return suspendCancellableCoroutine { continuation ->
+            val id = UUID.randomUUID().toString()
+
+            // Guardamos la continuación asociada al requestId
+            pendingRequests[id] = continuation
+
+            // Creamos el mensaje con requestId
+            var msg = data
+            msg.id = id
+
+            //Mandamos el mensaje
+            sendMessage(JsonManager().objetToString(msg))
+
+            // Timeout opcional (ejemplo: 10 segundos)
+            val timeoutJob = CoroutineScope(Dispatchers.IO).launch {
+                delay(10_000)
+                pendingRequests.remove(id)?.let {
+                    it.resumeWithException(TimeoutException("No se recibió respuesta en 10 segundos"))
+                }
+            }
+
+            // Cancelar timeout si se resuelve antes
+            continuation.invokeOnCancellation {
+                timeoutJob.cancel()
+                pendingRequests.remove(id)
+            }
+        }
     }
 
     // Verificar si la conexión está abierta
