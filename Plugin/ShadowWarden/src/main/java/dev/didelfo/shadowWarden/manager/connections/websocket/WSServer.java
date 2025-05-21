@@ -56,8 +56,15 @@ public class WSServer extends WebSocketServer {
         if (!cli.getCifrado()){
             cli.setPublicKeyMovil(s);
             cli.setCifrado(true);
-            plugin.getLogger().info("Mensaje recibido: " + s); // Borrar debug
+            // Borrar debug
+            plugin.getLogger().info("Ejecutando IF On Message");
+        } else {
+            plugin.getLogger().info("Se ejecuta el ELSE de On Message");
         }
+
+        plugin.getLogger().info("Clave Movil: " + cli.getPublicKeyMovil());
+        plugin.getLogger().info("Clave Server: " + cli.getPublicKeyServer());
+        plugin.getLogger().info("cifrado: " + cli.getCifrado());
 
 
     }
