@@ -35,6 +35,7 @@ object WSController {
         override fun onOpen(webSocket: WebSocket, response: Response) {
 //            this@WSController.webSocket = webSocket
             cliente.publicKeyMovil = t.publicKeyToBase64(checkNotNull(EphemeralKeyStore.getPublicKey()))
+            Log.d("prueba", "clave generada: ${cliente.publicKeyMovil}")
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
@@ -45,6 +46,9 @@ object WSController {
                 cliente.cifrado = true
                 Log.d("prueba", "clave recivida del servidor: ${text}")
             }
+            Log.d("prueba", "cifrado: ${cliente.cifrado}")
+            Log.d("prueba", "keyMovil: ${cliente.publicKeyMovil}")
+            Log.d("prueba", "keyServer: ${cliente.publicKeyServer}")
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
