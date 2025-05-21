@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.didelfo.shadowwarden.ui.screens.home.*
+import dev.didelfo.shadowwarden.ui.screens.server.ChatScreen
 import dev.didelfo.shadowwarden.ui.screens.server.ServerHomeScreen
 
 @Composable
@@ -43,6 +44,9 @@ fun AppNavigation() {
             ServerHomeScreen(navController)
         }
 
+        composable(route = AppScreens.ChatScreen.route){
+            ChatScreen(navController)
+        }
 
 
     }

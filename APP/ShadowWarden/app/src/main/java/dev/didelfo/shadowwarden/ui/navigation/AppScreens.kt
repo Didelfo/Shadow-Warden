@@ -25,4 +25,6 @@ sealed class AppScreens(val route:String) {
 
     object ServerHomeScreen: AppScreens("server_home_screen")
 
+    object ChatScreen: AppScreens("chat_screen")
+
 }

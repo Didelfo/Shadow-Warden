@@ -55,7 +55,7 @@ fun HomeScreen(navController: NavHostController){
             ToolBar(
                 title = "Servidores",
                 onImageClick = {
-
+                    navController.navigate(AppScreens.ChatScreen.route)
                 },
                 onAddClick = {
                     navController.navigate(AppScreens.AddServerScreen.route)
