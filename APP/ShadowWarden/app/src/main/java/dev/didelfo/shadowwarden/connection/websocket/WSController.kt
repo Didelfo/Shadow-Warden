@@ -34,16 +34,16 @@ object WSController {
 
         override fun onOpen(webSocket: WebSocket, response: Response) {
 //            this@WSController.webSocket = webSocket
-            EphemeralKeyStore.clearKeys()
-            EphemeralKeyStore.generateKeyPair()
             cliente.publicKeyMovil = t.publicKeyToBase64(checkNotNull(EphemeralKeyStore.getPublicKey()))
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
-            if (cliente.publicKeyServer.isBlank()){
+            // Primera conexion a cara perro
+            if (!cliente.cifrado){
                 cliente.publicKeyServer = text
-                Log.d("prueba", "clave recivida del servidor: ${text}")
                 sendMessage(cliente.publicKeyMovil)
+                cliente.cifrado = true
+                Log.d("prueba", "clave recivida del servidor: ${text}")
             }
         }
 
@@ -80,6 +80,10 @@ object WSController {
                     .build()
 
                 webSocket = client.newWebSocket(request, webSocketListener)
+
+                EphemeralKeyStore.clearKeys()
+                EphemeralKeyStore.generateKeyPair()
+
             } catch (e: Exception) {
                 Log.d("prueba", "error al conectar: ${e.message.toString()}")
             }
