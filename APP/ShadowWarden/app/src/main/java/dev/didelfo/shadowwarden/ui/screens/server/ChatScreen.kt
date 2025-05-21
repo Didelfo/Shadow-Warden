@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -19,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,7 +54,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import dev.didelfo.shadowwarden.ui.theme.AzulGrisElegante
+import dev.didelfo.shadowwarden.ui.theme.AzulVerdosoOscuro
+import dev.didelfo.shadowwarden.ui.theme.Cian
+import dev.didelfo.shadowwarden.ui.theme.OpenSanBold
+import dev.didelfo.shadowwarden.ui.theme.VerdeEsmeralda
+import dev.didelfo.shadowwarden.ui.theme.VerdeMenta
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -108,144 +118,8 @@ fun ChatScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Chat",
-                        modifier = Modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            painter = painterResource(id = android.R.drawable.ic_menu_revert),
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            )
-        },
-        bottomBar = {
-            Column {
-                // Botón para ir al final
-                if (showScrollToBottom) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        contentAlignment = Alignment.CenterEnd
-                    ) {
-                        IconButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    listState.animateScrollToItem(messages.size - 1)
-                                }
-                            },
-                            modifier = Modifier
-                                .shadow(4.dp, RoundedCornerShape(50))
-                                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.arrow_back),
-                                contentDescription = "Scroll to bottom",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                    }
-                }
-
-                // Barra de entrada
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Menú desplegable
-                    Box(
-                        modifier = Modifier.wrapContentSize(Alignment.TopStart)
-                    ) {
-                        IconButton(
-                            onClick = { showDropdown = true }
-                        ) {
-                            Icon(
-                                painter = painterResource(id = android.R.drawable.ic_menu_more),
-                                contentDescription = "More options"
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = showDropdown,
-                            onDismissRequest = { showDropdown = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Opción 1") },
-                                onClick = { showDropdown = false }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Opción 2") },
-                                onClick = { showDropdown = false }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Opción 3") },
-                                onClick = { showDropdown = false }
-                            )
-                        }
-                    }
-
-                    // Campo de texto
-                    TextField(
-                        value = messageText,
-                        onValueChange = { messageText = it },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp)
-                            .onKeyEvent { event ->
-                                if (event.type == KeyEventType.KeyDown && event.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_ENTER) {
-                                    handleSendMessage()
-                                    true
-                                } else {
-                                    false
-                                }
-                            },
-                        placeholder = { Text("Escribe un mensaje...") },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Send
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        singleLine = false,
-                        maxLines = 3
-                    )
-
-                    // Botón de enviar
-                    IconButton(
-                        onClick = { handleSendMessage() },
-                        enabled = messageText.isNotBlank()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Send,
-                            contentDescription = "Enviar mensaje",
-                            tint = if (messageText.isNotBlank()) MaterialTheme.colorScheme.primary else Color.Gray,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-            }
-        }
+        topBar = {toolBar("chat", {}) },
+        bottomBar = {bottomBar() }
     ) { innerPadding ->
         LazyColumn(
             state = listState,
@@ -260,6 +134,170 @@ fun ChatScreen(
         }
     }
 }
+
+
+// ==========================================
+// Funciones composables auxiliares
+// ==========================================
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun toolBar(
+    title: String,
+    onIcon: () -> Unit
+) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = title,
+                color = VerdeMenta,
+                fontFamily = OpenSanBold,
+                fontSize = 26.sp
+            )
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = AzulVerdosoOscuro
+        ),
+        navigationIcon = {
+            IconButton(onClick = onIcon) {
+                Icon(
+                    painter = painterResource(R.drawable.arrow_back),
+                    contentDescription = "Atras",
+                    tint = VerdeMenta,
+                    modifier = Modifier.size(25.dp)
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun bottomBar() {
+    Column(
+        modifier = Modifier.background(AzulGrisElegante)
+    ) {
+        /*
+        // Botón para ir al final
+        if (showScrollToBottom) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                IconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(messages.size - 1)
+                        }
+                    },
+                    modifier = Modifier
+                        .shadow(4.dp, RoundedCornerShape(50))
+                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.arrow_back),
+                        contentDescription = "Scroll to bottom",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+        }
+         */
+
+        // Barra de entrada
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .background(AzulGrisElegante),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Menú desplegable
+            Box(
+                modifier = Modifier.wrapContentSize(Alignment.TopStart)
+            ) {
+                IconButton(
+                    onClick = { }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.label),
+                        tint = VerdeMenta,
+                        contentDescription = "More options",
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = false,
+                    onDismissRequest = {  }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Opción 1") },
+                        onClick = { }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Opción 2") },
+                        onClick = { }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Opción 3") },
+                        onClick = {}
+                    )
+                }
+            }
+
+            // Campo de texto
+            TextField(
+                value = "asdfa",
+                onValueChange = {  },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
+                    .onKeyEvent { event ->
+                        if (event.type == KeyEventType.KeyDown && event.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_ENTER) {
+//                            handleSendMessage()
+                            true
+                        } else {
+                            false
+                        }
+                    },
+                placeholder = { Text("Escribe un mensaje...") },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface,
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Send
+                ),
+                shape = RoundedCornerShape(24.dp),
+                singleLine = false,
+                maxLines = 3
+            )
+
+            // Botón de enviar
+            IconButton(
+                onClick = { },
+//                enabled = messageText.isNotBlank()
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.send1),
+                    contentDescription = "Enviar mensaje",
+                    tint = VerdeMenta,
+                    modifier = Modifier.size(25.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(15.dp).background(Cian))
+    }
+}
+
+
+
 
 @Composable
 fun MessageItem(message: Message) {
