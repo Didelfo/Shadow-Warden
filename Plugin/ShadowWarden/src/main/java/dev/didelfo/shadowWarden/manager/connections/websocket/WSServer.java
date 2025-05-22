@@ -2,6 +2,7 @@ package dev.didelfo.shadowWarden.manager.connections.websocket;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
 import dev.didelfo.shadowWarden.manager.connections.websocket.components.ClientWebSocket;
+import dev.didelfo.shadowWarden.manager.connections.websocket.components.MessageProcessor;
 import dev.didelfo.shadowWarden.security.certificate.CertificateManager;
 import dev.didelfo.shadowWarden.utils.ToolManager;
 import org.bukkit.Bukkit;
@@ -17,10 +18,12 @@ public class WSServer extends WebSocketServer {
     private ToolManager t = new ToolManager();
     private ShadowWarden plugin;
     private final Map<WebSocket, ClientWebSocket> clients = new ConcurrentHashMap<>();
+    private MessageProcessor mPro;
 
     public WSServer(ShadowWarden pl, int port){
         super(new InetSocketAddress(port));
         this.plugin = pl;
+        this.mPro = new MessageProcessor(pl);
 
         try {
             CertificateManager certManager = new CertificateManager(plugin);
@@ -41,6 +44,7 @@ public class WSServer extends WebSocketServer {
             con.send(clients.get(con).getPublicKeyServer());
         } else {
             clients.remove(con);
+            con.close();
         }
     }
 
@@ -55,18 +59,13 @@ public class WSServer extends WebSocketServer {
         // Primer mensaje recibido para la primera conexion a cara perro
         if (!cli.getCifrado()){
             cli.setPublicKeyMovil(s);
+            cli.setShareKey(plugin.getE2ee().getSharedSecret(t.publicKeyBase64ToPublicKey(s)));
+            cli.setHmacKey(plugin.getE2ee().getHmacKey(cli.getShareKey()));
             cli.setCifrado(true);
-            // Borrar debug
-            plugin.getLogger().info("Ejecutando IF On Message");
         } else {
-            plugin.getLogger().info("Se ejecuta el ELSE de On Message");
+            // Ahora procesaremos todos los mensajes recibidos de esta conexion como mensajes cifrados
+            mPro.process(s, con);
         }
-
-        plugin.getLogger().info("Clave Movil: " + cli.getPublicKeyMovil());
-        plugin.getLogger().info("Clave Server: " + cli.getPublicKeyServer());
-        plugin.getLogger().info("cifrado: " + cli.getCifrado());
-
-
     }
 
     @Override
@@ -77,5 +76,9 @@ public class WSServer extends WebSocketServer {
     @Override
     public void onStart() {
 
+    }
+
+    public Map<WebSocket, ClientWebSocket> getClients() {
+        return clients;
     }
 }

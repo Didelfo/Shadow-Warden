@@ -77,6 +77,22 @@ public class EncryptedDatabase {
         return tokens;
     }
 
+    public String getToken(String uuid) {
+        String sql = "SELECT token FROM token WHERE uuidmojan = " + uuid;
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            if (rs.next()) {
+                return rs.getString("token");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
     // Eliminar token por nombre
     public void deleteTokenByName(String nombre) throws SQLException {
         String sql = "DELETE FROM token WHERE name = ?";

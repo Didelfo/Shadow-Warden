@@ -8,8 +8,6 @@ import java.util.Arrays;
 
 public class EphemeralKeyStore {
     private KeyPair keyPair;
-    private byte[] sharedSecret;
-    private SecretKey hmacKey;
 
     // Generar par de claves ECDH
     public void generateKeyPair() {
@@ -31,17 +29,19 @@ public class EphemeralKeyStore {
     }
 
     // Generar clave compartida
-    public void generateSharedSecret(PublicKey peerPublicKey)
-            throws InvalidKeyException, NoSuchAlgorithmException {
-        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH");
-        keyAgreement.init(keyPair.getPrivate());
-        keyAgreement.doPhase(peerPublicKey, true);
+    public byte[] getSharedSecret(PublicKey peerPublicKey) {
+        KeyAgreement keyAgreement = null;
+        try {
+            keyAgreement = KeyAgreement.getInstance("ECDH");
+            keyAgreement.init(keyPair.getPrivate());
+            keyAgreement.doPhase(peerPublicKey, true);
 
-        // Deriva la clave compartida
-        sharedSecret = deriveKey(keyAgreement.generateSecret());
+            // Deriva la clave compartida
+            return deriveKey(keyAgreement.generateSecret());
 
-        // Generar clave HMAC
-        hmacKey = generateHmacKey(sharedSecret);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Deriva clave AES
@@ -52,8 +52,13 @@ public class EphemeralKeyStore {
     }
 
     // Genera clave HMAC
-    private SecretKey generateHmacKey(byte[] sharedSecret) throws NoSuchAlgorithmException {
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-512");
+    public SecretKey getHmacKey(byte[] sharedSecret) {
+        MessageDigest messageDigest = null;
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-512");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         byte[] hmacKeyBytes = messageDigest.digest(
                 concatenate(sharedSecret, "HMAC".getBytes()));
         hmacKeyBytes = Arrays.copyOf(hmacKeyBytes, 64); // 512 bits para HMAC-SHA512
@@ -61,73 +66,65 @@ public class EphemeralKeyStore {
     }
 
     // Cifrar y firmar
-    public Pair<byte[], byte[]> encryptAndSign(String message)
-            throws NoSuchAlgorithmException, NoSuchPaddingException,
-            InvalidKeyException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, BadPaddingException {
-        if (sharedSecret == null) throw new IllegalStateException("Shared secret not generated");
+    public Pair<byte[], byte[]> encryptAndSign(String message, byte[] sharedSecret, SecretKey hmacKey) {
 
-        // Cifrado AES-256-GCM
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        byte[] iv = new byte[12];
-        new SecureRandom().nextBytes(iv);
-        SecretKeySpec keySpec = new SecretKeySpec(sharedSecret, "AES");
-        GCMParameterSpec parameterSpec = new GCMParameterSpec(128, iv);
+        try {
+            // Cifrado AES-256-GCM
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            byte[] iv = new byte[12];
+            new SecureRandom().nextBytes(iv);
+            SecretKeySpec keySpec = new SecretKeySpec(sharedSecret, "AES");
+            GCMParameterSpec parameterSpec = new GCMParameterSpec(128, iv);
 
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, parameterSpec);
-        byte[] cipherText = cipher.doFinal(message.getBytes());
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, parameterSpec);
+            byte[] cipherText = cipher.doFinal(message.getBytes());
 
-        // IV + cipherText
-        byte[] encryptedData = concatenate(iv, cipherText);
+            // IV + cipherText
+            byte[] encryptedData = concatenate(iv, cipherText);
 
-        // Firmar con HMAC
-        Mac mac = Mac.getInstance("HmacSHA512");
-        mac.init(hmacKey);
-        byte[] signature = mac.doFinal(encryptedData);
+            // Firmar con HMAC
+            Mac mac = Mac.getInstance("HmacSHA512");
+            mac.init(hmacKey);
+            byte[] signature = mac.doFinal(encryptedData);
 
-        return new Pair<>(encryptedData, signature);
+            return new Pair<>(encryptedData, signature);
+        } catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
+                 InvalidAlgorithmParameterException | BadPaddingException | InvalidKeyException e) {
+            return null;
+        }
     }
 
     // Verificar y descifrar
-    public String verifyAndDecrypt(byte[] encryptedData, byte[] signature)
-            throws NoSuchAlgorithmException, InvalidKeyException,
-            NoSuchPaddingException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, BadPaddingException, SecurityException {
-        if (sharedSecret == null) throw new IllegalStateException("Shared secret not generated");
-        if (hmacKey == null) throw new IllegalStateException("HMAC key not generated");
+    public String verifyAndDecrypt(byte[] encryptedData, byte[] signature, byte[] sharedSecret, SecretKey hmacKey) {
 
-        // Verificar firma
-        Mac mac = Mac.getInstance("HmacSHA512");
-        mac.init(hmacKey);
-        byte[] calculatedSignature = mac.doFinal(encryptedData);
+        try {
+            // Verificar firma
+            Mac mac = Mac.getInstance("HmacSHA512");
+            mac.init(hmacKey);
+            byte[] calculatedSignature = mac.doFinal(encryptedData);
 
-        if (!MessageDigest.isEqual(calculatedSignature, signature)) {
-            throw new SecurityException("HMAC verification failed");
+            if (!MessageDigest.isEqual(calculatedSignature, signature)) {
+                throw new SecurityException("HMAC verification failed");
+            }
+
+            // Descifrar
+            byte[] iv = Arrays.copyOfRange(encryptedData, 0, 12);
+            byte[] cipherText = Arrays.copyOfRange(encryptedData, 12, encryptedData.length);
+
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            SecretKeySpec keySpec = new SecretKeySpec(sharedSecret, "AES");
+            GCMParameterSpec parameterSpec = new GCMParameterSpec(128, iv);
+
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, parameterSpec);
+            byte[] decryptedBytes = cipher.doFinal(cipherText);
+
+            return new String(decryptedBytes);
+        } catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
+                 InvalidAlgorithmParameterException | BadPaddingException | InvalidKeyException e) {
+            throw new RuntimeException(e);
         }
-
-        // Descifrar
-        byte[] iv = Arrays.copyOfRange(encryptedData, 0, 12);
-        byte[] cipherText = Arrays.copyOfRange(encryptedData, 12, encryptedData.length);
-
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        SecretKeySpec keySpec = new SecretKeySpec(sharedSecret, "AES");
-        GCMParameterSpec parameterSpec = new GCMParameterSpec(128, iv);
-
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, parameterSpec);
-        byte[] decryptedBytes = cipher.doFinal(cipherText);
-
-        return new String(decryptedBytes);
     }
 
-    // Limpiar claves
-    public void clearKeys() {
-        keyPair = null;
-        if (sharedSecret != null) {
-            Arrays.fill(sharedSecret, (byte) 0);
-            sharedSecret = null;
-        }
-        hmacKey = null;
-    }
 
     // Método auxiliar para concatenar arrays
     private byte[] concatenate(byte[] a, byte[] b) {

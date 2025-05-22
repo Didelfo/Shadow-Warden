@@ -3,7 +3,9 @@ package dev.didelfo.shadowWarden.security.hmac;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -24,18 +26,23 @@ public class HmacUtil {
     }
 
     // Genera una firma HMAC-SHA256 de: tokenHash + nonce
-    public String generateHmac(String tokenBase64, byte[] secretKeyBytes, String nonce) throws Exception {
-        byte[] tokenHash = getTokenHash(tokenBase64);
+    public String generateHmac(String tokenBase64, byte[] secretKeyBytes, String nonce) {
 
-        Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-        SecretKeySpec keySpec = new SecretKeySpec(secretKeyBytes, HMAC_ALGORITHM);
-        mac.init(keySpec);
+        try {
+            byte[] tokenHash = getTokenHash(tokenBase64);
 
-        mac.update(tokenHash);
-        mac.update(nonce.getBytes(StandardCharsets.UTF_8));
+            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
+            SecretKeySpec keySpec = new SecretKeySpec(secretKeyBytes, HMAC_ALGORITHM);
+            mac.init(keySpec);
 
-        byte[] hmacBytes = mac.doFinal();
-        return Base64.getEncoder().encodeToString(hmacBytes);
+            mac.update(tokenHash);
+            mac.update(nonce.getBytes(StandardCharsets.UTF_8));
+
+            byte[] hmacBytes = mac.doFinal();
+            return Base64.getEncoder().encodeToString(hmacBytes);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
      // Verifica si dos firmas HMAC coinciden

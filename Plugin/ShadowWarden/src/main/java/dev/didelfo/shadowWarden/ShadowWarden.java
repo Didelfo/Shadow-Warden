@@ -110,6 +110,7 @@ public final class ShadowWarden extends JavaPlugin {
     public MessageManager getMsgManager() {return  msgManager; } // manager de Mensajes (Colorines);;
     public ExecutorServices getExecutor() {return executor;} // Ejecutor de hilos
     public EphemeralKeyStore getE2ee() {return e2ee; } // La clase encargada del cifrado de los mensajes
+    public WSServer getWs() {return ws;} // Obtenemos el wsocket
 
 
 }
