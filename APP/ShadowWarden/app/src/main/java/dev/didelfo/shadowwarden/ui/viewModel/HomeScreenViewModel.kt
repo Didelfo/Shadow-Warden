@@ -2,19 +2,26 @@ package dev.didelfo.shadowwarden.ui.viewModel
 
 import androidx.lifecycle.ViewModel
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.localfiles.Servers
 import dev.didelfo.shadowwarden.localfiles.User
 import dev.didelfo.shadowwarden.connection.websocket.WSController
+import dev.didelfo.shadowwarden.connection.websocket.components.MessageWS
+import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
+import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
+import dev.didelfo.shadowwarden.security.HMAC.HmacHelper
 import dev.didelfo.shadowwarden.utils.json.JsonManager
 import dev.didelfo.shadowwarden.utils.json.JsonEncripter
 import dev.didelfo.shadowwarden.security.keys.alias.GetAliasKey
 import dev.didelfo.shadowwarden.security.keys.alias.KeyAlias
 import dev.didelfo.shadowwarden.utils.tools.ToolManager
+import kotlinx.coroutines.launch
 import java.io.File
 
 class HomeScreenViewModel(contex:Context): ViewModel() {
@@ -75,12 +82,40 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
         // Conectamos el servidor
         WSController.connect(server)
 
-        WSController.sendAndWait(mensaje)
+        // Generamos nuestro hmac
+        val hmacTool = HmacHelper()
+        val nonce = hmacTool.generateNonce()
+        val token = t.getToken(cont).token
+        val hmac = hmacTool.generateHmac(
+            token,
+            checkNotNull(EphemeralKeyStore.getShared()),
+            nonce
+            )
+
+
+        var msg: StructureMessage = StructureMessage(
+            "auth",
+            "IdentifyAndCheckPermissions",
+            hmac,
+            nonce,
+            mapOf()
+        )
+
+        val msgEncryp = t.encryptObjectMessage(msg)
+
+        var respuesta = StructureMessage("","","","",mapOf())
+        Log.d("prueba", "Antes de la corrutina")
+        viewModelScope.launch {
+            Log.d("prueba", "En la corrutina")
+            respuesta = t.decryptObjectMessage(WSController.sendAndWaitResponse(msgEncryp))
+        }
+
+        Log.d("prueba", "Despues de la corrutina")
+        Log.d("prueba", "Valor accion: ${respuesta.action}, Valor categoria: ${respuesta.category}")
 
         // resto de codigo ejecutado despues de recibir la respuesta.
 
-
-
+        loadingScreen = false
     }
 
 

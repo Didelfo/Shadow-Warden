@@ -50,6 +50,7 @@ object WSController {
             // Primera conexion a cara perro
             if (!cliente.cifrado){
                 cliente.publicKeyServer = text
+                EphemeralKeyStore.generateSharedSecret(t.publicKeyBase64ToPublicKey(text))
                 sendMessage(cliente.publicKeyMovil)
                 cliente.cifrado = true
             } else {

@@ -33,6 +33,8 @@ object EphemeralKeyStore {
         return keyPair?.public
     }
 
+    fun getShared(): ByteArray? = sharedSecret
+
     // Generar clave compartida a partir de la clave pública del otro extremo
     fun generateSharedSecret(peerPublicKey: PublicKey) {
         val keyAgreement = KeyAgreement.getInstance("ECDH")
