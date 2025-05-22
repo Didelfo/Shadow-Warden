@@ -76,42 +76,70 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
 
     fun conectar(server:Server){
 
+        EphemeralKeyStore.clearKeys()
+        EphemeralKeyStore.generateKeyPair()
+
         // Ponemos pantalla de carga
         loadingScreen = true
 
         // Conectamos el servidor
+        Log.d("prueba", "Antes de conectar")
         WSController.connect(server)
+        Log.d("prueba", "Despues de conectar")
 
+        Log.d("prueba", "Antesdel Hmac")
         // Generamos nuestro hmac
         val hmacTool = HmacHelper()
+        Log.d("prueba", "Objeto creado")
         val nonce = hmacTool.generateNonce()
+        Log.d("prueba", "Nonce creado")
         val token = t.getToken(cont).token
-        val hmac = hmacTool.generateHmac(
-            token,
-            checkNotNull(EphemeralKeyStore.getShared()),
-            nonce
-            )
+        Log.d("prueba", "token obtenido")
 
+        val keyShare = EphemeralKeyStore.getShared()
 
-        var msg: StructureMessage = StructureMessage(
-            "auth",
-            "IdentifyAndCheckPermissions",
-            hmac,
-            nonce,
-            mapOf()
-        )
-
-        val msgEncryp = t.encryptObjectMessage(msg)
-
-        var respuesta = StructureMessage("","","","",mapOf())
-        Log.d("prueba", "Antes de la corrutina")
-        viewModelScope.launch {
-            Log.d("prueba", "En la corrutina")
-            respuesta = t.decryptObjectMessage(WSController.sendAndWaitResponse(msgEncryp))
+        if (keyShare != null) {
+            Log.d("prueba", "la llave no es null")
+        } else {
+            Log.d("prueba", "la llave es null")
         }
 
+        Log.d("prueba", "antes de la creacion de hmac")
+//        val hmac = hmacTool.generateHmac(
+//            token,
+//            checkNotNull(EphemeralKeyStore.getShared()),
+//            nonce
+//            )
+        Log.d("prueba", "Despues del hmac")
+
+
+
+        Log.d("prueba", "antes de la estructura")
+//        var msg: StructureMessage = StructureMessage(
+//            "auth",
+//            "IdentifyAndCheckPermissions",
+//            hmac,
+//            nonce,
+//            t.getUser(cont).uuid,
+//            mapOf()
+//        )
+        Log.d("prueba", "despues de la estructura")
+
+        Log.d("prueba", "Antes del mensaje")
+//        val msgEncryp = t.encryptObjectMessage(msg)
+//        Log.d("prueba", "Mensaje encriptado: $msgEncryp")
+
+        // StructureMessage("","","","", "",mapOf())
+        var respuesta = MessageWS("", "", "")
+        Log.d("prueba", "Antes de la corrutina")
+//        viewModelScope.launch {
+//            Log.d("prueba", "En la corrutina")
+//            respuesta = WSController.sendAndWaitResponse(msgEncryp)
+//        }
+
         Log.d("prueba", "Despues de la corrutina")
-        Log.d("prueba", "Valor accion: ${respuesta.action}, Valor categoria: ${respuesta.category}")
+//        Log.d("prueba", "Valor accion: ${respuesta.action}, Valor categoria: ${respuesta.category}")
+//        Log.d("prueba", "Map: ${respuesta.data.toString()}")
 
         // resto de codigo ejecutado despues de recibir la respuesta.
 

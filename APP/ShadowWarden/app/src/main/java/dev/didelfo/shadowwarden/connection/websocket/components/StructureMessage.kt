@@ -5,5 +5,6 @@ data class StructureMessage(
     val action: String,
     val hmac: String,
     val nonce: String,
+    val uuidMojan: String,
     val data: Map<String, Any>
 )

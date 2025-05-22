@@ -23,6 +23,7 @@ import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.IOException
+import kotlin.math.log
 
 object WSController {
 
@@ -43,17 +44,23 @@ object WSController {
     private val webSocketListener = object : WebSocketListener() {
 
         override fun onOpen(webSocket: WebSocket, response: Response) {
-            cliente.publicKeyMovil = t.publicKeyToBase64(checkNotNull(EphemeralKeyStore.getPublicKey()))
+            sendMessage(cliente.publicKeyMovil)
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
+            Log.d("prueba", "Se recibe mensaje")
+            Log.d("prueba", "${cliente.cifrado}")
             // Primera conexion a cara perro
             if (!cliente.cifrado){
+                Log.d("prueba", "dentro del if")
+                Log.d("prueba", "${text}")
                 cliente.publicKeyServer = text
-                EphemeralKeyStore.generateSharedSecret(t.publicKeyBase64ToPublicKey(text))
+                EphemeralKeyStore.generateSharedSecret(t.publicKeyBase64ToPublicKey(cliente.publicKeyServer))
+                Log.d("prueba", "Despues de generar la llave")
                 sendMessage(cliente.publicKeyMovil)
                 cliente.cifrado = true
             } else {
+                Log.d("prueba", "dentro del else")
 
                 val mensajeRecibido = JsonManager().stringToObjet(text, MessageWS::class.java)
                 val id = mensajeRecibido.id
@@ -106,8 +113,8 @@ object WSController {
 
                 webSocket = client.newWebSocket(request, webSocketListener)
 
-                EphemeralKeyStore.clearKeys()
-                EphemeralKeyStore.generateKeyPair()
+                cliente.publicKeyMovil = t.publicKeyToBase64(checkNotNull(EphemeralKeyStore.getPublicKey()))
+                Log.d("prueba", "KeyMovil: ${cliente.publicKeyMovil}")
 
             } catch (e: Exception) {
                 Log.d("prueba", "error al conectar: ${e.message.toString()}")
@@ -117,9 +124,7 @@ object WSController {
 
     // Enviar un mensaje a través de WebSocket (asegúrate de que la conexión esté abierta)
     fun sendMessage(message: String) {
-        if (!cliente.cifrado) {
             webSocket?.send(message) ?: println("WebSocket no está conectado")
-        } /// poner else
     }
 
     // Cerrar la conexión WebSocket de forma controlada
