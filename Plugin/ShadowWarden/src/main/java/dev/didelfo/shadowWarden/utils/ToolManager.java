@@ -86,20 +86,25 @@ public class ToolManager {
         }
     }
 
+    // Me lo devuelve con un hmac nonce y uuid del jugador
     public StructureMessage getStructure(String uuid, ShadowWarden p, ClientWebSocket c){
         String token = getToken(uuid, p);
-        String nonce = h.generateNonce();
+        if (token != null) {
+            String nonce = h.generateNonce();
 
-        String hmac = h.generateHmac(token, c.getShareKey(), nonce);
+            String hmac = h.generateHmac(token, c.getShareKey(), nonce);
 
 
-
-        return new StructureMessage("", "", hmac, nonce, uuid, Collections.emptyMap());
+            return new StructureMessage("", "", hmac, nonce, uuid, Collections.emptyMap());
+        }
+        return new StructureMessage("", "", "", "", "", Collections.emptyMap());
     }
 
     private String getToken(String uuidMojan, ShadowWarden p){
         EncryptedDatabase dbE = new EncryptedDatabase(p);
+        dbE.connect();
         String token = dbE.getToken(uuidMojan);
+        dbE.close();
 
         if (token != null){
             return token;

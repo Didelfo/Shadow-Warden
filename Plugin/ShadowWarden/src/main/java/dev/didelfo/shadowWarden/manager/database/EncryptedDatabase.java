@@ -22,7 +22,7 @@ public class EncryptedDatabase {
     }
 
     // Abrir conexión con la base de datos cifrada
-    public void connect() throws SQLException {
+    public void connect()  {
         try {
             // Cargar driver SQLCipher
             Class.forName("org.sqlite.JDBC");
@@ -32,7 +32,11 @@ public class EncryptedDatabase {
 
         String url = String.format("jdbc:sqlite:%s", dbPath);
 
-        connection = DriverManager.getConnection(url);
+        try {
+            connection = DriverManager.getConnection(url);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         try (Statement stmt = connection.createStatement()) {
             // Establecer clave de cifrado
             stmt.execute("PRAGMA key = '" + encryptionKey + "'");
@@ -46,6 +50,8 @@ public class EncryptedDatabase {
                     token TEXT
                 );
             """);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -78,13 +84,33 @@ public class EncryptedDatabase {
     }
 
     public String getToken(String uuid) {
-        String sql = "SELECT token FROM token WHERE uuidmojan = " + uuid;
+        String sql = "SELECT token FROM token WHERE uuidmojan = ?";
 
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, uuid);
 
-            if (rs.next()) {
-                return rs.getString("token");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("token");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    public String getUuidServer(String uuid) {
+        String sql = "SELECT uuidServer FROM token WHERE uuidmojan = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, uuid);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("uuidServer");
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -111,9 +137,13 @@ public class EncryptedDatabase {
     }
 
     // Cerrar conexión
-    public void close() throws SQLException {
-        if (connection != null && !connection.isClosed()) {
-            connection.close();
+    public void close() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

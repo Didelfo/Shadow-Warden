@@ -142,5 +142,12 @@
             <version>2.13.1</version>
         </dependency>
 
+<!--        API Luck Perms - Permisos-->
+        <dependency>
+            <groupId>net.luckperms</groupId>
+            <artifactId>api</artifactId>
+            <version>5.4</version>
+        </dependency>
+
     </dependencies>
 </project>
