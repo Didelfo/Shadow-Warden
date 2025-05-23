@@ -53,9 +53,9 @@ class ToolManager {
     fun encryptObjectMessage(m: StructureMessage): MessageWS {
         val encrip = EphemeralKeyStore.encryptAndSign(JsonManager().objetToString(m))
         return MessageWS(
+            "Communication",
             byteArrayToBase64(encrip.first),
-            byteArrayToBase64(encrip.second),
-            ""
+            byteArrayToBase64(encrip.second)
         )
     }
 

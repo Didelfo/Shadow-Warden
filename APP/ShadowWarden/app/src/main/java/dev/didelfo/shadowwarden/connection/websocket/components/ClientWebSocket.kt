@@ -7,6 +7,13 @@ class ClientWebSocket {
     var cifrado: Boolean = false
 
 
+    fun reset(){
+        publicKeyMovil = ""
+        publicKeyServer= ""
+        cifrado = false
+    }
+
+
 
 
 }

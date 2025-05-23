@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import dev.didelfo.shadowwarden.connection.websocket.components.ClientWebSocket
 import dev.didelfo.shadowwarden.connection.websocket.components.MessageWS
+import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
 import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
 import dev.didelfo.shadowwarden.utils.json.JsonManager
@@ -35,7 +36,7 @@ object WSController {
     private var currentServerUrl: String? = null
     private var currentCertificate: String? = null
     private var cliente: ClientWebSocket = ClientWebSocket()
-    private val pendingRequests = mutableMapOf<String, CancellableContinuation<MessageWS>>()
+    private val pendingRequests = mutableMapOf<String, CancellableContinuation<StructureMessage>>()
     var claveCompartidaUsable by mutableStateOf(false)
     private var t = ToolManager()
 
@@ -48,36 +49,56 @@ object WSController {
     private val webSocketListener = object : WebSocketListener() {
 
         override fun onOpen(webSocket: WebSocket, response: Response) {
-            sendMessage(cliente.publicKeyMovil)
+            // Nada mas conectar mandamos la clave del movil
+            sendMessage(JsonManager().objetToString(MessageWS("KeyExchange", cliente.publicKeyMovil, "")))
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
-            // Primera conexion a cara perro
-            if (!cliente.cifrado){
-                // Estamos recibiendo la clave publica del servidor  en la primera conexion
-                cliente.publicKeyServer = text
-                // Generamos la clave compartida con la clave del servidor
-                EphemeralKeyStore.generateSharedSecret(t.publicKeyBase64ToPublicKey(cliente.publicKeyServer))
-//                mandamos al servidor la clave del movil
-                sendMessage(cliente.publicKeyMovil)
-                // Activamos el cifrado
-                cliente.cifrado = true
-                // Indicamos que la Shared Key esta operativa
-                claveCompartidaUsable = true
-            } else {
-                Log.d("prueba", "dentro del else")
 
+            // Ahora Usaremos un try para asegurarnos que solo recibimos un json valido
+            try {
                 val mensajeRecibido = JsonManager().stringToObjet(text, MessageWS::class.java)
-                val id = mensajeRecibido.id
 
-                // Si tiene una ID lo trataremos como una peticion que esta esperando respuesta,
-                // sino tiene ID lo vamos a interpretar como un mensaje normal
-                if (id.isNotEmpty()){
 
-//                    pendingRequests[id]?.resume(mensajeRecibido)
-                    pendingRequests[id]?.resumeWith(Result.success(mensajeRecibido))
-                    pendingRequests.remove(id)
-                } // falta poner else
+                // Ahora procesaremos el mensaje segun el tipo
+                when(mensajeRecibido.type){
+                    // En este caso asumimos que solo tiene una llave en el campo "data"
+                    "KeyExchange" -> {
+                        // Aqui estaria la clave publica del servidor
+                        cliente.publicKeyServer = mensajeRecibido.data
+                        // Generamos la clave compartida
+                        EphemeralKeyStore.generateSharedSecret(t.publicKeyBase64ToPublicKey(cliente.publicKeyServer))
+                        // Indicamos que la clave compartida ya esta activa
+                        claveCompartidaUsable = true
+                    }
+                    // En este caso asumimos que los datos estan encriptados
+                    "Communication" -> {
+
+                        // Como suponemos que hay esta encriptado lo desencriptamos usamos un try
+                        // en caso de error de descifrado
+                        try {
+                            val mensajeDesencryp = t.decryptObjectMessage(mensajeRecibido)
+
+                            // Establecemos un sistema hibrido de procesamiento si tenemos ID es porque hay una
+                            // peticion esperando respuesta
+                            if (mensajeDesencryp.id.isNotEmpty()){
+                                pendingRequests[mensajeDesencryp.id]?.resumeWith(Result.success(mensajeDesencryp))
+                                pendingRequests.remove(mensajeDesencryp.id)
+                            } else {
+                                // Cuando no tenga un ID sera un mensaje que procesaremos de manera normal
+                            }
+                        } catch (e: Exception){
+
+                        }
+                    }
+                    // En caso que no tenga ninguno de estos tipos, que es imposible porque los controla nuestro sistema
+                    else -> {}
+                }
+
+
+
+            } catch (e: Exception){
+
             }
         }
 
@@ -109,6 +130,13 @@ object WSController {
             currentServerUrl = serverUrl
             currentCertificate = server.certificate
 
+            // Generamos las claves y las guardamos en en el Cliente
+            EphemeralKeyStore.clearKeys()
+            EphemeralKeyStore.generateKeyPair()
+            cliente.reset()
+            cliente.publicKeyMovil = t.publicKeyToBase64(checkNotNull(EphemeralKeyStore.getPublicKey()))
+
+
             try {
                 client = createSecureClient(server.certificate, server.ip)
 
@@ -117,9 +145,6 @@ object WSController {
                     .build()
 
                 webSocket = client.newWebSocket(request, webSocketListener)
-
-                cliente.publicKeyMovil = t.publicKeyToBase64(checkNotNull(EphemeralKeyStore.getPublicKey()))
-                Log.d("prueba", "KeyMovil: ${cliente.publicKeyMovil}")
 
             } catch (e: Exception) {
                 Log.d("prueba", "error al conectar: ${e.message.toString()}")
@@ -140,11 +165,10 @@ object WSController {
     }
 
     // Metodo de mandar y esperar respuesta
-    suspend fun sendAndWaitResponse(data: MessageWS): MessageWS {
+    suspend fun sendAndWaitResponse(data: StructureMessage): StructureMessage {
         return suspendCancellableCoroutine { continuation ->
             val id = UUID.randomUUID().toString()
 
-            Log.d("prueba", "id: ${id}")
             // Guardamos la continuación asociada al requestId
             pendingRequests[id] = continuation
 
@@ -153,8 +177,7 @@ object WSController {
             msg.id = id
 
             //Mandamos el mensaje
-            //JsonManager().objetToString(msg)
-            sendMessage(msg.toString())
+            sendMessage(JsonManager().objetToString(msg))
 
             // Timeout opcional (ejemplo: 10 segundos)
             val timeoutJob = CoroutineScope(Dispatchers.IO).launch {

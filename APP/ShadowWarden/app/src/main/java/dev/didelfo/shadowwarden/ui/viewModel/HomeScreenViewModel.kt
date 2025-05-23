@@ -25,17 +25,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
-class HomeScreenViewModel(contex:Context): ViewModel() {
+class HomeScreenViewModel(contex: Context) : ViewModel() {
 
-//===========================================
+    //===========================================
 //         Variables Fundamentales
 //===========================================
     val cont = contex
 
     // Varialbles usables
     var servers: ArrayList<Server> by mutableStateOf(ArrayList<Server>())
-    val user:User = JsonManager().loadObject(cont, "user.json", User::class.java)
     val t: ToolManager = ToolManager()
+    val user: User = t.getUser(cont)
+
 
     // Variables de mostrar
     var loadingScreen by mutableStateOf(false)
@@ -51,11 +52,12 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
 
     fun getServers() {
 
-        if (File(cont.filesDir, "servers.dat").exists()){
+        if (File(cont.filesDir, "servers.dat").exists()) {
 
             val jsonEncrip = JsonEncripter(cont, GetAliasKey().getKey(KeyAlias.KeyServerEncrip))
 
-            val jsonString: String = jsonEncrip.decryptJson(jsonEncrip.readEncryptedFile("servers.dat"))
+            val jsonString: String =
+                jsonEncrip.decryptJson(jsonEncrip.readEncryptedFile("servers.dat"))
 
             servers = JsonManager().stringToObjet(jsonString, Servers::class.java).listaServidores
         }
@@ -64,7 +66,10 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
     fun deleteServer(server: Server) {
         // traemos los servidores desde los archivos
         val key: JsonEncripter = JsonEncripter(cont, GetAliasKey().getKey(KeyAlias.KeyServerEncrip))
-        val newSever = JsonManager().stringToObjet(key.decryptJson(key.readEncryptedFile("servers.dat")), Servers::class.java)
+        val newSever = JsonManager().stringToObjet(
+            key.decryptJson(key.readEncryptedFile("servers.dat")),
+            Servers::class.java
+        )
 
         // Eliminamos el archivo
         newSever.listaServidores.remove(server)
@@ -75,10 +80,7 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
         key.saveEncryptedFile("servers.dat", key.encryptJson(JsonManager().objetToString(newSever)))
     }
 
-    fun conectar(server:Server){
-
-        EphemeralKeyStore.clearKeys()
-        EphemeralKeyStore.generateKeyPair()
+    fun conectar(server: Server) {
 
         // Ponemos pantalla de carga
         loadingScreen = true
@@ -86,14 +88,13 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
         // Conectamos el servidor
         WSController.connect(server)
 
-        Log.d("prueba", "Antesdel Hmac")
         // Generamos nuestro hmac
         val hmacTool = HmacHelper()
         val nonce = hmacTool.generateNonce()
         val token = t.getToken(cont).token
 
 
-        // ---------------- Codigo Nuevo -------------
+        // ---------------- Pregunta asincrona -------------
 
         viewModelScope.launch {
             var attempts = 0
@@ -108,7 +109,7 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
                 return@launch
             }
 
-            // Aqui esta el problema la clave compartida es null
+            // Obtenemos la llave
             val keyShare = EphemeralKeyStore.getShared()
 
             if (keyShare != null) {
@@ -119,7 +120,9 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
                     nonce
                 )
 
+                // El mensaje que mandamos
                 val msg = StructureMessage(
+                    "",
                     "auth",
                     "IdentifyAndCheckPermissions",
                     hmac,
@@ -127,63 +130,14 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
                     t.getUser(cont).uuid,
                     mapOf()
                 )
-                val msgEncryp = t.encryptObjectMessage(msg)
 
-                val respuesta = WSController.sendAndWaitResponse(msgEncryp)
+                // Esperamos la respuesta de la peticion
+                val respuesta = WSController.sendAndWaitResponse(msg)
+                Log.d("prueba", respuesta.toString())
 
-
-            } else {
-                Log.d("prueba", "la llave es null")
+                loadingScreen = false
 
             }
-
-            loadingScreen = false
-
         }
-
-
-
-
-
-
-        // -------------- Codigo antiguo ----------------
-
-
-
-
-
-
-//        Log.d("prueba", "antes de la creacion de hmac")
-//        val hmac = hmacTool.generateHmac(
-//            token,
-//            checkNotNull(EphemeralKeyStore.getShared()),
-//            nonce
-//            )
-//        Log.d("prueba", "Despues del hmac")
-
-
-
-//        Log.d("prueba", "antes de la estructura")
-//        var msg: StructureMessage = StructureMessage(
-//            "auth",
-//            "IdentifyAndCheckPermissions",
-//            hmac,
-//            nonce,
-//            t.getUser(cont).uuid,
-//            mapOf()
-//        )
-
-//        val msgEncryp = t.encryptObjectMessage(msg)
-
-        // StructureMessage("","","","", "",mapOf())
-//        var respuesta = MessageWS("", "", "")
-//        viewModelScope.launch {
-//            Log.d("prueba", "En la corrutina")
-//            respuesta = WSController.sendAndWaitResponse(msgEncryp)
-//        }
-
     }
-
-
-
 }
