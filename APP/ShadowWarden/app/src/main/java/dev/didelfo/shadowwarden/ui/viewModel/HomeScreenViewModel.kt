@@ -21,6 +21,7 @@ import dev.didelfo.shadowwarden.utils.json.JsonEncripter
 import dev.didelfo.shadowwarden.security.keys.alias.GetAliasKey
 import dev.didelfo.shadowwarden.security.keys.alias.KeyAlias
 import dev.didelfo.shadowwarden.utils.tools.ToolManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -83,38 +84,86 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
         loadingScreen = true
 
         // Conectamos el servidor
-        Log.d("prueba", "Antes de conectar")
         WSController.connect(server)
-        Log.d("prueba", "Despues de conectar")
 
         Log.d("prueba", "Antesdel Hmac")
         // Generamos nuestro hmac
         val hmacTool = HmacHelper()
-        Log.d("prueba", "Objeto creado")
         val nonce = hmacTool.generateNonce()
-        Log.d("prueba", "Nonce creado")
         val token = t.getToken(cont).token
-        Log.d("prueba", "token obtenido")
 
-        val keyShare = EphemeralKeyStore.getShared()
 
-        if (keyShare != null) {
-            Log.d("prueba", "la llave no es null")
-        } else {
-            Log.d("prueba", "la llave es null")
+        // ---------------- Codigo Nuevo -------------
+
+        viewModelScope.launch {
+            var attempts = 0
+            while (!WSController.claveCompartidaUsable && attempts < 100) {
+                delay(100)
+                attempts++
+            }
+
+            if (!WSController.claveCompartidaUsable) {
+                Log.e("HomeViewModel", "Timeout: No se completó el handshake.")
+                loadingScreen = false
+                return@launch
+            }
+
+            // Aqui esta el problema la clave compartida es null
+            val keyShare = EphemeralKeyStore.getShared()
+
+            if (keyShare != null) {
+                Log.d("prueba", "la llave no es null")
+                val hmac = hmacTool.generateHmac(
+                    token,
+                    keyShare,
+                    nonce
+                )
+
+                val msg = StructureMessage(
+                    "auth",
+                    "IdentifyAndCheckPermissions",
+                    hmac,
+                    nonce,
+                    t.getUser(cont).uuid,
+                    mapOf()
+                )
+                val msgEncryp = t.encryptObjectMessage(msg)
+
+                val respuesta = WSController.sendAndWaitResponse(msgEncryp)
+
+
+            } else {
+                Log.d("prueba", "la llave es null")
+
+            }
+
+            loadingScreen = false
+
         }
 
-        Log.d("prueba", "antes de la creacion de hmac")
+
+
+
+
+
+        // -------------- Codigo antiguo ----------------
+
+
+
+
+
+
+//        Log.d("prueba", "antes de la creacion de hmac")
 //        val hmac = hmacTool.generateHmac(
 //            token,
 //            checkNotNull(EphemeralKeyStore.getShared()),
 //            nonce
 //            )
-        Log.d("prueba", "Despues del hmac")
+//        Log.d("prueba", "Despues del hmac")
 
 
 
-        Log.d("prueba", "antes de la estructura")
+//        Log.d("prueba", "antes de la estructura")
 //        var msg: StructureMessage = StructureMessage(
 //            "auth",
 //            "IdentifyAndCheckPermissions",
@@ -123,27 +172,16 @@ class HomeScreenViewModel(contex:Context): ViewModel() {
 //            t.getUser(cont).uuid,
 //            mapOf()
 //        )
-        Log.d("prueba", "despues de la estructura")
 
-        Log.d("prueba", "Antes del mensaje")
 //        val msgEncryp = t.encryptObjectMessage(msg)
-//        Log.d("prueba", "Mensaje encriptado: $msgEncryp")
 
         // StructureMessage("","","","", "",mapOf())
-        var respuesta = MessageWS("", "", "")
-        Log.d("prueba", "Antes de la corrutina")
+//        var respuesta = MessageWS("", "", "")
 //        viewModelScope.launch {
 //            Log.d("prueba", "En la corrutina")
 //            respuesta = WSController.sendAndWaitResponse(msgEncryp)
 //        }
 
-        Log.d("prueba", "Despues de la corrutina")
-//        Log.d("prueba", "Valor accion: ${respuesta.action}, Valor categoria: ${respuesta.category}")
-//        Log.d("prueba", "Map: ${respuesta.data.toString()}")
-
-        // resto de codigo ejecutado despues de recibir la respuesta.
-
-        loadingScreen = false
     }
 
 

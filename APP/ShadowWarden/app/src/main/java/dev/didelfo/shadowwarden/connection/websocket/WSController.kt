@@ -1,6 +1,9 @@
 package dev.didelfo.shadowwarden.connection.websocket
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import dev.didelfo.shadowwarden.connection.websocket.components.ClientWebSocket
 import dev.didelfo.shadowwarden.connection.websocket.components.MessageWS
 import dev.didelfo.shadowwarden.localfiles.Server
@@ -33,6 +36,7 @@ object WSController {
     private var currentCertificate: String? = null
     private var cliente: ClientWebSocket = ClientWebSocket()
     private val pendingRequests = mutableMapOf<String, CancellableContinuation<MessageWS>>()
+    var claveCompartidaUsable by mutableStateOf(false)
     private var t = ToolManager()
 
 
@@ -48,17 +52,18 @@ object WSController {
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
-            Log.d("prueba", "Se recibe mensaje")
-            Log.d("prueba", "${cliente.cifrado}")
             // Primera conexion a cara perro
             if (!cliente.cifrado){
-                Log.d("prueba", "dentro del if")
-                Log.d("prueba", "${text}")
+                // Estamos recibiendo la clave publica del servidor  en la primera conexion
                 cliente.publicKeyServer = text
+                // Generamos la clave compartida con la clave del servidor
                 EphemeralKeyStore.generateSharedSecret(t.publicKeyBase64ToPublicKey(cliente.publicKeyServer))
-                Log.d("prueba", "Despues de generar la llave")
+//                mandamos al servidor la clave del movil
                 sendMessage(cliente.publicKeyMovil)
+                // Activamos el cifrado
                 cliente.cifrado = true
+                // Indicamos que la Shared Key esta operativa
+                claveCompartidaUsable = true
             } else {
                 Log.d("prueba", "dentro del else")
 
@@ -139,6 +144,7 @@ object WSController {
         return suspendCancellableCoroutine { continuation ->
             val id = UUID.randomUUID().toString()
 
+            Log.d("prueba", "id: ${id}")
             // Guardamos la continuación asociada al requestId
             pendingRequests[id] = continuation
 
