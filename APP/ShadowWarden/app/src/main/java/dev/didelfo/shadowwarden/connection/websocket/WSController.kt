@@ -153,7 +153,8 @@ object WSController {
             msg.id = id
 
             //Mandamos el mensaje
-            sendMessage(JsonManager().objetToString(msg))
+            //JsonManager().objetToString(msg)
+            sendMessage(msg.toString())
 
             // Timeout opcional (ejemplo: 10 segundos)
             val timeoutJob = CoroutineScope(Dispatchers.IO).launch {

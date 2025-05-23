@@ -3,7 +3,9 @@ package dev.didelfo.shadowwarden.connection.websocket.components
 import com.google.gson.annotations.SerializedName
 
 data class MessageWS(
-    @SerializedName("data") var data: String,
-    @SerializedName("signature") var signature: String,
-    @SerializedName("id") var id: String
-)
+    var data: String,
+    var signature: String,
+    var id: String
+) {
+    override fun toString(): String = "{\"data\": \"${data}\",  \"signature\": \"${signature}\", \"id\": \"${id}\"}"
+}
