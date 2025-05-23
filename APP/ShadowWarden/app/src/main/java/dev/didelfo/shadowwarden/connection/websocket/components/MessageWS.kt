@@ -1,7 +1,9 @@
 package dev.didelfo.shadowwarden.connection.websocket.components
 
+import com.google.gson.annotations.SerializedName
+
 data class MessageWS(
-    var data: String,
-    var signature: String,
-    var id: String
+    @SerializedName("data") var data: String,
+    @SerializedName("signature") var signature: String,
+    @SerializedName("id") var id: String
 )
