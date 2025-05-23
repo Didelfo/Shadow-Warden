@@ -58,11 +58,13 @@ public class WSServer extends WebSocketServer {
         ClientWebSocket cli = clients.get(con);
         // Primer mensaje recibido para la primera conexion a cara perro
         if (!cli.getCifrado()){
+            plugin.getLogger().info("Dentro del if");
             cli.setPublicKeyMovil(s);
             cli.setShareKey(plugin.getE2ee().getSharedSecret(t.publicKeyBase64ToPublicKey(s)));
             cli.setHmacKey(plugin.getE2ee().getHmacKey(cli.getShareKey()));
             cli.setCifrado(true);
         } else {
+            plugin.getLogger().info("Fuera del if de cifrado");
             // Ahora procesaremos todos los mensajes recibidos de esta conexion como mensajes cifrados
             mPro.process(s, con);
         }

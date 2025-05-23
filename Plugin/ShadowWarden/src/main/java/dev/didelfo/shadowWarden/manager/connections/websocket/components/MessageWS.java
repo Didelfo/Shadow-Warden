@@ -6,6 +6,8 @@ public class MessageWS {
     private String signature;
     private String id;
 
+    public MessageWS() {}
+
     public MessageWS(String data, String signature, String id) {
         this.data = data;
         this.signature = signature;

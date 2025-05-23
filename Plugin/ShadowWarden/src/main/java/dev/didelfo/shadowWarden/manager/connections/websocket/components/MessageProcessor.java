@@ -24,26 +24,42 @@ public class MessageProcessor {
     }
 
     public void process(String m, WebSocket con){
+        pl.getLogger().info("Metodo proceess");
         // procesamos el mensaje en otro hilo
         pl.getExecutor().execute(() -> {
 
             ClientWebSocket c = pl.getWs().getClients().get(con);
 
+
+            pl.getLogger().info("mensaje: " + m);
+
+            pl.getLogger().info("Antes de obtener el objeto mensaje");
             // Procesamos el mensaje ademas huardaremos la Id  en caso de que tenga
             MessageWS mensajeCifrado = t.stringToObject(m, MessageWS.class);
+            pl.getLogger().info("Despues deobtener el mensaje");
             String id = mensajeCifrado.getId();
+            pl.getLogger().info("ID Mensaje: " + id);
 
-            // Desencriptamos el mensaje
-            String msgDescifrado = pl.getE2ee().verifyAndDecrypt(
-                    t.base64ToByteArray(mensajeCifrado.getData()),
-                    t.base64ToByteArray(mensajeCifrado.getSignature()),
-                    c.getShareKey(),
-                    c.getHmacKey()
-            );
+            pl.getLogger().info("Antes de descifrar el mensaje");
 
-            StructureMessage peticion = t.stringToObject(msgDescifrado, StructureMessage.class);
+            if (c.getShareKey() != null) {
+                pl.getLogger().info("key shared no null");
+                // Desencriptamos el mensaje
+                String msgDescifrado = pl.getE2ee().verifyAndDecrypt(
+                        t.base64ToByteArray(mensajeCifrado.getData()),
+                        t.base64ToByteArray(mensajeCifrado.getSignature()),
+                        c.getShareKey(),
+                        c.getHmacKey()
+                );
+                pl.getLogger().info("Despues de descifrar el mensaje");
 
-            classifyCategory(peticion, id, con);
+
+                StructureMessage peticion = t.stringToObject(msgDescifrado, StructureMessage.class);
+
+                classifyCategory(peticion, id, con);
+            } else {
+                pl.getLogger().info("key Share null");
+            }
         });
     }
 
