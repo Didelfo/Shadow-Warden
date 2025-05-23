@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class MessageProcessor {
 
     private ShadowWarden pl;
-    private ToolManager t;
+    private ToolManager t = new ToolManager();
 
     public MessageProcessor(ShadowWarden p){
         this.pl = p;
@@ -35,7 +35,15 @@ public class MessageProcessor {
 
             pl.getLogger().info("Antes de obtener el objeto mensaje");
             // Procesamos el mensaje ademas huardaremos la Id  en caso de que tenga
-            MessageWS mensajeCifrado = t.stringToObject(m, MessageWS.class);
+
+            try {
+                MessageWS mensajeCifrado = t.stringToObject(m, MessageWS.class);
+            } catch (Exception e) {
+                pl.getLogger().severe(e.getMessage());
+                throw new RuntimeException(e);
+            }
+
+            /*
             pl.getLogger().info("Despues deobtener el mensaje");
             String id = mensajeCifrado.getId();
             pl.getLogger().info("ID Mensaje: " + id);
@@ -60,6 +68,8 @@ public class MessageProcessor {
             } else {
                 pl.getLogger().info("key Share null");
             }
+
+             */
         });
     }
 

@@ -50,9 +50,7 @@ public class ToolManager {
 
 
     // ------- Objetos a String y vicebersa -----------
-    public <T> T stringToObject(String s, Class<T> clazz) {
-        return new Gson().fromJson(s, clazz);
-    }
+    public <T> T stringToObject(String s, Class<T> clazz) {return new Gson().fromJson(s, clazz);}
 
     public String objectToString(Object o){
         return g.toJson(o);
