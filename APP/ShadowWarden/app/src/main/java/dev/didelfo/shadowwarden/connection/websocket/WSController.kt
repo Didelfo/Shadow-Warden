@@ -77,6 +77,7 @@ object WSController {
                         // Como suponemos que hay esta encriptado lo desencriptamos usamos un try
                         // en caso de error de descifrado
                         try {
+
                             val mensajeDesencryp = t.decryptObjectMessage(mensajeRecibido)
 
                             // Establecemos un sistema hibrido de procesamiento si tenemos ID es porque hay una
@@ -176,8 +177,20 @@ object WSController {
             var msg = data
             msg.id = id
 
+            // Encriptamos la el mensaje
+
+            val datos = EphemeralKeyStore.encryptAndSign(JsonManager().objetToString(msg))
+
+            var msgBuenFormato = MessageWS(
+                "Communication",
+                t.byteArrayToBase64(datos.first),
+                t.byteArrayToBase64(datos.second)
+            )
+
+            // Cobertimos el formato bueno y enviamos
+
             //Mandamos el mensaje
-            sendMessage(JsonManager().objetToString(msg))
+            sendMessage(JsonManager().objetToString(msgBuenFormato))
 
             // Timeout opcional (ejemplo: 10 segundos)
             val timeoutJob = CoroutineScope(Dispatchers.IO).launch {
