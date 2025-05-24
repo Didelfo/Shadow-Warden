@@ -3,6 +3,7 @@ package dev.didelfo.shadowWarden.manager.connections.websocket.components;
 import java.util.Map;
 
 public class StructureMessage {
+    private String id;
     private String category;
     private String action;
     private String hmac;
@@ -10,14 +11,24 @@ public class StructureMessage {
     private String uuidMojan;
     private Map<String, Object> data;
 
+    public StructureMessage(){}
 
-    public StructureMessage(String category, String action, String hmac, String nonce, String uuidMojan, Map<String, Object> data) {
+    public StructureMessage(String id, String category, String action, String hmac, String nonce, String uuidMojan, Map<String, Object> data) {
+        this.id = id;
         this.category = category;
         this.action = action;
         this.hmac = hmac;
         this.nonce = nonce;
         this.uuidMojan = uuidMojan;
         this.data = data;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getCategory() {

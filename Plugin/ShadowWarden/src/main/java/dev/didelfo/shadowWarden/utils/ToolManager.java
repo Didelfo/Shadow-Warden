@@ -18,8 +18,15 @@ import java.util.Map;
 
 public class ToolManager {
 
-    private Gson g = new Gson();
-    private HmacUtil h = new HmacUtil();
+    private Gson g;
+    private HmacUtil ha;
+    private ShadowWarden p;
+
+    public ToolManager(ShadowWarden pl) {
+        this.g = new Gson();
+        this.ha = new HmacUtil();
+        this.p = pl;
+    }
 
     // -------------- PublicKey -----------------------
 
@@ -34,25 +41,27 @@ public class ToolManager {
         }
     }
 
-    public String publicKeyToBase64(PublicKey key){
+    public String publicKeyToBase64(PublicKey key) {
         return Base64.getEncoder().encodeToString(key.getEncoded());
     }
 
     // ------------------------ Base64 ---------------------------
 
     public String base64ToString(String base64) {
-         return new String(Base64.getDecoder().decode(base64));
+        return new String(Base64.getDecoder().decode(base64));
     }
 
-    public String stringToBase64(String texto){
+    public String stringToBase64(String texto) {
         return Base64.getEncoder().encodeToString(texto.getBytes());
     }
 
 
     // ------- Objetos a String y vicebersa -----------
-    public <T> T stringToObject(String s, Class<T> clazz) {return new Gson().fromJson(s, clazz);}
+    public <T> T stringToObject(String s, Class<T> clazz) {
+        return new Gson().fromJson(s, clazz);
+    }
 
-    public String objectToString(Object o){
+    public String objectToString(Object o) {
         return g.toJson(o);
     }
 
@@ -69,42 +78,42 @@ public class ToolManager {
 
     // -------------- Verificar HMAC facil------------
 
-    public Boolean verificarHmac(StructureMessage m, ClientWebSocket c, ShadowWarden p){
-        String hmacServidor = h.generateHmac(
-                getToken(m.getUuidMojan(), p),
-                c.getShareKey(),
-                m.getNonce()
-        );
-
+    public Boolean verificarHmac(String hmacSever, String hmacMensaje) {
         // Si el hmacServidor no es nulo lo comprobamosk sino devolvemos false directamente
-        if (hmacServidor != null){
-            return h.verifyHmac(hmacServidor, m.getHmac());
-        } else {
-            return false;
-        }
+        return ha.verifyHmac(hmacSever, hmacMensaje);
+    }
+
+
+    // generar hmac
+    public String generarHMACServidor(String uuidMojan, ClientWebSocket c, String nonce) {
+        return ha.generateHmac(
+                getToken(uuidMojan),
+                c.getShareKey(),
+                nonce
+        );
     }
 
     // Me lo devuelve con un hmac nonce y uuid del jugador
-    public StructureMessage getStructure(String uuid, ShadowWarden p, ClientWebSocket c){
-        String token = getToken(uuid, p);
+    public StructureMessage getStructure(String uuid, ClientWebSocket c) {
+        String token = getToken(uuid);
         if (token != null) {
-            String nonce = h.generateNonce();
+            String nonce = ha.generateNonce();
 
-            String hmac = h.generateHmac(token, c.getShareKey(), nonce);
+            String hmac = generarHMACServidor(token, c, nonce);
 
-
+            // Devolvemos una estructura lista para enviar
             return new StructureMessage("", "", hmac, nonce, uuid, Collections.emptyMap());
         }
         return new StructureMessage("", "", "", "", "", Collections.emptyMap());
     }
 
-    private String getToken(String uuidMojan, ShadowWarden p){
+    private String getToken(String uuidMojan) {
         EncryptedDatabase dbE = new EncryptedDatabase(p);
         dbE.connect();
         String token = dbE.getToken(uuidMojan);
         dbE.close();
 
-        if (token != null){
+        if (token != null) {
             return token;
         } else {
             return null;

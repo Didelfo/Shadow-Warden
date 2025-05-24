@@ -17,59 +17,43 @@ import java.util.stream.Collectors;
 public class MessageProcessor {
 
     private ShadowWarden pl;
-    private ToolManager t = new ToolManager();
+    private ToolManager t;
 
-    public MessageProcessor(ShadowWarden p){
+    public MessageProcessor(ShadowWarden p) {
         this.pl = p;
+        this.t = p.getT();
     }
 
-    public void process(String m, WebSocket con){
-        pl.getLogger().info("Metodo proceess");
+    public void process(MessageWS m, WebSocket con) {
+
         // procesamos el mensaje en otro hilo
         pl.getExecutor().execute(() -> {
 
+            // Traemos el cliente que lo necesitaremos
             ClientWebSocket c = pl.getWs().getClients().get(con);
 
-
-            pl.getLogger().info("mensaje: " + m);
-
-            pl.getLogger().info("Antes de obtener el objeto mensaje");
-            // Procesamos el mensaje ademas huardaremos la Id  en caso de que tenga
-
+            // Tratamos de desencriptar el mensaje y procesarlo
             try {
-                MessageWS mensajeCifrado = t.stringToObject(m, MessageWS.class);
-            } catch (Exception e) {
-                pl.getLogger().severe(e.getMessage());
-                throw new RuntimeException(e);
-            }
-
-            /*
-            pl.getLogger().info("Despues deobtener el mensaje");
-            String id = mensajeCifrado.getId();
-            pl.getLogger().info("ID Mensaje: " + id);
-
-            pl.getLogger().info("Antes de descifrar el mensaje");
-
-            if (c.getShareKey() != null) {
-                pl.getLogger().info("key shared no null");
-                // Desencriptamos el mensaje
-                String msgDescifrado = pl.getE2ee().verifyAndDecrypt(
-                        t.base64ToByteArray(mensajeCifrado.getData()),
-                        t.base64ToByteArray(mensajeCifrado.getSignature()),
-                        c.getShareKey(),
-                        c.getHmacKey()
+                // Obtenemos el mensaje descifrado
+                StructureMessage msgDescryp = t.stringToObject(pl.getE2ee().verifyAndDecrypt(
+                                t.base64ToByteArray(m.getData()),
+                                t.base64ToByteArray(m.getSignature()),
+                                c.getShareKey(),
+                                c.getHmacKey()
+                        ),
+                        StructureMessage.class
                 );
-                pl.getLogger().info("Despues de descifrar el mensaje");
 
-
-                StructureMessage peticion = t.stringToObject(msgDescifrado, StructureMessage.class);
-
-                classifyCategory(peticion, id, con);
-            } else {
-                pl.getLogger().info("key Share null");
+                // Verificamos el HMAC que nos viene para comprobar la identidad del jugador
+                // para ello tenemos que crear un HMAC con los datos y comprarlas
+                String HMACServer = t.generarHMACServidor(msgDescryp.getUuidMojan(), c, msgDescryp.getNonce());
+                // Verificamos si el HMAC es valido antes de procesar la peticion
+                if (t.verificarHmac(HMACServer, msgDescryp.getHmac())) {
+                    classifyCategory(msgDescryp, con);
+                }
+            } catch (Exception e) {
+                pl.getLogger().info(e.getMessage());
             }
-
-             */
         });
     }
 
@@ -78,12 +62,26 @@ public class MessageProcessor {
 //     Clasificacion segun su categoria
 // ========================================
 
-    private void classifyCategory(StructureMessage p, String id, WebSocket con) {
-        switch (p.getCategory()){
-            case "auth" -> {
-                processAuth(p, id, con);
+    private void classifyCategory(StructureMessage p, WebSocket con) {
+        // Antes de clasificar el mensaje vamos a verificar que sea valido el hmac para no gastar
+        // recrusos en un mensaje no valido
+        String HMACSever = t.generarHMACServidor(
+                p.getUuidMojan(),
+                pl.getWs().getClients().get(con),
+                p.getNonce()
+        );
+
+        // Si es verdadero ya procesamos el mensaje sino directamente cerramos la conexion
+        if (t.verificarHmac(HMACSever, p.getHmac())) {
+            switch (p.getCategory()) {
+                case "auth" -> {
+                    processAuth(p, con);
+                }
+                default -> {
+                }
             }
-            default -> {}
+        } else {
+            pl.getWs().closeConection(con);
         }
     }
 
@@ -91,79 +89,73 @@ public class MessageProcessor {
 //     Procesar Categoria auth
 // ========================================
 
-    private void processAuth(StructureMessage p, String id, WebSocket con){
-        switch (p.getAction()){
-            case "IdentifyAndCheckPermissions" -> {IdentifyAndCheckPermissions(p, id, con);}
-            case "" -> {}
-            default -> {}
+    private void processAuth(StructureMessage p, WebSocket con) {
+        switch (p.getAction()) {
+            case "IdentifyAndCheckPermissions" -> {
+                IdentifyAndCheckPermissions(p, con);
+            }
+            case "" -> {
+            }
+            default -> {
+            }
         }
     }
 
     // ------------- Funcion segun peticion -------------------
-    private void IdentifyAndCheckPermissions(StructureMessage p, String id, WebSocket con){
+    private void IdentifyAndCheckPermissions(StructureMessage p, WebSocket con) {
         ClientWebSocket c = pl.getWs().getClients().get(con);
-        if(t.verificarHmac(p, c, pl)) {
-            // Si es verdadero quiere decir que es un usuario valido
-            // Obtenemos el uuid del server para obtener el user del server
-            EncryptedDatabase dbE = new EncryptedDatabase(pl);
-            dbE.connect();
-            String uuid = dbE.getUuidServer(p.getUuidMojan());
-            dbE.close();
 
-            // Si no es null es que existe por lo que sabemos que va a tener permisos
-            if (uuid != null) {
-                User user = LuckPermsProvider.get().getUserManager().getUser(UUID.fromString(uuid));
-                Set<String> permissions = user.getCachedData().getPermissionData().getPermissionMap().keySet();
+        // Obtenemos el uuid del server para obtener el user del server para conocer sus permisos
+        EncryptedDatabase dbE = new EncryptedDatabase(pl);
+        dbE.connect();
+        String uuid = dbE.getUuidServer(p.getUuidMojan());
+        dbE.close();
 
-                List<String> shadowWardenPerms = permissions.stream()
-                        .filter(per -> per.startsWith("shadowwarden."))
-                        .collect(Collectors.toList());
+        // Si no es null es que existe por lo que sabemos que va a tener permisos
+        if (uuid != null) {
+            // Obtenemos los permisos
+            User user = LuckPermsProvider.get().getUserManager().getUser(UUID.fromString(uuid));
+            Set<String> permissions = user.getCachedData().getPermissionData().getPermissionMap().keySet();
 
-                // DEBUG BORRAR
-                pl.getLogger().info(shadowWardenPerms.toString());
+            // Filtramos los permisos de nuestro plugin
+            List<String> shadowWardenPerms = permissions.stream()
+                    .filter(per -> per.startsWith("shadowwarden."))
+                    .collect(Collectors.toList());
 
-                // Preparamos el objeto
-                StructureMessage m = t.getStructure(p.getUuidMojan(), pl, c);
-                m.setCategory("auth");
-                m.setAction("GetCurrentUserPermissions");
 
-                Map<String, Object> mapa = new HashMap<>();
-                mapa.put("permissions", shadowWardenPerms);
-                m.setData(mapa);
+            // DEBUG BORRAR
+            pl.getLogger().info(shadowWardenPerms.toString());
 
-                // Encriptamos el objeto y lo guardamos en el formato de envio
 
-                EphemeralKeyStore.Pair<byte[], byte[]> datos = pl.getE2ee().encryptAndSign(t.objectToString(m), c.getShareKey(), c.getHmacKey());
-                MessageWS msg = new MessageWS(
-                        t.byteArrayToBase64(datos.first),
-                        t.byteArrayToBase64(datos.second),
-                        id
-                );
+            // Preparamos el objeto del mensaje que vamos a mandar
+            StructureMessage mensajeEnviar = new StructureMessage();
+            mensajeEnviar.setId(p.getId());
+            mensajeEnviar.setCategory("auth");
+            mensajeEnviar.setAction("GetCurrentUserPermissions");
 
-                con.send(t.objectToString(msg));
+            Map<String, Object> mapa = new HashMap<>();
+            mapa.put("permissions", shadowWardenPerms);
+            mensajeEnviar.setData(mapa);
 
-            }
+            // Encriptamos el objeto y lo guardamos en el formato de envio
+            EphemeralKeyStore.Pair<byte[], byte[]> datos = pl.getE2ee().encryptAndSign(
+                    t.objectToString(mensajeEnviar),
+                    c.getShareKey(),
+                    c.getHmacKey()
+            );
+
+            MessageWS msg = new MessageWS(
+                    "Communication",
+                    t.byteArrayToBase64(datos.first),
+                    t.byteArrayToBase64(datos.second)
+            );
+
+            con.send(t.objectToString(msg));
 
         } else {
-            // Si es falsa no podemos procesar esta solicitud la rellenamos y el campo data lo dejamos vacio
-            // Nota: recibimos un objeto que puede estar vacio sino se encuentra esa uuid en nuestra base de datos
-            StructureMessage e = t.getStructure(p.getUuidMojan(), pl, c);
-            e.setCategory("auth");
-            e.setAction("GetCurrentUserPermissions");
-
-            EphemeralKeyStore.Pair<byte[], byte[]> datos = pl.getE2ee().encryptAndSign(t.objectToString(e),c.getShareKey(), c.getHmacKey());
-
-            if (datos != null){
-                MessageWS msg = new MessageWS(t.byteArrayToBase64(datos.first), t.byteArrayToBase64(datos.second), id);
-                con.send(t.objectToString(msg));
-            }
-
-
-            
-            // Cerramos la conexion
-            pl.getWs().getClients().remove(con);
-            con.close();
-
+            // Como no hemos obtenido su UUID no existe por lo que no va a tener permisos
+            // Asi que directamente cerramos la conexion
+            pl.getWs().closeConection(con);
         }
     }
 

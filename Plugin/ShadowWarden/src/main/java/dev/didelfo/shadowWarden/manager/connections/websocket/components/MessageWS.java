@@ -2,16 +2,25 @@ package dev.didelfo.shadowWarden.manager.connections.websocket.components;
 
 public class MessageWS {
 
+    private String type;
     private String data;
     private String signature;
-    private String id;
+
 
     public MessageWS() {}
 
-    public MessageWS(String data, String signature, String id) {
+    public MessageWS(String type, String data, String signature) {
+        this.type = type;
         this.data = data;
         this.signature = signature;
-        this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getData() {
@@ -28,13 +37,5 @@ public class MessageWS {
 
     public void setSignature(String signature) {
         this.signature = signature;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 }

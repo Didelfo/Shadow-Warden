@@ -12,6 +12,7 @@ import dev.didelfo.shadowWarden.manager.executor.ExecutorServices;
 import dev.didelfo.shadowWarden.manager.inventory.InventoryManager;
 import dev.didelfo.shadowWarden.manager.message.MessageManager;
 import dev.didelfo.shadowWarden.security.E2EE.EphemeralKeyStore;
+import dev.didelfo.shadowWarden.utils.ToolManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -24,6 +25,7 @@ public final class ShadowWarden extends JavaPlugin {
     private WSServer ws;
     private ExecutorServices executor;
     private MessageManager msgManager;
+    private ToolManager t;
 
     // E2EE Websocket
     private EphemeralKeyStore e2ee;
@@ -59,6 +61,7 @@ public final class ShadowWarden extends JavaPlugin {
         this.invManager = new InventoryManager(pl);
         this.msgManager = new MessageManager(pl);
         this.executor = new ExecutorServices(pl);
+        this.t = new ToolManager(pl);
 
 
         // Inicializar manager
@@ -111,6 +114,7 @@ public final class ShadowWarden extends JavaPlugin {
     public ExecutorServices getExecutor() {return executor;} // Ejecutor de hilos
     public EphemeralKeyStore getE2ee() {return e2ee; } // La clase encargada del cifrado de los mensajes
     public WSServer getWs() {return ws;} // Obtenemos el wsocket
+    public ToolManager getT(){return t;}
 
 
 }
