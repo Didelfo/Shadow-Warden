@@ -4,14 +4,9 @@ import dev.didelfo.shadowWarden.ShadowWarden;
 import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.security.E2EE.EphemeralKeyStore;
 import dev.didelfo.shadowWarden.utils.ToolManager;
-import net.luckperms.api.LuckPermsProvider;
-import net.luckperms.api.model.user.User;
-import org.bukkit.permissions.Permission;
 import org.java_websocket.WebSocket;
-
-import javax.swing.plaf.SplitPaneUI;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 
 
 public class MessageProcessor {
@@ -92,7 +87,13 @@ public class MessageProcessor {
     private void processAuth(StructureMessage p, WebSocket con) {
         switch (p.getAction()) {
             case "IdentifyAndCheckPermissions" -> {
-                IdentifyAndCheckPermissions(p, con);
+                try {
+                    IdentifyAndCheckPermissions(p, con);
+                } catch (Exception e){
+                    e.printStackTrace();
+
+                }
+
             }
             case "" -> {
             }
@@ -111,20 +112,36 @@ public class MessageProcessor {
         String uuid = dbE.getUuidServer(p.getUuidMojan());
         dbE.close();
 
+
+
         // Si no es null es que existe por lo que sabemos que va a tener permisos
         if (uuid != null) {
+
+
+
+             /*
             // Obtenemos los permisos
+            pl.getLogger().info("Antes de obtener el user");
             User user = LuckPermsProvider.get().getUserManager().getUser(UUID.fromString(uuid));
+            pl.getLogger().info("Despues de obtener eluser");
+            if (user != null){
+                pl.getLogger().info("User no null");
+            } else {
+                pl.getLogger().info("User null");
+            }
+
             Set<String> permissions = user.getCachedData().getPermissionData().getPermissionMap().keySet();
 
             // Filtramos los permisos de nuestro plugin
             List<String> shadowWardenPerms = permissions.stream()
                     .filter(per -> per.startsWith("shadowwarden."))
                     .collect(Collectors.toList());
+            */
+
 
 
             // DEBUG BORRAR
-            pl.getLogger().info(shadowWardenPerms.toString());
+//            pl.getLogger().info(shadowWardenPerms.toString());
 
 
             // Preparamos el objeto del mensaje que vamos a mandar
@@ -134,7 +151,7 @@ public class MessageProcessor {
             mensajeEnviar.setAction("GetCurrentUserPermissions");
 
             Map<String, Object> mapa = new HashMap<>();
-            mapa.put("permissions", shadowWardenPerms);
+//            mapa.put("permissions", shadowWardenPerms);
             mensajeEnviar.setData(mapa);
 
             // Encriptamos el objeto y lo guardamos en el formato de envio
@@ -152,12 +169,18 @@ public class MessageProcessor {
 
             con.send(t.objectToString(msg));
 
+
         } else {
             // Como no hemos obtenido su UUID no existe por lo que no va a tener permisos
             // Asi que directamente cerramos la conexion
             pl.getWs().closeConection(con);
         }
+
+
+
     }
+
+
 
 
 }

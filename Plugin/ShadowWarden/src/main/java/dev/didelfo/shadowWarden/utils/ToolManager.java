@@ -6,6 +6,7 @@ import dev.didelfo.shadowWarden.manager.connections.websocket.components.ClientW
 import dev.didelfo.shadowWarden.manager.connections.websocket.components.StructureMessage;
 import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.security.hmac.HmacUtil;
+import org.bukkit.inventory.ItemStack;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -93,20 +94,6 @@ public class ToolManager {
         );
     }
 
-    // Me lo devuelve con un hmac nonce y uuid del jugador
-    public StructureMessage getStructure(String uuid, ClientWebSocket c) {
-        String token = getToken(uuid);
-        if (token != null) {
-            String nonce = ha.generateNonce();
-
-            String hmac = generarHMACServidor(token, c, nonce);
-
-            // Devolvemos una estructura lista para enviar
-            return new StructureMessage("", "", hmac, nonce, uuid, Collections.emptyMap());
-        }
-        return new StructureMessage("", "", "", "", "", Collections.emptyMap());
-    }
-
     private String getToken(String uuidMojan) {
         EncryptedDatabase dbE = new EncryptedDatabase(p);
         dbE.connect();
@@ -119,5 +106,20 @@ public class ToolManager {
             return null;
         }
     }
+
+    // ---------- Item  a STRING y viceversa ----------
+    public String itemToString(ItemStack i){
+        // El objeto a bytes -> Base64
+
+        return byteArrayToBase64(i.serializeAsBytes());
+    }
+
+    public ItemStack stringToItem(String i){
+        // base64 -> bytes -> Objeto
+        return ItemStack.deserializeBytes(base64ToByteArray(i));
+    }
+
+
+
 
 }

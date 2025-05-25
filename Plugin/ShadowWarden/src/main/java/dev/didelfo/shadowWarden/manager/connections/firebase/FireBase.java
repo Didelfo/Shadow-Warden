@@ -9,9 +9,11 @@ import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.manager.message.MessageType;
 import dev.didelfo.shadowWarden.security.certificate.CertificateManager;
 import dev.didelfo.shadowWarden.security.hmac.HmacUtil;
+import dev.didelfo.shadowWarden.utils.CreateCustomHead;
 import dev.didelfo.shadowWarden.utils.ToolManager;
 import okhttp3.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 import java.security.KeyFactory;
@@ -24,10 +26,11 @@ public class FireBase {
     private static final String FIREBASE_URL = "https://shadowwarden-e9645-default-rtdb.europe-west1.firebasedatabase.app/";
     private static final OkHttpClient client = new OkHttpClient();
     private ShadowWarden plugin;
-    private ToolManager t = new ToolManager();
+    private ToolManager t;
     private HmacUtil hmacTool = new HmacUtil();
 
     public FireBase(ShadowWarden pl){
+        this.t = pl.getT();
         this.plugin = pl;
     }
 
@@ -116,11 +119,17 @@ public class FireBase {
                     // Vamos a verificar si el token es correcto usando la uuid
                     if (comprobarToken(token, uuidMojan)){
 
+                        // Guardamos la cabeza del jugador serializada para mejorar nuestra interfaz grafica
+                        ItemStack head = new CreateCustomHead().givePlayerHead(p);
+                        String headstring = t.itemToString(head);
+
                         // Guardamos el Token de manera segura
                         EncryptedDatabase dbEn = new EncryptedDatabase(plugin);
                         dbEn.connect();
-                        dbEn.insertToken(uuidMojan, p, token);
+                        dbEn.insertToken(uuidMojan, p, token, headstring);
                         dbEn.close();
+
+
 
                         // Si el token es correcto procedemos a generar nuestro HMAC
                         String nonce = hmacTool.generateNonce();

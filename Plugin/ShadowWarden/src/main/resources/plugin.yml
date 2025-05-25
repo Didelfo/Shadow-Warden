@@ -19,6 +19,10 @@ commands:
     permission: shadowwardem.staff.link
     permisssion-message: No tienes permiso para usar este comando
 
+  cabeza:
+    description: asdfasd
+    usage: /cabeza
+
 permissions:
 
   # =============================
