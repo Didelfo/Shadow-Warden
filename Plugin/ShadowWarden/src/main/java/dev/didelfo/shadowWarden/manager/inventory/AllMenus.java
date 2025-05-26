@@ -18,4 +18,6 @@ public enum AllMenus {
     // Menus de administracion de permisos
     PERMSAPP_HomeMenu,
     PERMSAPP_MenuRoles,
+    PERMSAPP_PermissionMenu,
+    PERMSAPP_PlayerMenu,
 }
