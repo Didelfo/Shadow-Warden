@@ -1,9 +1,6 @@
 package dev.didelfo.shadowWarden.manager.database;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
-import dev.didelfo.shadowWarden.manager.inventory.componets.Permissions;
-import dev.didelfo.shadowWarden.manager.inventory.componets.User;
-import dev.didelfo.shadowWarden.utils.ToolManager;
 import org.bukkit.entity.Player;
 
 import java.io.File;
@@ -139,51 +136,7 @@ public class EncryptedDatabase {
 //                  Gets
 // ==========================================
 
-    public List<Permissions> getAllPermissions() {
-        List<Permissions> permissions = new ArrayList<>();
-        String sql = "SELECT * FROM permissions";
 
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                String description = rs.getString("description");
-
-
-                Permissions permission = new Permissions(id, name, description);
-                permissions.add(permission);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al obtener permisos: " + e.getMessage(), e);
-        }
-        return permissions;
-    }
-
-    public List<User> getAllUser() {
-        List<User> usuarios = new ArrayList<>();
-        String sql = "SELECT uuidmojan, name, head, idRol FROM user";
-
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            ToolManager t = new ToolManager(plugin);
-
-            while (rs.next()) {
-                String uuidmojan = rs.getString("uuidmojan");
-                String name = rs.getString("name");
-                String cabeza = rs.getString("head");
-                int idRol = rs.getInt("idRol");
-
-                User user = new User(uuidmojan, name, t.stringToItem(cabeza), idRol);
-                usuarios.add(user);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al obtener permisos: " + e.getMessage(), e);
-        }
-        return usuarios;
-    }
 
 
     public String getToken(String uuid) {

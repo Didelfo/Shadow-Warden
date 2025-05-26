@@ -15,9 +15,5 @@ public enum AllMenus {
     SMS_StaffEdit,
     SMS_StaffProfile,
 
-    // Menus de administracion de permisos
-    PERMSAPP_HomeMenu,
-    PERMSAPP_MenuRoles,
-    PERMSAPP_PermissionMenu,
-    PERMSAPP_PlayerMenu,
+
 }

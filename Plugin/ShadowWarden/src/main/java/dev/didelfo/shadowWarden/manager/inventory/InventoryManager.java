@@ -2,13 +2,6 @@ package dev.didelfo.shadowWarden.manager.inventory;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
 import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
-import dev.didelfo.shadowWarden.manager.inventory.componets.Permissions;
-import dev.didelfo.shadowWarden.manager.inventory.componets.User;
-import dev.didelfo.shadowWarden.manager.inventory.invs.PERMSAPP.PERMSAPP_HomeMenu;
-import dev.didelfo.shadowWarden.manager.inventory.invs.PERMSAPP.PERMSAPP_MenuRoles;
-import dev.didelfo.shadowWarden.manager.inventory.invs.PERMSAPP.PERMSAPP_PermissionMenu;
-import dev.didelfo.shadowWarden.manager.inventory.invs.PERMSAPP.PERMSAPP_PlayerMenu;
-import dev.didelfo.shadowWarden.manager.inventory.invs.SMS.SMS_StaffAdd;
 import dev.didelfo.shadowWarden.manager.inventory.invs.SMS.SMS_StaffList;
 import dev.didelfo.shadowWarden.manager.inventory.invs.SMS.SMS_StaffMenu;
 import org.bukkit.entity.Player;
@@ -23,11 +16,6 @@ public class InventoryManager {
 
     private ShadowWarden pluign;
     private Map<UUID, AllMenus> open_menus = new HashMap<>();
-    private List<User> listaJugadores;
-    private User jugadorSeleccionado;
-    private int idRolSeleccionado;
-    private List<Permissions> todosLosPermisos;
-    private List<Permissions> permissionsSelecionados;
 
 
     public InventoryManager(ShadowWarden pl){
@@ -45,21 +33,6 @@ public class InventoryManager {
             case SMS_StaffMenu -> {
                 inv = SMS_StaffMenu.get();
             }
-
-            // Gestion de permisos de usuarios y rol
-            case PERMSAPP_HomeMenu -> {
-                inv = PERMSAPP_HomeMenu.get();
-            }
-            case PERMSAPP_MenuRoles -> {
-                inv = PERMSAPP_MenuRoles.get();
-            }
-            case PERMSAPP_PermissionMenu -> {
-                inv = PERMSAPP_PermissionMenu.get();
-            }
-            case PERMSAPP_PlayerMenu -> {
-                inv = PERMSAPP_PlayerMenu.get(pluign);
-            }
-
 
             default -> {}
         }
@@ -79,17 +52,6 @@ public class InventoryManager {
     }
 
     public Map<UUID, AllMenus> getOpen_menus() {return open_menus; }
-
-    public void cargarJugadores(){
-        EncryptedDatabase db = new EncryptedDatabase(pluign);
-        db.connect();
-        listaJugadores = db.getAllUser();
-        db.close();
-    }
-
-    public List<User> getListaJugadores(){
-        return listaJugadores;
-    }
 
 
 }

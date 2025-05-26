@@ -2,7 +2,6 @@ package dev.didelfo.shadowWarden.listeners.events.inventory;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
 import dev.didelfo.shadowWarden.manager.inventory.AllMenus;
-import dev.didelfo.shadowWarden.manager.inventory.invs.PERMSAPP.*;
 import dev.didelfo.shadowWarden.manager.inventory.invs.SMS.*;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -41,9 +40,6 @@ public class InventoryListener implements Listener {
             switch (menuAbierto) {
                 // Menus staff
                 case SMS_StaffMenu -> SMS_StaffMenu.onClick(slot, this.plugin, p);
-                // Menus Administracion permisos
-                case PERMSAPP_HomeMenu -> PERMSAPP_HomeMenu.onClick(slot, this.plugin, p);
-                case PERMSAPP_MenuRoles -> PERMSAPP_MenuRoles.onClick(slot, this.plugin, p);
             }
         }
     }
