@@ -58,12 +58,9 @@ public class PERMSAPP_HomeMenu {
     public static void onClick(int slot, ShadowWarden pl, Player p) {
         switch (slot){
             case 2 -> {
-                pl.getExecutor().execute(() -> {
                     pl.getInvManager().closeInv(p);
-                    pl.getInvManager().cargarTodosJugadores();
+                    pl.getInvManager().cargarJugadores();
                     pl.getInvManager().openInv(p, PERMSAPP_PlayerMenu);
-                });
-
 
             }
             case 6 -> {

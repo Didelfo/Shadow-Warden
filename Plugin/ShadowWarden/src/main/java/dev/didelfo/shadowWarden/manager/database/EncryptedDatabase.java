@@ -163,7 +163,7 @@ public class EncryptedDatabase {
 
     public List<User> getAllUser() {
         List<User> usuarios = new ArrayList<>();
-        String sql = "SELECT uuidmojan, name, cabeza, idRol FROM user";
+        String sql = "SELECT uuidmojan, name, head, idRol FROM user";
 
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -173,7 +173,7 @@ public class EncryptedDatabase {
             while (rs.next()) {
                 String uuidmojan = rs.getString("uuidmojan");
                 String name = rs.getString("name");
-                String cabeza = rs.getString("cabeza");
+                String cabeza = rs.getString("head");
                 int idRol = rs.getInt("idRol");
 
                 User user = new User(uuidmojan, name, t.stringToItem(cabeza), idRol);

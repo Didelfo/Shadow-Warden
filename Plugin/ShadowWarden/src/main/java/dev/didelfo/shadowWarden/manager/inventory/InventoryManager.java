@@ -57,7 +57,7 @@ public class InventoryManager {
                 inv = PERMSAPP_PermissionMenu.get();
             }
             case PERMSAPP_PlayerMenu -> {
-                inv = PERMSAPP_PlayerMenu.get();
+                inv = PERMSAPP_PlayerMenu.get(pluign);
             }
 
 
@@ -80,71 +80,16 @@ public class InventoryManager {
 
     public Map<UUID, AllMenus> getOpen_menus() {return open_menus; }
 
-    public void cargarTodosPermisos(){
-        pluign.getExecutor().execute(() -> {
-            EncryptedDatabase dbE = new EncryptedDatabase(pluign);
-            dbE.connect();
-            todosLosPermisos = dbE.getAllPermissions();
-            dbE.close();
-        });
+    public void cargarJugadores(){
+        EncryptedDatabase db = new EncryptedDatabase(pluign);
+        db.connect();
+        listaJugadores = db.getAllUser();
+        db.close();
     }
 
-    public void limpiarTodosPermisos(){
-        todosLosPermisos = null;
-    }
-
-    public void cargarTodosJugadores(){
-            EncryptedDatabase dbE = new EncryptedDatabase(pluign);
-            dbE.connect();
-            listaJugadores = dbE.getAllUser();
-            dbE.close();
-    }
-    public void limpiarTodosUsers(){
-        listaJugadores = null;
-    }
-
-
-    public void setOpen_menus(Map<UUID, AllMenus> open_menus) {
-        this.open_menus = open_menus;
-    }
-
-    public List<User> getListaJugadores() {
+    public List<User> getListaJugadores(){
         return listaJugadores;
     }
 
-    public void setListaJugadores(List<User> listaJugadores) {
-        this.listaJugadores = listaJugadores;
-    }
 
-    public User getJugadorSeleccionado() {
-        return jugadorSeleccionado;
-    }
-
-    public void setJugadorSeleccionado(User jugadorSeleccionado) {
-        this.jugadorSeleccionado = jugadorSeleccionado;
-    }
-
-    public int getIdRolSeleccionado() {
-        return idRolSeleccionado;
-    }
-
-    public void setIdRolSeleccionado(int idRolSeleccionado) {
-        this.idRolSeleccionado = idRolSeleccionado;
-    }
-
-    public List<Permissions> getTodosLosPermisos() {
-        return todosLosPermisos;
-    }
-
-    public void setTodosLosPermisos(List<Permissions> todosLosPermisos) {
-        this.todosLosPermisos = todosLosPermisos;
-    }
-
-    public List<Permissions> getPermissionsSelecionados() {
-        return permissionsSelecionados;
-    }
-
-    public void setPermissionsSelecionados(List<Permissions> permissionsSelecionados) {
-        this.permissionsSelecionados = permissionsSelecionados;
-    }
 }

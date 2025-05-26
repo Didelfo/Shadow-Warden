@@ -17,14 +17,12 @@ import java.util.List;
 
 public class PERMSAPP_PlayerMenu {
 
-    private static ShadowWarden pl;
-    private static List<Integer> bottom_bar = Arrays.asList(45,46, 47, 48, 50, 51, 52, 53, 54);
 
-    public PERMSAPP_PlayerMenu(ShadowWarden plugin) {
-        this.pl = plugin;
-    }
+    private static List<Integer> bottom_bar = Arrays.asList(45,46, 47, 48, 49, 50, 51, 52, 53);
 
-    public static Inventory get() {
+    public PERMSAPP_PlayerMenu() {}
+
+    public static Inventory get(ShadowWarden pl) {
 
         Inventory inv = Bukkit.createInventory(null, 54, ChatColor.LIGHT_PURPLE + "Player Menu");
 
@@ -43,8 +41,14 @@ public class PERMSAPP_PlayerMenu {
         // Tiene un maximo de 45 jugadores es muy raro tener tantos staff
 
         User u = null;
+        int max = 0;
+        if (pl.getInvManager().getListaJugadores().size() >= 45){
+            max = 44;
+        } else {
+            max = pl.getInvManager().getListaJugadores().size();
+        }
 
-        for (int i = 0; i < 45; i++) {
+        for (int i = 0; i < max; i++) {
             u = pl.getInvManager().getListaJugadores().get(i);
             item = u.getHead();
             meta = item.getItemMeta();
@@ -61,11 +65,9 @@ public class PERMSAPP_PlayerMenu {
         // Nos aseguramos que no se pulsa ningun boton de decoracion
         if (!bottom_bar.contains(slot)) {
             // Establecemos el jugador del slot como jugador seleccionado sobre elq ue se aplicaran los cambios
-            pl.getInvManager().setJugadorSeleccionado(pl.getInvManager().getListaJugadores().get(slot));
-            pl.getLogger().info("Jugador seleccionado: " + pl.getInvManager().getJugadorSeleccionado().getName());
 
             // Limpiamos la lista de jugadores par no ocupar memoria
-            pl.getInvManager().limpiarTodosUsers();
+
 
             // navegamos a otro inventario
         }
