@@ -1,6 +1,6 @@
 package dev.didelfo.shadowWarden;
 
-import dev.didelfo.shadowWarden.commands.staff.CabezaCommand;
+import dev.didelfo.shadowWarden.commands.staff.PermissionCommand;
 import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
 import dev.didelfo.shadowWarden.commands.staff.StaffMenuCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
@@ -86,7 +86,7 @@ public final class ShadowWarden extends JavaPlugin {
     private void initializeCommands(ShadowWarden pl){
         pl.getCommand("staffmenu").setExecutor(new StaffMenuCommand(pl));
         pl.getCommand("link").setExecutor(new LinkCommand(pl));
-        pl.getCommand("cabeza").setExecutor(new CabezaCommand(pl));
+        pl.getCommand("permission").setExecutor(new PermissionCommand(pl));
     }
 
     // Inicializador de lisener
