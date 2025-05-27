@@ -1,5 +1,6 @@
 package dev.didelfo.shadowWarden;
 
+import dev.didelfo.shadowWarden.autocomplete.PermissionCompleter;
 import dev.didelfo.shadowWarden.commands.staff.PermissionCommand;
 import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
 import dev.didelfo.shadowWarden.commands.staff.StaffMenuCommand;
@@ -98,7 +99,7 @@ public final class ShadowWarden extends JavaPlugin {
 
     // Inicializador de autoCompletado
     private void initializeAutocomplete(ShadowWarden pl){
-
+        pl.getCommand("permission").setTabCompleter(new PermissionCompleter(pl));
     }
 
     // Secuencia de inicio

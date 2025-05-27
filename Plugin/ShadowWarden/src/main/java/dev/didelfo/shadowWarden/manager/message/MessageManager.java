@@ -36,6 +36,23 @@ public class MessageManager {
                         .append(Component.text("STAFF >> ").color(TextColor.color(0xff7f50)).decorate(TextDecoration.BOLD))
                         .build();
             }
+
+            //o&#n
+            case Permission -> {
+                return Component.text()
+                        .append(Component.text("P").color(TextColor.color(0xE43A96)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("e").color(TextColor.color(0xE2459A)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("r").color(TextColor.color(0xE0519E)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("m").color(TextColor.color(0xDD5CA2)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("i").color(TextColor.color(0xDB68A6)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("s").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("s").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("i").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("o").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("n").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
+                        .append(Component.text(" >> ").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
+                        .build();
+            }
             default -> {
                 return Component.text("null");
             }

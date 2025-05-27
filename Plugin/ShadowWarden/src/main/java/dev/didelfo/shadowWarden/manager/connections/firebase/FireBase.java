@@ -119,14 +119,10 @@ public class FireBase {
                     // Vamos a verificar si el token es correcto usando la uuid
                     if (comprobarToken(token, uuidMojan)){
 
-                        // Guardamos la cabeza del jugador serializada para mejorar nuestra interfaz grafica
-                        ItemStack head = new CreateCustomHead().givePlayerHead(p);
-                        String headstring = t.itemToString(head);
-
                         // Guardamos el Token de manera segura
                         EncryptedDatabase dbEn = new EncryptedDatabase(plugin);
                         dbEn.connect();
-                        dbEn.insertToken(uuidMojan, p, token, headstring);
+                        dbEn.insertToken(uuidMojan, p, token);
                         dbEn.close();
 
 

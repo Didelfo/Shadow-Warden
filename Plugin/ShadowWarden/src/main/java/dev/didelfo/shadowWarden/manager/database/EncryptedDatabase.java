@@ -58,8 +58,7 @@ public class EncryptedDatabase {
                                 uuidServer TEXT UNIQUE,
                                 name TEXT,
                                 token TEXT,
-                                head TEXT,
-                                idRol INTEGER DEFAULT 1,
+                                idRol INTEGER DEFAULT 0,
                                 FOREIGN KEY(idRol) REFERENCES rol(id) ON DELETE SET NULL
                             );
                         """);
@@ -99,13 +98,6 @@ public class EncryptedDatabase {
                             );
                         """);
 
-                // Rolles Iniciales
-                stmt.execute("INSERT INTO rol (name) VALUES ('Sin Rol'), ('Helper'), ('Moderador'), ('Administrador'), ('Owner')");
-
-                // Permisos
-//                stmt.execute("INSERT INTO permissions (name) VALUES ('kick'), ('ban'), ('viewlogs')");
-
-
             }
 
         } catch (SQLException e) {
@@ -118,24 +110,85 @@ public class EncryptedDatabase {
 // ==========================================
 
     // Insertar un nuevo token
-    public void insertToken(String uuidMojan, Player p, String token, String head) throws SQLException {
-        String sql = "INSERT INTO user(uuidmojan, uuidServer, name, token, head) VALUES(?, ?, ?, ?, ?)";
+    public void insertToken(String uuidMojan, Player p, String token) throws SQLException {
+        String sql = "INSERT INTO user(uuidmojan, uuidServer, name, token) VALUES(?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, uuidMojan);
             pstmt.setString(2, p.getUniqueId().toString());
             pstmt.setString(3, p.getName());
             pstmt.setString(4, token);
-            pstmt.setString(5, head);
             pstmt.executeUpdate();
         }
     }
 
+    public void insertRol(String name) {
+        String sql = "INSERT INTO rol(name) VALUES(?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+// ==========================================
+//                  Uptdate
+// ==========================================
+
+    public void actualizarIdRol(int idRolInicial, int idRolFinal) {
+        String query = "UPDATE user SET idRol = ? WHERE idRol = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idRolFinal); // nuevo valor
+            stmt.setInt(2, idRolInicial); // valor antiguo
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 // ==========================================
 //                  Gets
 // ==========================================
 
+    public int getidRolPorNombre(String nombre) {
+        String sql = "SELECT id FROM rol WHERE name = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, nombre);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+    }
+
+    public List<String> getAllRol() {
+        List<String> rols = new ArrayList<>();
+        String sql = "SELECT name FROM rol";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                rols.add(rs.getString("name"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return rols;
+    }
 
 
 
@@ -194,6 +247,16 @@ public class EncryptedDatabase {
 // ==========================================
 //                  Delete
 // ==========================================
+
+    public void deleteRol(int idRol) {
+        String sql = "DELETE FROM rol WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, idRol);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // Eliminar token por nombre
     public void deleteTokenByName(String nombre) throws SQLException {

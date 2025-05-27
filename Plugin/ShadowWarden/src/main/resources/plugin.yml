@@ -29,11 +29,14 @@ permissions:
   #       Staff Permissions
   # =============================
 
-  shadowWarden.staff:
+  shadowwarden.staff:
       menu:
         description: Permite usar el comando /staffmenu
         default: op
       link:
         description: Permite usar el comando /link
+        default: op
+      permission:
+        description: Permite usar el comando /permission
         default: op
 
