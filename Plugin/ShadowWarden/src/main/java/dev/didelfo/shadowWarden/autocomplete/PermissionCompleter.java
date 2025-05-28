@@ -30,7 +30,7 @@ public class PermissionCompleter implements TabCompleter {
         Player p = (Player) sender;
         if (args.length == 1) {
             // Autocompletar acciones
-            List<String> acciones = Arrays.asList("createrol", "deleterol", "rol", "user");
+            List<String> acciones = getUser();
             String partial = args[0].toLowerCase();
             return acciones.stream()
                     .filter(s -> s.startsWith(partial))
@@ -38,25 +38,15 @@ public class PermissionCompleter implements TabCompleter {
         }
 
         if (args.length == 2) {
-            switch (args[0].toLowerCase()) {
-                case "deleterol" -> {
-                    List<String> acciones = getRoles();
-                    String partial = args[1].toLowerCase();
-                    return acciones.stream()
-                            .filter(s -> s.startsWith(partial))
-                            .collect(Collectors.toList());
-                }
-                case "rol" -> {
-                    List<String> acciones = Arrays.asList("add", "delete");
-                    String partial = args[0].toLowerCase();
-                    return acciones.stream()
-                            .filter(s -> s.startsWith(partial))
-                            .collect(Collectors.toList());
-                }
-                default -> {
-                }
-            }
+            // Autocompletar acciones
+            List<String> acciones = getRoles();
+            String partial = args[0].toLowerCase();
+            return acciones.stream()
+                    .filter(s -> s.startsWith(partial))
+                    .collect(Collectors.toList());
         }
+
+
         /*
 
         if (args.length == 2 && args[0].equalsIgnoreCase("teleport")) {
@@ -73,13 +63,20 @@ public class PermissionCompleter implements TabCompleter {
     }
 
 
+    private List<String> getUser() {
+        EncryptedDatabase db = new EncryptedDatabase(plugin);
+        db.connect();
+        List<String> users = db.getAllUser();
+        db.close();
+        return users;
+    }
+
     private List<String> getRoles() {
             EncryptedDatabase db = new EncryptedDatabase(plugin);
             db.connect();
             List<String> rol = db.getAllRol();
             db.close();
             return rol;
-
     }
 
 

@@ -5,6 +5,7 @@ import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.security.E2EE.EphemeralKeyStore;
 import dev.didelfo.shadowWarden.utils.ToolManager;
 import org.java_websocket.WebSocket;
+
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -72,6 +73,9 @@ public class MessageProcessor {
                 case "auth" -> {
                     processAuth(p, con);
                 }
+                case "register" -> {
+                    processRegister(p, con);
+                }
                 default -> {
                 }
             }
@@ -89,20 +93,18 @@ public class MessageProcessor {
             case "IdentifyAndCheckPermissions" -> {
                 try {
                     IdentifyAndCheckPermissions(p, con);
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
 
                 }
 
-            }
-            case "" -> {
             }
             default -> {
             }
         }
     }
 
-    // ------------- Funcion segun peticion -------------------
+    // ------------- Funcion segun peticion AUTH -------------------
     private void IdentifyAndCheckPermissions(StructureMessage p, WebSocket con) {
         ClientWebSocket c = pl.getWs().getClients().get(con);
 
@@ -111,7 +113,6 @@ public class MessageProcessor {
         dbE.connect();
         String uuid = dbE.getUuidServer(p.getUuidMojan());
         dbE.close();
-
 
 
         // Si no es null es que existe por lo que sabemos que va a tener permisos
@@ -145,21 +146,44 @@ public class MessageProcessor {
                     t.byteArrayToBase64(datos.first),
                     t.byteArrayToBase64(datos.second)
             );
-
             con.send(t.objectToString(msg));
-
-
         } else {
             // Como no hemos obtenido su UUID no existe por lo que no va a tener permisos
             // Asi que directamente cerramos la conexion
             pl.getWs().closeConection(con);
         }
 
-
-
     }
 
+    // ========================================
+//     Procesar Categoria register
+// ========================================
+    private void processRegister(StructureMessage p, WebSocket con) {
+        switch (p.getAction()) {
+            case "SubscribeChat" -> {
+                // Tenemos que comprobar si este usuario tiene permisos para el chat
+                EncryptedDatabase db = new EncryptedDatabase(pl);
+                db.connect();
+                if (
+                        (db.tienePermiso(p.getUuidMojan(), "shadowwarden.app.ui.chat")) ||
+                                (db.tienePermiso(p.getUuidMojan(), "shadowwarden.app.root"))
+                ) {
+                    db.close();
 
+                    // Suscribimos el cliente a chat
+                    pl.getWs().getClients().get(con).setSubscription("chat");
+
+                    // Le mandamos los ultimos 50 mensajes de la base de datos de logs si es que los hay.
+
+                } else {
+                    db.close();
+                    con.close();
+                }
+            }
+            default -> {
+            }
+        }
+    }
 
 
 }

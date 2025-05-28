@@ -7,92 +7,82 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-
 public class ManagerDBT {
 
-    private ShadowWarden plugin;
+    private final ShadowWarden plugin;
 
-    public ManagerDBT(ShadowWarden pl){this.plugin = pl;}
-
-
-// =================================
-//
-// =================================
-
-    public void onChat(String uuid, String name, String msg){
-        String sql =
-                """
-                CREATE TABLE IF NOT EXISTS chat(
-                    hour TEXT,
-                    uuid TEXT,
-                    name TEXT,
-                    message TEXT
-                );
-                """;
-        String sql2 = "INSERT INTO chat (hour, uuid, name, message) VALUES (?, ?, ?, ?)";
-
-        executeSQL(sql);
-
-        try (
-                PreparedStatement pre = connectDBT().prepareStatement(sql2);
-                ){
-            pre.setString(1, LocalTime.now().toString());
-            pre.setString(2, uuid);
-            pre.setString(3, name);
-            pre.setString(4, msg);
-            pre.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
+    public ManagerDBT(ShadowWarden plugin) {
+        this.plugin = plugin;
     }
 
+    // Método principal: se conecta y asegura las tablas necesarias
+    public Connection connect() {
+        try {
+            Connection conn = connectDBT();
+            createTablesIfNotExists(conn);
+            return conn;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al conectar con la base de datos", e);
+        }
+    }
 
-
-
-// =================================
-//
-// =================================
-
-    private Connection connectDBT() throws SQLException{
-        // Sino existe la base de datos la crea.
-        // Usamos la fecha del momento para saber si cambio de dia o no
-
-        // Creamos la carpeta sino existe
+    // Conecta o crea el archivo de BD del día actual
+    private Connection connectDBT() throws SQLException {
         File folder = new File(plugin.getDataFolder(), "logs");
-        if (!folder.exists()) folder.mkdir();
+        if (!folder.exists() && !folder.mkdirs()) {
+            throw new RuntimeException("No se pudo crear la carpeta logs");
+        }
 
-        // Guardamos la BD en la carpeta o nos conectamos a ella
         String today = LocalDate.now().toString();
-        File db = new File(folder, today + ".db");
+        File dbFile = new File(folder, today + ".db");
 
-        return DriverManager.getConnection("jdbc:sqlite:" + db.getAbsolutePath());
+        return DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
     }
 
-    private void createTables(){
-        String sql =
-                """
-                CREATE TABLE IF NOT EXISTS chat(
-                    hour TEXT,
-                    uuid TEXT,
-                    message TEXT
-                );
-                """;
-
-        executeSQL(sql);
+    // Crea todas las tablas necesarias si no existen
+    private void createTablesIfNotExists(Connection conn) throws SQLException {
+        createChatTable(conn);
+        // Aquí puedes añadir más tablas cuando las necesites
+        // createUsersTable(conn);
+        // createPermissionsTable(conn);
     }
 
-    private void executeSQL(String sql){
-        try (
-                Statement sta = connectDBT().createStatement();
-            ){
-            sta.execute(sql);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    // Tabla chat
+    private void createChatTable(Connection conn) throws SQLException {
+        String sql = """
+            CREATE TABLE IF NOT EXISTS chat (
+                hour TEXT,
+                uuid TEXT,
+                name TEXT,
+                message TEXT
+            )
+            """;
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute(sql);
         }
     }
 
+    // Ejemplo: insertar mensaje de chat
+    public void onChat(String uuid, String name, String msg) {
+        String sql = "INSERT INTO chat(hour, uuid, name, message) VALUES (?, ?, ?, ?)";
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
+            pstmt.setString(1, LocalTime.now().toString());
+            pstmt.setString(2, uuid);
+            pstmt.setString(3, name);
+            pstmt.setString(4, msg);
+            pstmt.executeUpdate();
 
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al guardar mensaje de chat", e);
+        }
+    }
+
+    // Método auxiliar para ejecutar SQL simple (opcional)
+    private void executeSQL(String sql, Connection conn) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute(sql);
+        }
+    }
 }

@@ -72,9 +72,8 @@ public class EncryptedDatabase {
 
                 stmt.execute("""
                             CREATE TABLE IF NOT EXISTS permissions (
-                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                id INTEGER PRIMARY KEY,
                                 name TEXT NOT NULL
-                                description TEXT NOT NULL
                             );
                         """);
 
@@ -97,6 +96,19 @@ public class EncryptedDatabase {
                                 FOREIGN KEY (idPermission) REFERENCES permissions(id) ON DELETE CASCADE
                             );
                         """);
+
+                // Rol principal de administrador
+                stmt.execute("INSERT INTO rol(name) VALUES ('Root');");
+
+                // Ingresamos los permisos
+                stmt.execute("""
+                        INSERT INTO permissions(id, name) VALUES
+                        (0, 'shadowwarden.app.root'),
+                        (1, 'shadowwarden.app.ui.chat');
+                        """);
+
+                // Asignamos todos los permisos al root
+                stmt.execute("INSERT INTO permsRol(idRol, idPermission) VALUES (1, 0)");
 
             }
 
@@ -136,12 +148,12 @@ public class EncryptedDatabase {
 //                  Uptdate
 // ==========================================
 
-    public void actualizarIdRol(int idRolInicial, int idRolFinal) {
-        String query = "UPDATE user SET idRol = ? WHERE idRol = ?";
+    public void actualizarRolUser(String user, int idRol) {
+        String query = "UPDATE user SET idRol = ? WHERE name = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, idRolFinal); // nuevo valor
-            stmt.setInt(2, idRolInicial); // valor antiguo
+            stmt.setInt(1, idRol);
+            stmt.setString(2, user);
 
             stmt.executeUpdate();
 
@@ -154,6 +166,56 @@ public class EncryptedDatabase {
 // ==========================================
 //                  Gets
 // ==========================================
+
+    public boolean tienePermiso(String uuidMojan, String permissionName) {
+        String sql = """
+        SELECT 1
+        FROM user u
+        JOIN rol r ON u.idRol = r.id
+        JOIN permsRol pr ON r.id = pr.idRol
+        JOIN permissions p ON pr.idPermission = p.id
+        WHERE u.uuidMojan = ? AND p.name = ?
+        
+        UNION
+        
+        SELECT 1
+        FROM aditionalPerms ap
+        JOIN permissions p ON ap.idPermission = p.id
+        WHERE ap.uuidMojan = ? AND p.name = ?
+        LIMIT 1
+    """;
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, uuidMojan);
+            pstmt.setString(2, permissionName);
+            pstmt.setString(3, uuidMojan);
+            pstmt.setString(4, permissionName);
+
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    // Usuarios de la tabla user
+    public List<String> getAllUser() {
+        List<String> user = new ArrayList<>();
+        String sql = "SELECT name FROM user";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                user.add(rs.getString("name"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return user;
+    }
 
     public int getidRolPorNombre(String nombre) {
         String sql = "SELECT id FROM rol WHERE name = ?";

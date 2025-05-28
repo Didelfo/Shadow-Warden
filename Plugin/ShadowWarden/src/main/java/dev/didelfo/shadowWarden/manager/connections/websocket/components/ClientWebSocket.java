@@ -12,6 +12,7 @@ public class ClientWebSocket {
     private String publicKeyMovil = "";
     private byte[] shareKey;
     private SecretKey hmacKey;
+    private String subscription;
 
 
     public ClientWebSocket(){}
@@ -50,6 +51,14 @@ public class ClientWebSocket {
 
     public void setHmacKey(SecretKey hmacKey) {
         this.hmacKey = hmacKey;
+    }
+
+    public String getSubscription() {
+        return subscription;
+    }
+
+    public void setSubscription(String subscription) {
+        this.subscription = subscription;
     }
 }
 
