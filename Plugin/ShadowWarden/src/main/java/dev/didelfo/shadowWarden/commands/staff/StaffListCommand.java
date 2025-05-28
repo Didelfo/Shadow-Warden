@@ -1,4 +1,4 @@
-package dev.didelfo.shadowWarden.commands;
+package dev.didelfo.shadowWarden.commands.staff;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
 import dev.didelfo.shadowWarden.manager.inventory.AllMenus;

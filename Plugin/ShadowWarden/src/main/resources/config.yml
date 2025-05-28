@@ -1,6 +1,83 @@
-# DataBase Configuration
-db:
-  url: "localhost:3306"
+#===============================================
+#            general Configuration
+#===============================================
+
+passMaestral: "shadowWardennn"
+
+
+#===============================================
+#            Database Configuration
+#===============================================
+dataBase:
+
+  # Enter the type of database you are going to use: "SQLITE", "MYSQL",
+  # "MARIADB" or leave it as "NONE" if you do not use a database.
+  type: "NONE"
+
+  # Enter the IP address of your database and the port, if
+  # you selected "SQLITE" you do not need to provide this data
+  ip: "localhost"
+  port: 3306
+
+  # Enter the name of the database the plugin will use. If you don't
+  # know what to enter, leave the default one.
   name: "shawdowWarden"
+
+  # Enter the username and password, if you chose "SQLITE" type,
+  # do not fill in these fields.
   user: "root"
   pass: "root"
+
+
+#===============================================
+#            WebSocket configuration
+#===============================================
+
+websocket:
+
+  # The settings in this section are only for establishing communication
+  # with the mobile app. If you do not want this service, leave it set to false.
+  enable: false
+
+  # Enter the numeric IP of this server (the server where the plugin is, not Bungecord
+  # or Velocity), and the open port for this service. If your host does not allow you
+  # to open ports, you will not be able to use this service.
+  ip: "0.0.0.0"
+  port: 8080
+
+  # The certificate expires on the date indicated in "Expiration." If it expires,
+  # delete the file from the security folder. After changing the password, delete the folder.
+  # Any change, whether to the password or the certificate, will impact this service. Handle with caution.
+  expiration: ""
+
+#===============================================
+#            Threads configuration
+#===============================================
+
+threadspool:
+  # This configuration directly affects server resources and plugin performance. This setting
+  # establishes the minimum and maximum number of threads that will be controlled by the pool
+  # for asynchronous tasks (outside the main thread) so that the thread doesn't block. If you're
+  # unfamiliar with this topic, leave it at its default value (minimum 2 - maximum 6).
+  # WARNING -> This method has no verification or security features. Failure to configure it
+  # properly can lead to multiple problems.
+  min: 2
+  max: 6
+
+#===============================================
+#            Logs configuration
+#===============================================
+
+logs:
+  # This plugin features enhanced logs stored in separate SQLite databases on a daily basis,
+  # allowing for precise searches. This option must be enabled to use the websocket option with
+  # mobile app communication.
+  enable: false
+
+  # Set the maximum number of logs, meaning that when it reaches 30, the oldest record will be
+  # deleted the next day and the current day's record will be created. It's completely modifiable;
+  # it's recommended to set a reasonable number, such as 30 or 15.
+  logretentiondays: 30
+
+
+
