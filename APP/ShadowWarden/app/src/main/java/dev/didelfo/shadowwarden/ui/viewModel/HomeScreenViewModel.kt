@@ -12,6 +12,7 @@ import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.localfiles.Servers
 import dev.didelfo.shadowwarden.localfiles.User
 import dev.didelfo.shadowwarden.connection.websocket.WSController
+import dev.didelfo.shadowwarden.connection.websocket.components.MessageProcessor
 import dev.didelfo.shadowwarden.connection.websocket.components.MessageWS
 import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
@@ -105,7 +106,6 @@ class HomeScreenViewModel(contex: Context) : ViewModel() {
 
             if (!WSController.claveCompartidaUsable) {
                 Log.e("HomeViewModel", "Timeout: No se completó el handshake.")
-                loadingScreen = false
                 return@launch
             }
 
@@ -113,7 +113,6 @@ class HomeScreenViewModel(contex: Context) : ViewModel() {
             val keyShare = EphemeralKeyStore.getShared()
 
             if (keyShare != null) {
-                Log.d("prueba", "la llave no es null")
                 val hmac = hmacTool.generateHmac(
                     token,
                     keyShare,
@@ -133,11 +132,10 @@ class HomeScreenViewModel(contex: Context) : ViewModel() {
 
                 // Esperamos la respuesta de la peticion
                 val respuesta = WSController.sendAndWaitResponse(msg)
-                Log.d("prueba", respuesta.toString())
-
-                loadingScreen = false
+                MessageProcessor().classifyCategory(respuesta)
 
             }
+            loadingScreen = false
         }
     }
 }
