@@ -117,32 +117,11 @@ public class MessageProcessor {
         // Si no es null es que existe por lo que sabemos que va a tener permisos
         if (uuid != null) {
 
+            List<String> perm = new ArrayList();
+            perm.add("shadowwarden.app.ui.chat");
 
-
-             /*
-            // Obtenemos los permisos
-            pl.getLogger().info("Antes de obtener el user");
-            User user = LuckPermsProvider.get().getUserManager().getUser(UUID.fromString(uuid));
-            pl.getLogger().info("Despues de obtener eluser");
-            if (user != null){
-                pl.getLogger().info("User no null");
-            } else {
-                pl.getLogger().info("User null");
-            }
-
-            Set<String> permissions = user.getCachedData().getPermissionData().getPermissionMap().keySet();
-
-            // Filtramos los permisos de nuestro plugin
-            List<String> shadowWardenPerms = permissions.stream()
-                    .filter(per -> per.startsWith("shadowwarden."))
-                    .collect(Collectors.toList());
-            */
-
-
-
-            // DEBUG BORRAR
-//            pl.getLogger().info(shadowWardenPerms.toString());
-
+            pl.getLogger().info("Lista de permisos");
+            pl.getLogger().info(perm.toString());
 
             // Preparamos el objeto del mensaje que vamos a mandar
             StructureMessage mensajeEnviar = new StructureMessage();
@@ -151,7 +130,7 @@ public class MessageProcessor {
             mensajeEnviar.setAction("GetCurrentUserPermissions");
 
             Map<String, Object> mapa = new HashMap<>();
-//            mapa.put("permissions", shadowWardenPerms);
+            mapa.put("permissions", perm);
             mensajeEnviar.setData(mapa);
 
             // Encriptamos el objeto y lo guardamos en el formato de envio
