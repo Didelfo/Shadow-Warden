@@ -1,1 +1,7 @@
-APP\*
+APP\ShadowWarden\.idea\*
+Plugin\*
+APP/ShadowWarden/.idea/misc.xml
+/APP/ShadowWarden/.idea
+/APP/ShadowWarden/.kotlin
+/APP/ShadowWarden/.idea
+/APP/ShadowWarden/.idea

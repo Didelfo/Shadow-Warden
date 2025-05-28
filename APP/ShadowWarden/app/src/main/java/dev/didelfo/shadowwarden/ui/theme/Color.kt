@@ -8,3 +8,6 @@ val Cian = Color(0xFF05ffe1)
 val VerdeMenta = Color(0xFFa8e6cf)
 val RojoCoral = Color(0xFFff6f61)
 val VerdeEsmeralda = Color(0xFF47dd93)
+val AzulGrisElegante = Color(0xFF2C3E50)
+
+

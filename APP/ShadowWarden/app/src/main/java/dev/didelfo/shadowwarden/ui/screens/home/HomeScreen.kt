@@ -1,16 +1,18 @@
 package dev.didelfo.shadowwarden.ui.screens.home
 
-import android.util.Log
+import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import dev.didelfo.shadowwarden.R
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
-import android.content.Context
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,81 +21,65 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import dev.didelfo.shadowwarden.config.servers.Server
-import dev.didelfo.shadowwarden.config.servers.Servers
-import dev.didelfo.shadowwarden.config.user.User
+import dev.didelfo.shadowwarden.localfiles.Server
+import dev.didelfo.shadowwarden.ui.screens.components.createDialogOpti
+import dev.didelfo.shadowwarden.ui.screens.components.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.utils.json.JSONCreator
+import dev.didelfo.shadowwarden.ui.viewModel.home.HomeScreenViewModel
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun HomeScreen(navController: NavHostController){
 
-    val context:Context = LocalContext.current
+    val viewModel: HomeScreenViewModel = HomeScreenViewModel(LocalContext.current, navController)
 
-    val servers = remember { getServers(context) }
-
-    val user = JSONCreator().loadObject(context, "user.json", User::class.java)
+    viewModel.getServers()
 
     Scaffold(
         topBar = {
-            ToolBarNewHome(
+            ToolBar(
                 title = "Servidores",
-                userrr = user,
                 onImageClick = {
-
+                    navController.navigate(AppScreens.ChatScreen.route)
                 },
                 onAddClick = {
                     navController.navigate(AppScreens.AddServerScreen.route)
-                }
+                },
+                viewModel
             )
         },
 
         content = { paddingValues ->
-
             ServersRecyclerView(
-                servers = servers,
+                servers = viewModel.servers,
                 modifier = Modifier.padding(paddingValues),
-                onItemClicck = {server ->
-                    Log.d("prueba", server.name)
-                }
+                onItemClick = {server ->
+                    viewModel.conectar(server)
+                },
+                viewModel
             )
-
+            loadingView(viewModel.loadingScreen)
         }
-
-
     )
-}
 
-// -----------------------------------------------------------
-//                   Funciones logicas
-// -----------------------------------------------------------
-
-// Conseguir todos los servidores del json
-private fun getServers(context: Context): ArrayList<Server> {
-    if (JSONCreator().exist(context, "servers.json")){
-        return JSONCreator().loadObject(context, "servers.json", Servers::class.java).listaServidores
-    } else {
-        return ArrayList<Server>()
-    }
 
 }
+
 
 // -----------------------------------------------------------
 //                   Funciones composables
@@ -102,11 +88,11 @@ private fun getServers(context: Context): ArrayList<Server> {
 // ToolBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ToolBarNewHome(
+private fun ToolBar(
     title: String,
-    userrr: User,
     onImageClick: () -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    viewModel: HomeScreenViewModel
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -122,25 +108,40 @@ private fun ToolBarNewHome(
         ),
         navigationIcon = {
             IconButton(onClick = onImageClick) {
-                val imageRequest = ImageRequest.Builder(LocalContext.current)
-                    .data(userrr.url)
-                    .crossfade(true)
-                    .build()
 
-                Image(
-                    painter = rememberAsyncImagePainter(imageRequest),
-                    contentDescription = "User avatar",
-                    modifier = Modifier
-                        .size(52.dp)
-                )
+                if (viewModel.file.exists()){
+
+                    val painter = rememberAsyncImagePainter(
+                        ImageRequest.Builder(viewModel.cont)
+                            .data(Uri.fromFile(viewModel.file))
+                            .crossfade(true)
+                            .build()
+                    )
+
+                    Image(
+                        painter = painter,
+                        contentDescription = "User avatar",
+                        modifier = Modifier
+                            .size(52.dp)
+                    )
+
+                } else {
+                 Icon(
+                     painter = painterResource(R.drawable.creeper),
+                     contentDescription = "sin skin",
+                     tint = VerdeEsmeralda,
+                     modifier = Modifier.size(52.dp)
+                 )
+                }
             }
         },
         actions = {
             IconButton(onClick = onAddClick) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    painter = painterResource(R.drawable.add),
                     contentDescription = "Add",
-                    tint = VerdeMenta
+                    tint = VerdeMenta,
+                    modifier = Modifier.size(25.dp)
                 )
             }
         }
@@ -152,7 +153,8 @@ private fun ToolBarNewHome(
 private fun ServersRecyclerView(
     servers: ArrayList<Server>,
     modifier: Modifier = Modifier,
-    onItemClicck: (Server) -> Unit
+    onItemClick: (Server) -> Unit,
+    viewModel: HomeScreenViewModel
 ){
 
     LazyColumn (
@@ -162,7 +164,8 @@ private fun ServersRecyclerView(
         items(servers) { server ->
             ServerItem(
                 server = server,
-                onItemClicck = {onItemClicck(server)}
+                onItemClicck = {onItemClick(server)},
+                viewModel
             )
 
         }
@@ -171,28 +174,31 @@ private fun ServersRecyclerView(
 }
 
 // Vista de cada item
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ServerItem(
     server: Server,
-    onItemClicck: () -> Unit
+    onItemClicck: () -> Unit,
+    viewModel: HomeScreenViewModel
 ){
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal =  16.dp, vertical = 8.dp)
-            .clickable {onItemClicck}/*
-        elevation = CardDefaults.cardColors(
-            containerColor = AzulVerdosoOscuro
+            .combinedClickable(
+                onClick = onItemClicck,
+                onLongClick = {viewModel.showMenuDelete = true}
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = AzulGrisElegante
         )
-       */
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icono (asumiendo que tienes los iconos como recursos vectoriales)
             Icon(
-                imageVector = Icons.Default.Home,
+                painter = painterResource(R.drawable.server),
                 contentDescription = "Server Icon",
                 tint = VerdeMenta,
                 modifier = Modifier.size(40.dp)
@@ -207,8 +213,25 @@ private fun ServerItem(
                 fontFamily = OpenSanBold,
                 modifier = Modifier.weight(1f)
             )
-
-            // Podrías añadir más elementos como estado, etc.
         }
+    }
+
+    if (viewModel.showMenuDelete){
+        createDialogOpti(
+            painterResource(R.drawable.delete),
+            RojoCoral,
+            "Borrar",
+            RojoCoral,
+            "¿Deseas borrar este servidor?",
+            "Si",
+            VerdeEsmeralda,
+            "No",
+            RojoCoral,
+            {
+                viewModel.deleteServer(server)
+                viewModel.showMenuDelete = false
+            },
+            {viewModel.showMenuDelete = false}
+        )
     }
 }

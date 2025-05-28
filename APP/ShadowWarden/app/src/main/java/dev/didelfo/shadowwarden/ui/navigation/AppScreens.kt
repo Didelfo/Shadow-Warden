@@ -1,6 +1,6 @@
 package dev.didelfo.shadowwarden.ui.navigation
 
-import dev.didelfo.shadowwarden.config.servers.QR
+import java.net.URLEncoder
 
 sealed class AppScreens(val route:String) {
 
@@ -20,5 +20,19 @@ sealed class AppScreens(val route:String) {
         fun createRoute(qr: String?) = "add_server_screen/${qr}"
     }
     object ScannerScreen: AppScreens("qr_scanner_screen")
+
+// ----------------------------------
+//           Server
+// ----------------------------------
+
+//    object ServerHomeScreen: AppScreens("server_home_screen")
+object ServerHomeScreen : AppScreens("server_home_screen/{permissions}") {
+    fun createRoute(permissions: List<String>): String {
+        val encoded = URLEncoder.encode(permissions.joinToString(","), "utf-8")
+        return "server_home_screen/$encoded"
+    }
+}
+
+    object ChatScreen: AppScreens("chat_screen")
 
 }

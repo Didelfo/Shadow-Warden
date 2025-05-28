@@ -13,17 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,24 +32,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.R
-import dev.didelfo.shadowwarden.connection.MC.MinecraftApi
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.ui.utils.createDialog
-import dev.didelfo.shadowwarden.viewModel.RegisterScreenViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import dev.didelfo.shadowwarden.ui.screens.components.createDialogInfo
+import dev.didelfo.shadowwarden.ui.screens.components.loadingView
+import dev.didelfo.shadowwarden.ui.viewModel.home.RegisterScreenViewModel
 
 @Composable
 fun RegisterScreen(navController: NavHostController) {
 
-    // CoroutineScope para lanzar corrutinas
-    val coroutineScope = rememberCoroutineScope()
-
-    val viewModel = RegisterScreenViewModel()
-
-    // Obetenemos el context
-    val context = LocalContext.current
+    val context: Context = LocalContext.current
+    val viewModel = remember { RegisterScreenViewModel(context)}
 
     Column(
         modifier = Modifier
@@ -72,14 +61,13 @@ fun RegisterScreen(navController: NavHostController) {
 
         textFieldNick(viewModel)
 
-        boton(viewModel, context, coroutineScope)
+        boton(viewModel)
 
         mostrarDialogs(viewModel, navController)
 
     }
 
-
-
+    loadingView(viewModel.showLoading)
 
 }
 
@@ -169,41 +157,15 @@ fun textFieldNick(viewModel:RegisterScreenViewModel){
 
 @Composable
 fun boton(
-    viewModel: RegisterScreenViewModel,
-    context: Context,
-    coroutineScope:CoroutineScope
-
+    viewModel: RegisterScreenViewModel
 ){
     Button(
         onClick = {
 
             if ((viewModel.txtNick.isEmpty()) || (viewModel.txtNick.toString().length > 32)) {
-
                 viewModel.showDialogInfo = true
-
             } else {
-
-                coroutineScope.launch {
-
-                    val api = MinecraftApi()
-
-//                        Si es premium muestra el que ha sido verificado
-//                        Sino es premium muestra el error
-
-                    var response = api.getUUID(viewModel.txtNick)
-
-                    if (response != null){
-
-                        viewModel.generarToken(response, context)
-
-
-                        // Mostrar alerta de ferificacion
-                        viewModel.showDialogVerificado = true
-
-                    }  else viewModel.showDialogPremium = true
-
-                }
-
+                viewModel.registrar()
             }
 
         },
@@ -237,8 +199,8 @@ fun mostrarDialogs(
 
     if (viewModel.showDialogInfo) {
 
-        createDialog(
-            Icons.Default.Info,
+        createDialogInfo(
+            painterResource(R.drawable.info),
             Cian,
             "Información",
             Cian,
@@ -254,8 +216,8 @@ fun mostrarDialogs(
 
     if (viewModel.showDialogPremium) {
 
-        createDialog(
-            Icons.Default.Clear,
+        createDialogInfo(
+            painterResource(R.drawable.close),
             RojoCoral,
             "Error",
             RojoCoral,
@@ -272,17 +234,17 @@ fun mostrarDialogs(
 
     if (viewModel.showDialogVerificado) {
 
-        createDialog(
-            Icons.Default.Check,
+        createDialogInfo(
+            painterResource(R.drawable.check),
             VerdeEsmeralda,
             "Verificado",
             VerdeEsmeralda,
             "Tu cuenta ha sido verificada correctamente.",
             "Continuar",
             {
+                navController.popBackStack()
                 navController.navigate(AppScreens.HomeScreen.route)
                 viewModel.showDialogPremium = false
             })
-
     }
 }

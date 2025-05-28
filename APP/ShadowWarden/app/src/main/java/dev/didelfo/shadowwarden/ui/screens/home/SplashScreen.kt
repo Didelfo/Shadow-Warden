@@ -21,7 +21,7 @@ import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.R
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
-import dev.didelfo.shadowwarden.utils.json.JSONCreator
+import dev.didelfo.shadowwarden.utils.json.JsonManager
 import kotlinx.coroutines.delay
 
 @Composable
@@ -39,9 +39,9 @@ fun logic(nav: NavHostController){
 
     LaunchedEffect(Unit) {
 
-        delay(2000)
-
-        if (JSONCreator().exist(context, "token.dat")){
+        delay(1000)
+        nav.popBackStack()
+        if (JsonManager().exist(context, "token.dat")){
             nav.navigate(AppScreens.HomeScreen.route)
         } else {
             nav.navigate(AppScreens.RegisterScreen.route)
