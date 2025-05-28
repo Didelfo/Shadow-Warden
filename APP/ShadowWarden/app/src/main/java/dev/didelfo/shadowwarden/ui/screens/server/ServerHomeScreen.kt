@@ -26,17 +26,19 @@ import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.platform.LocalContext
+import dev.didelfo.shadowwarden.ui.viewModel.server.ServerHomeScreenViewModel
 import kotlin.math.roundToInt
 
 @Composable
-fun ServerHomeScreen(navController: NavHostController) {
-    val isEditing = remember { mutableStateOf(false) }
-    val allItems = listOf<GridItem>(
-        GridItem(R.drawable.chat, "Chat", "shadowwarden.app.ui.chat"),
-    )
-    var permissions by remember {mutableStateOf(listOf<String>())}
-    val filteredItems = allItems
-        .filter { item -> permissions.contains(item.id) }
+fun ServerHomeScreen(navController: NavHostController, permissions: List<String>) {
+
+    var viewModel: ServerHomeScreenViewModel = ServerHomeScreenViewModel(LocalContext.current, navController)
+
+
+    var permissionss by remember {mutableStateOf(permissions)}
+    val filteredItems = viewModel.allItems
+        .filter { item -> permissionss.contains(item.id) }
         .toMutableList()
 
 
@@ -48,10 +50,10 @@ fun ServerHomeScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             ToolBar(
-                title = "",
+                title = "Opciones",
                 { navController.navigate(AppScreens.HomeScreen.route) },
-                {},
-                { isEditing.value = !isEditing.value }
+                { viewModel.isEditing = !viewModel.isEditing},
+                viewModel
             )
         },
         content = { paddingValues ->
@@ -71,17 +73,17 @@ fun ServerHomeScreen(navController: NavHostController) {
 
                     GridItemCard(
                         item = item,
-                        isEditing = isEditing.value,
+                        isEditing = viewModel.isEditing,
                         isBeingDragged = isBeingDragged,
                         onClick = {
-                            if (!isEditing.value) {
-                                println("Item clicado: ${item.text}")
+                            if (!viewModel.isEditing) {
+                                viewModel.clickItem(item)
                             }
                         },
                         modifier = Modifier
                             .aspectRatio(1f)
-                            .pointerInput(isEditing.value) {
-                                if (!isEditing.value) return@pointerInput
+                            .pointerInput(viewModel.isEditing) {
+                                if (!viewModel.isEditing) return@pointerInput
 
                                 detectDragGestures(
                                     onDragStart = { draggingIndex = index },
@@ -171,8 +173,8 @@ fun detectTargetIndex(
 private fun ToolBar(
     title: String,
     onBackClick: () -> Unit,
-    onRefreshClick: () -> Unit,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    viewModel: ServerHomeScreenViewModel
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -197,17 +199,13 @@ private fun ToolBar(
             }
         },
         actions = {
-            IconButton(onClick = onRefreshClick) {
-                Icon(
-                    painter = painterResource(R.drawable.reload),
-                    contentDescription = "Refrescar",
-                    tint = VerdeMenta,
-                    modifier = Modifier.size(25.dp)
-                )
-            }
             IconButton(onClick = onEditClick) {
                 Icon(
-                    painter = painterResource(R.drawable.edit),
+                    painter = if (viewModel.isEditing) {
+                        painterResource(R.drawable.save)
+                    } else {
+                        painterResource(R.drawable.edit)
+                    },
                     contentDescription = "Editar",
                     tint = VerdeMenta,
                     modifier = Modifier.size(25.dp)

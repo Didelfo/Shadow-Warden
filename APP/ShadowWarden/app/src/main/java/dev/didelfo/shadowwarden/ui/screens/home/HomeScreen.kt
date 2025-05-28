@@ -40,13 +40,13 @@ import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.ui.screens.components.createDialogOpti
 import dev.didelfo.shadowwarden.ui.screens.components.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.ui.viewModel.HomeScreenViewModel
+import dev.didelfo.shadowwarden.ui.viewModel.home.HomeScreenViewModel
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun HomeScreen(navController: NavHostController){
 
-    val viewModel: HomeScreenViewModel = HomeScreenViewModel(LocalContext.current)
+    val viewModel: HomeScreenViewModel = HomeScreenViewModel(LocalContext.current, navController)
 
     viewModel.getServers()
 

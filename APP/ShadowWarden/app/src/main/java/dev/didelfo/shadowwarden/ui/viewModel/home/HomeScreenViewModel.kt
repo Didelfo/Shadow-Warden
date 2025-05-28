@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.viewModel
+package dev.didelfo.shadowwarden.ui.viewModel.home
 
 import androidx.lifecycle.ViewModel
 import android.content.Context
@@ -7,13 +7,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
+import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.localfiles.Servers
 import dev.didelfo.shadowwarden.localfiles.User
 import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.connection.websocket.components.MessageProcessor
-import dev.didelfo.shadowwarden.connection.websocket.components.MessageWS
 import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
 import dev.didelfo.shadowwarden.security.HMAC.HmacHelper
@@ -26,12 +25,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
-class HomeScreenViewModel(contex: Context) : ViewModel() {
+class HomeScreenViewModel(contex: Context, nav: NavHostController) : ViewModel() {
 
     //===========================================
 //         Variables Fundamentales
 //===========================================
     val cont = contex
+    val nave = nav
 
     // Varialbles usables
     var servers: ArrayList<Server> by mutableStateOf(ArrayList<Server>())
@@ -132,7 +132,7 @@ class HomeScreenViewModel(contex: Context) : ViewModel() {
 
                 // Esperamos la respuesta de la peticion
                 val respuesta = WSController.sendAndWaitResponse(msg)
-                MessageProcessor().classifyCategory(respuesta)
+                MessageProcessor(nave).classifyCategory(respuesta)
 
             }
             loadingScreen = false

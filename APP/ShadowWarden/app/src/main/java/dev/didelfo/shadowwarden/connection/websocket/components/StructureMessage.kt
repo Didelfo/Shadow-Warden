@@ -2,10 +2,10 @@ package dev.didelfo.shadowwarden.connection.websocket.components
 
 data class StructureMessage(
     var id: String,
-    val category: String,
-    val action: String,
-    val hmac: String,
-    val nonce: String,
-    val uuidMojan: String,
-    val data: Map<String, Any>
+    var category: String,
+    var action: String,
+    var hmac: String,
+    var nonce: String,
+    var uuidMojan: String,
+    var data: Map<String, Any>
 )

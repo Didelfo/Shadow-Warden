@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.viewModel
+package dev.didelfo.shadowwarden.ui.viewModel.home
 
 import android.content.Context
 import androidx.compose.runtime.getValue
@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import dev.didelfo.shadowwarden.localfiles.Tokeen
 import dev.didelfo.shadowwarden.localfiles.User
 import dev.didelfo.shadowwarden.connection.MC.MinecraftApi
@@ -18,7 +17,6 @@ import dev.didelfo.shadowwarden.security.keys.alias.KeyAlias
 import dev.didelfo.shadowwarden.utils.json.JsonEncripter
 import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import kotlinx.coroutines.launch
-import java.util.Base64
 import java.util.Date
 import java.util.UUID
 

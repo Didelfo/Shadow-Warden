@@ -36,7 +36,7 @@ import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.*
 import dev.didelfo.shadowwarden.ui.screens.components.createDialogInfo
 import dev.didelfo.shadowwarden.ui.screens.components.loadingView
-import dev.didelfo.shadowwarden.ui.viewModel.RegisterScreenViewModel
+import dev.didelfo.shadowwarden.ui.viewModel.home.RegisterScreenViewModel
 
 @Composable
 fun RegisterScreen(navController: NavHostController) {

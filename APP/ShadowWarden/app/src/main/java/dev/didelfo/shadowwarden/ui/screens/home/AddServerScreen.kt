@@ -26,8 +26,8 @@ import dev.didelfo.shadowwarden.ui.screens.components.createDialogInfo
 import dev.didelfo.shadowwarden.ui.screens.components.createDialogOpti
 import dev.didelfo.shadowwarden.ui.screens.components.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.ui.viewModel.AddServerScreenViewModel
-import dev.didelfo.shadowwarden.ui.viewModel.AddServerStatus
+import dev.didelfo.shadowwarden.ui.viewModel.home.AddServerScreenViewModel
+import dev.didelfo.shadowwarden.ui.viewModel.home.AddServerStatus
 
 @Composable
 fun AddServerScreen(navController: NavHostController) {
