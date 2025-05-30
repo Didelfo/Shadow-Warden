@@ -7,8 +7,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dev.didelfo.shadowwarden.ui.screens.home.*
-import dev.didelfo.shadowwarden.ui.screens.server.ChatScreen
-import dev.didelfo.shadowwarden.ui.screens.server.ServerHomeScreen
+import dev.didelfo.shadowwarden.ui.screens.home.addServer.AddServerScreen
+import dev.didelfo.shadowwarden.ui.screens.home.home.HomeScreen
+import dev.didelfo.shadowwarden.ui.screens.home.register.RegisterScreen
+import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatScreen
+import dev.didelfo.shadowwarden.ui.screens.server.serverhome.ServerHomeScreen
 
 @Composable
 fun AppNavigation() {

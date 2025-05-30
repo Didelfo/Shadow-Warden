@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.screens.server
+package dev.didelfo.shadowwarden.ui.screens.server.serverhome
 
 import dev.didelfo.shadowwarden.R
 import androidx.compose.foundation.background
@@ -27,7 +27,7 @@ import dev.didelfo.shadowwarden.ui.theme.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.platform.LocalContext
-import dev.didelfo.shadowwarden.ui.viewModel.server.ServerHomeScreenViewModel
+import dev.didelfo.shadowwarden.ui.screens.server.serverhome.ServerHomeScreenViewModel
 import kotlin.math.roundToInt
 
 @Composable

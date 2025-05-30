@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.viewModel.server
+package dev.didelfo.shadowwarden.ui.screens.server.serverhome
 
 import android.content.Context
 import android.util.Log
@@ -14,7 +14,6 @@ import dev.didelfo.shadowwarden.connection.websocket.components.MessageProcessor
 import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
 import dev.didelfo.shadowwarden.security.HMAC.HmacHelper
-import dev.didelfo.shadowwarden.ui.screens.server.GridItem
 import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

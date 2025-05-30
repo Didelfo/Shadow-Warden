@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.screens.home
+package dev.didelfo.shadowwarden.ui.screens.home.home
 
 import android.annotation.SuppressLint
 import android.net.Uri
@@ -40,7 +40,7 @@ import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.ui.screens.components.createDialogOpti
 import dev.didelfo.shadowwarden.ui.screens.components.loadingView
 import dev.didelfo.shadowwarden.ui.theme.*
-import dev.didelfo.shadowwarden.ui.viewModel.home.HomeScreenViewModel
+import dev.didelfo.shadowwarden.ui.screens.home.home.HomeScreenViewModel
 
 @SuppressLint("UnrememberedMutableState")
 @Composable

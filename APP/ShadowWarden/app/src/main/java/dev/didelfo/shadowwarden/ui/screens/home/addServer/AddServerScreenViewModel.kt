@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.viewModel.home
+package dev.didelfo.shadowwarden.ui.screens.home.addServer
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
