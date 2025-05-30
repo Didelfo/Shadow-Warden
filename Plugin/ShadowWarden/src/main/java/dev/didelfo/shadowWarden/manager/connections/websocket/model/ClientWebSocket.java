@@ -1,10 +1,6 @@
-package dev.didelfo.shadowWarden.manager.connections.websocket.components;
-
-import com.google.gson.Gson;
-import dev.didelfo.shadowWarden.utils.ToolManager;
+package dev.didelfo.shadowWarden.manager.connections.websocket.model;
 
 import javax.crypto.SecretKey;
-import java.util.ArrayList;
 
 public class ClientWebSocket {
     // Variables

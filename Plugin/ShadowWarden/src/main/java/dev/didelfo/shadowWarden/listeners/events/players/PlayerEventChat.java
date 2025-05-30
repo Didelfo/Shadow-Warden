@@ -21,6 +21,7 @@ public class PlayerEventChat implements Listener {
         Player p = event.getPlayer();
         String msg = event.getMessage();
 
+        // Guarda el mensaje en la BD
         onMessage(
                 p.getUniqueId().toString(),
                 p.getName().toString(),
@@ -31,7 +32,9 @@ public class PlayerEventChat implements Listener {
 
     private void onMessage(String uuid, String name, String msg){
         plugin.getExecutor().execute(() -> {
+            plugin.getDbmT().open();
             plugin.getDbmT().onChat(uuid, name, msg);
+            plugin.getDbmT().close();
         });
     }
 

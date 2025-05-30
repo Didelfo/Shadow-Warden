@@ -1,4 +1,4 @@
-package dev.didelfo.shadowWarden.manager.connections.websocket.components;
+package dev.didelfo.shadowWarden.manager.connections.websocket.model;
 
 import java.util.Map;
 

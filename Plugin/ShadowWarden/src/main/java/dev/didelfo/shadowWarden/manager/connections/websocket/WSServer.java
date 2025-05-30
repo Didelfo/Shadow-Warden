@@ -1,12 +1,11 @@
 package dev.didelfo.shadowWarden.manager.connections.websocket;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
-import dev.didelfo.shadowWarden.manager.connections.websocket.components.ClientWebSocket;
+import dev.didelfo.shadowWarden.manager.connections.websocket.model.ClientWebSocket;
 import dev.didelfo.shadowWarden.manager.connections.websocket.components.MessageProcessor;
-import dev.didelfo.shadowWarden.manager.connections.websocket.components.MessageWS;
+import dev.didelfo.shadowWarden.manager.connections.websocket.model.MessageWS;
 import dev.didelfo.shadowWarden.security.certificate.CertificateManager;
 import dev.didelfo.shadowWarden.utils.ToolManager;
-import org.bukkit.Bukkit;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.DefaultSSLWebSocketServerFactory;

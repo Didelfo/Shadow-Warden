@@ -2,8 +2,7 @@ package dev.didelfo.shadowWarden.utils;
 
 import com.google.gson.Gson;
 import dev.didelfo.shadowWarden.ShadowWarden;
-import dev.didelfo.shadowWarden.manager.connections.websocket.components.ClientWebSocket;
-import dev.didelfo.shadowWarden.manager.connections.websocket.components.StructureMessage;
+import dev.didelfo.shadowWarden.manager.connections.websocket.model.ClientWebSocket;
 import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.security.hmac.HmacUtil;
 import org.bukkit.inventory.ItemStack;
@@ -14,8 +13,6 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.Map;
 
 public class ToolManager {
 

@@ -1,13 +1,17 @@
 package dev.didelfo.shadowWarden.manager.connections.websocket.components;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
+import dev.didelfo.shadowWarden.manager.connections.websocket.model.ChatMessage;
+import dev.didelfo.shadowWarden.manager.connections.websocket.model.ClientWebSocket;
+import dev.didelfo.shadowWarden.manager.connections.websocket.model.MessageWS;
+import dev.didelfo.shadowWarden.manager.connections.websocket.model.StructureMessage;
 import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
+import dev.didelfo.shadowWarden.manager.database.ManagerDBT;
 import dev.didelfo.shadowWarden.security.E2EE.EphemeralKeyStore;
 import dev.didelfo.shadowWarden.utils.ToolManager;
 import org.java_websocket.WebSocket;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 
 public class MessageProcessor {
@@ -173,8 +177,33 @@ public class MessageProcessor {
                     // Suscribimos el cliente a chat
                     pl.getWs().getClients().get(con).setSubscription("chat");
 
-                    // Le mandamos los ultimos 50 mensajes de la base de datos de logs si es que los hay.
+                    // Traemos la lista de los 50 ultimos mensajes
+                    ManagerDBT dbt = pl.getDbmT();
+                    dbt.open();
+                    List<ChatMessage> mensajes = dbt.getLast50Messages();
+                    dbt.close();
 
+                    // Le mandamos los ultimos 50 mensajes de la base de datos de logs si es que los hay.
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("mensajesChat", mensajes);
+                    p.setData(data);
+
+                    // ciframos el cotenido
+                    EphemeralKeyStore.Pair<byte[], byte[]> pair = pl.getE2ee().encryptAndSign(
+                            t.objectToString(p),  // El mensaje
+                            pl.getWs().getClients().get(con).getShareKey(), // La clave compartida
+                            pl.getWs().getClients().get(con).getHmacKey() // La key del hmac
+                    );
+
+                    // mensaje que se manda
+                    MessageWS mEnviar = new MessageWS(
+                            "Communication",
+                            t.byteArrayToBase64(pair.first),
+                            t.byteArrayToBase64(pair.second)
+                    );
+
+                    // Enviamos
+                    con.send(t.objectToString(mEnviar));
                 } else {
                     db.close();
                     con.close();
