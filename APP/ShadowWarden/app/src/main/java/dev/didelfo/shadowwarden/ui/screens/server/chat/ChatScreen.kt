@@ -20,9 +20,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,16 +37,15 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -57,32 +56,29 @@ import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.AzulGrisElegante
 import dev.didelfo.shadowwarden.ui.theme.AzulOscuroProfundo
 import dev.didelfo.shadowwarden.ui.theme.AzulVerdosoOscuro
-import dev.didelfo.shadowwarden.ui.theme.Cian
 import dev.didelfo.shadowwarden.ui.theme.OpenSanBold
 import dev.didelfo.shadowwarden.ui.theme.OpenSanNormal
 import dev.didelfo.shadowwarden.ui.theme.VerdeMenta
+import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import kotlin.random.Random
 
-data class Message(
-    val id: Int,
-    val sender: String,
-    val content: String,
-    val timestamp: String
+data class ChatMessage(
+    var hour: String,
+    var uuid: String,
+    var name: String,
+    var message: String
 )
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(navController: NavHostController) {
+fun ChatScreen(navController: NavHostController, mensajes: List<ChatMessage>) {
 
-    val viewModel: ChatScreenViewModel = ChatScreenViewModel()
+    val viewModel: ChatScreenViewModel = ChatScreenViewModel(LocalContext.current)
 
     // Estado de los mensajes
-    val messages = remember { generateSampleMessages() }
-    val listState = rememberLazyListState()
+    var messages = remember { mensajes }
+    var listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var messageText by remember { mutableStateOf("") }
     var showScrollToBottom by remember { mutableStateOf(false) }
@@ -115,7 +111,7 @@ fun ChatScreen(navController: NavHostController) {
                 reverseLayout = true
             ) {
                 items(messages) { message ->
-                    MessageItem(message = message)
+                    MessageItem( message, viewModel)
                 }
             }
 
@@ -291,8 +287,8 @@ private fun bottomBar(
 
 
 @Composable
-fun MessageItem(message: Message) {
-    val isUser = message.sender == "judor"
+fun MessageItem(message: ChatMessage, viewModel: ChatScreenViewModel) {
+    val isUser = message.name == ToolManager().getUser(viewModel.cont).nick
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
     Row(
@@ -318,7 +314,7 @@ fun MessageItem(message: Message) {
             ) {
                 if (!isUser) {
                     Text(
-                        text = message.sender,
+                        text = message.name,
                         color = VerdeMenta.copy(alpha = 0.85f),
                         style = MaterialTheme.typography.labelSmall,
                         fontFamily = OpenSanBold,
@@ -331,7 +327,7 @@ fun MessageItem(message: Message) {
                     horizontalArrangement = Arrangement.End
                 ) {
                     Text(
-                        text = message.content,
+                        text = message.message,
                         color = VerdeMenta,
                         style = MaterialTheme.typography.bodyMedium,
                         fontFamily = OpenSanNormal,
@@ -342,7 +338,7 @@ fun MessageItem(message: Message) {
                     )
 
                     Text(
-                        text = message.timestamp,
+                        text = message.hour,
                         color = VerdeMenta.copy(alpha = 0.6f),
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = 10.sp
@@ -351,62 +347,4 @@ fun MessageItem(message: Message) {
             }
         }
     }
-}
-
-
-
-
-
-
-// Función para generar 50 mensajes de ejemplo
-private fun generateSampleMessages(): SnapshotStateList<Message> {
-    val messages = mutableStateListOf<Message>()
-    val senders = listOf("judor", "amigo1", "amigo2", "bot", "admin")
-    val sampleTexts = listOf(
-        "¡Hola! ¿Cómo estás?",
-        "¿Qué planes tienes para hoy?",
-        "Nos vemos más tarde",
-        "¿Has visto la última película?",
-        "Estoy trabajando en un nuevo proyecto",
-        "¿Quieres jugar algo?",
-        "El servidor se reiniciará en 5 minutos",
-        "¡Feliz cumpleaños!",
-        "Reunión a las 3pm",
-        "¿Has terminado el informe?",
-        "El código necesita revisión",
-        "¡Buena partida!",
-        "Necesito ayuda con esto",
-        "¿Vas a la conferencia?",
-        "Checkea el último commit",
-        "El servidor está caído",
-        "Actualización disponible",
-        "Mira este enlace interesante",
-        "¿Recibiste mi correo?",
-        "Llamame cuando puedas"
-    )
-
-    val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-    val now = System.currentTimeMillis()
-
-    for (i in 1..50) {
-        val randomHour = Random.nextInt(0, 24)
-        val randomMinute = Random.nextInt(0, 60)
-        val time = now - Random.nextLong(0, 7 * 24 * 60 * 60 * 1000) // Últimos 7 días
-        val date = Date(time)
-
-        messages.add(
-            Message(
-                id = i,
-                sender = senders[Random.nextInt(senders.size)],
-                content = sampleTexts[Random.nextInt(sampleTexts.size)] + " " +
-                        if (Random.nextBoolean()) "(mensaje #$i)" else "",
-                timestamp = dateFormat.format(date)
-            )
-        )
-    }
-
-    // Ordenar por timestamp (más reciente primero)
-    messages.sortByDescending { it.timestamp }
-
-    return messages
 }

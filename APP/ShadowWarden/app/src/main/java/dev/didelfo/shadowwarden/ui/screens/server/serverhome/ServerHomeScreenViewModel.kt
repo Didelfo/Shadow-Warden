@@ -11,7 +11,7 @@ import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.R
 import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.connection.websocket.components.MessageProcessor
-import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
+import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
 import dev.didelfo.shadowwarden.security.HMAC.HmacHelper
 import dev.didelfo.shadowwarden.utils.tools.ToolManager

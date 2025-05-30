@@ -10,7 +10,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.connection.websocket.components.MessageProcessor
-import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
+import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.localfiles.Servers
 import dev.didelfo.shadowwarden.localfiles.User

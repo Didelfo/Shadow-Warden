@@ -1,8 +1,10 @@
 package dev.didelfo.shadowwarden.connection.websocket.components
 
-import android.util.Log
 import androidx.navigation.NavHostController
+import dev.didelfo.shadowwarden.connection.websocket.WSController
+import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
+import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatMessage
 
 class MessageProcessor(navController: NavHostController) {
 
@@ -27,7 +29,8 @@ class MessageProcessor(navController: NavHostController) {
             "GetCurrentUserPermissions" -> {
                 // Savemos que es una lista de string
                 val permissions: List<String> = m.data.get("permissions") as List<String>
-                nave.navigate(AppScreens.ServerHomeScreen.createRoute(permissions))
+                WSController.cliente.permission = permissions
+                nave.navigate(AppScreens.ServerHomeScreen.route)
             }
             else -> {}
         }
@@ -35,7 +38,10 @@ class MessageProcessor(navController: NavHostController) {
 
     private fun classifyChat(m: StructureMessage){
         when(m.action){
-            "JoinChat" -> {}
+            "SubscribeChat" -> {
+                val mensajes: List<ChatMessage> = m.data.get("mensajesChat") as List<ChatMessage>
+                nave.navigate(AppScreens.ChatScreen.createRoute(mensajes))
+            }
             "MessageSend" -> {}
             else -> {}
         }

@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.connection.websocket.components
+package dev.didelfo.shadowwarden.connection.websocket.model
 
 data class StructureMessage(
     var id: String,

@@ -27,19 +27,24 @@ import dev.didelfo.shadowwarden.ui.theme.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.platform.LocalContext
+import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.ui.screens.server.serverhome.ServerHomeScreenViewModel
 import kotlin.math.roundToInt
 
 @Composable
-fun ServerHomeScreen(navController: NavHostController, permissions: List<String>) {
+fun ServerHomeScreen(navController: NavHostController) {
 
     var viewModel: ServerHomeScreenViewModel = ServerHomeScreenViewModel(LocalContext.current, navController)
 
 
-    var permissionss by remember {mutableStateOf(permissions)}
-    val filteredItems = viewModel.allItems
+    var permissionss by remember {mutableStateOf(WSController.cliente.permission)}
+    var filteredItems = viewModel.allItems
         .filter { item -> permissionss.contains(item.id) }
         .toMutableList()
+
+    if (permissionss.contains("shadowwarden.app.root")){
+        filteredItems = viewModel.allItems.toMutableList()
+    }
 
 
     var draggingIndex by remember { mutableStateOf<Int?>(null) }

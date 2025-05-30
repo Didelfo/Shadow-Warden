@@ -1,6 +1,8 @@
 package dev.didelfo.shadowwarden.ui.navigation
 
+import com.google.gson.Gson
 import java.net.URLEncoder
+import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatMessage
 
 sealed class AppScreens(val route: String) {
 
@@ -22,14 +24,14 @@ sealed class AppScreens(val route: String) {
 //           Server
 // ----------------------------------
 
-    //    object ServerHomeScreen: AppScreens("server_home_screen")
-    object ServerHomeScreen : AppScreens("server_home_screen/{permissions}") {
-        fun createRoute(permissions: List<String>): String {
-            val encoded = URLEncoder.encode(permissions.joinToString(","), "utf-8")
-            return "server_home_screen/$encoded"
+    object ServerHomeScreen : AppScreens("server_home_screen")
+
+//    object ChatScreen : AppScreens("chat_screen")
+
+    object ChatScreen : AppScreens("chat_screen/{messages}") {
+        fun createRoute(messages: List<ChatMessage>): String {
+            val json = Gson().toJson(messages) // Serializa la lista a JSON
+            return "chat_screen/${URLEncoder.encode(json, "UTF-8")}" // Codifica para URL
         }
     }
-
-    object ChatScreen : AppScreens("chat_screen")
-
 }
