@@ -80,4 +80,16 @@ logs:
   logretentiondays: 30
 
 
+#===============================================
+#           Spam Filter configuration
+#===============================================
+
+spamfilter:
+
+  enable: false
+  # Time between messages in seconds
+  time: 3
+
+
+
 

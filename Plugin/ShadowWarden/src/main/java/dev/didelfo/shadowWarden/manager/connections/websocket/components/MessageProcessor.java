@@ -77,8 +77,8 @@ public class MessageProcessor {
                 case "auth" -> {
                     processAuth(p, con);
                 }
-                case "register" -> {
-                    processRegister(p, con);
+                case "chat" -> {
+                    processChat(p, con);
                 }
                 default -> {
                 }
@@ -93,17 +93,11 @@ public class MessageProcessor {
 // ========================================
 
     private void processAuth(StructureMessage p, WebSocket con) {
-        switch (p.getAction()) {
-            case "IdentifyAndCheckPermissions" -> {
-                try {
-                    IdentifyAndCheckPermissions(p, con);
-                } catch (Exception e) {
-                    e.printStackTrace();
-
-                }
-
-            }
-            default -> {
+        if (p.getAction().equals("IdentifyAndCheckPermissions")){
+            try {
+                IdentifyAndCheckPermissions(p, con);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -116,16 +110,15 @@ public class MessageProcessor {
         EncryptedDatabase dbE = new EncryptedDatabase(pl);
         dbE.connect();
         String uuid = dbE.getUuidServer(p.getUuidMojan());
-        dbE.close();
+
 
 
         // Si no es null es que existe por lo que sabemos que va a tener permisos
         if (uuid != null) {
 
-            List<String> perm = new ArrayList();
-            perm.add("shadowwarden.app.ui.chat");
+            List<String> perm = dbE.getAllPlayerPermissions(p.getUuidMojan());
+            dbE.close();
 
-            pl.getLogger().info("Lista de permisos");
             pl.getLogger().info(perm.toString());
 
             // Preparamos el objeto del mensaje que vamos a mandar
@@ -162,7 +155,7 @@ public class MessageProcessor {
     // ========================================
 //     Procesar Categoria register
 // ========================================
-    private void processRegister(StructureMessage p, WebSocket con) {
+    private void processChat(StructureMessage p, WebSocket con) {
         switch (p.getAction()) {
             case "SubscribeChat" -> {
                 // Tenemos que comprobar si este usuario tiene permisos para el chat
@@ -187,6 +180,7 @@ public class MessageProcessor {
                     Map<String, Object> data = new HashMap<>();
                     data.put("mensajesChat", mensajes);
                     p.setData(data);
+                    p.setCategory("chat");
 
                     // ciframos el cotenido
                     EphemeralKeyStore.Pair<byte[], byte[]> pair = pl.getE2ee().encryptAndSign(
@@ -209,8 +203,8 @@ public class MessageProcessor {
                     con.close();
                 }
             }
-            default -> {
-            }
+            case "MessageSend" -> {}
+            default -> {}
         }
     }
 

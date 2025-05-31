@@ -33,7 +33,7 @@ public class MessageManager {
         switch (type) {
             case Staff -> {
                 return Component.text()
-                        .append(Component.text("STAFF >> ").color(TextColor.color(0xff7f50)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("STAFF » ").color(TextColor.color(0xff7f50)).decorate(TextDecoration.BOLD))
                         .build();
             }
 
@@ -50,9 +50,21 @@ public class MessageManager {
                         .append(Component.text("i").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
                         .append(Component.text("o").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
                         .append(Component.text("n").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
-                        .append(Component.text(" >> ").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
+                        .append(Component.text(" » ").color(TextColor.color(0xD973AA)).decorate(TextDecoration.BOLD))
                         .build();
             }
+
+            // Chat
+            case Chat -> {
+                return Component.text()
+                        .append(Component.text("C").color(TextColor.color(0x54DAF4)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("H").color(TextColor.color(0x45C4DD)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("A").color(TextColor.color(0x37AEC5)).decorate(TextDecoration.BOLD))
+                        .append(Component.text("T").color(TextColor.color(0x2898AE)).decorate(TextDecoration.BOLD))
+                        .append(Component.text(" » ").color(TextColor.color(0x2898AE)).decorate(TextDecoration.BOLD))
+                        .build();
+            }
+
             default -> {
                 return Component.text("null");
             }

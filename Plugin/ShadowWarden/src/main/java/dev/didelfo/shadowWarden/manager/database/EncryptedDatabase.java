@@ -272,6 +272,34 @@ public class EncryptedDatabase {
         return null;
     }
 
+    // Obtener todos los permisos
+    public List<String> getAllPlayerPermissions(String uuidMojan) {
+        List<String> permissions = new ArrayList<>();
+        String sql = """
+        SELECT DISTINCT p.name
+        FROM permissions p
+        LEFT JOIN permsRol pr ON p.id = pr.idPermission
+        LEFT JOIN user u ON pr.idRol = u.idRol
+        LEFT JOIN aditionalPerms ap ON p.id = ap.idPermission
+        WHERE u.uuidmojan = ? OR ap.uuidmojan = ?
+    """;
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, uuidMojan);
+            pstmt.setString(2, uuidMojan);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    permissions.add(rs.getString("name"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al obtener permisos del jugador", e);
+        }
+
+        return permissions;
+    }
+
     // Obtener todos los tokens
     public List<String> getAllTokens() throws SQLException {
         List<String> tokens = new ArrayList<>();

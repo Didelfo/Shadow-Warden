@@ -103,19 +103,19 @@ public class ManagerDBT {
     // Obtener últimos 50 mensajes
     public List<ChatMessage> getLast50Messages() {
         List<ChatMessage> messages = new ArrayList<>();
-        String sql = "SELECT hour, uuid, name, message FROM chat ORDER BY hour ASC LIMIT 50";
+        String sql = "SELECT hour, uuid, name, message FROM chat ORDER BY hour DESC LIMIT 50";
 
         try (Connection ignored = open();
              PreparedStatement pstmt = connection.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
-                String hour = rs.getString("hour");
-                String uuid = rs.getString("uuid");
-                String name = rs.getString("name");
-                String message = rs.getString("message");
-
-                messages.add(new ChatMessage(hour, uuid, name, message));
+                messages.add(new ChatMessage(
+                        rs.getString("hour"),
+                        rs.getString("uuid"),
+                        rs.getString("name"),
+                        rs.getString("message")
+                ));
             }
 
         } catch (SQLException e) {
@@ -123,8 +123,7 @@ public class ManagerDBT {
             throw new RuntimeException("Error al obtener los mensajes", e);
         }
 
-        Collections.reverse(messages); // Más recientes al final
-        return messages;
+        return messages; // Más reciente primero, más antiguo al final
     }
 
     // Opcional: método auxiliar para ejecutar SQL simple
