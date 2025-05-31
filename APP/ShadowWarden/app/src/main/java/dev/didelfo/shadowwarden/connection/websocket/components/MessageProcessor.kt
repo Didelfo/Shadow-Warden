@@ -1,5 +1,6 @@
 package dev.didelfo.shadowwarden.connection.websocket.components
 
+import android.util.Log
 import androidx.navigation.NavHostController
 import com.google.gson.Gson
 import dev.didelfo.shadowwarden.connection.websocket.WSController
@@ -7,6 +8,7 @@ import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.ui.navigation.AppNavigator
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatMessage
+import kotlinx.coroutines.flow.StateFlow
 
 class MessageProcessor() {
 
@@ -51,8 +53,10 @@ class MessageProcessor() {
                         null
                     }
                 }
-                WSController.cliente.chat = mensajes
                 nave.navigate(AppScreens.ChatScreen.route)
+                WSController.cliente.setMessages(mensajes)
+
+
             }
             "MessageSend" -> {
                 val gson = Gson()

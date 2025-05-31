@@ -36,6 +36,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +64,8 @@ import dev.didelfo.shadowwarden.ui.theme.OpenSanNormal
 import dev.didelfo.shadowwarden.ui.theme.VerdeMenta
 import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 data class ChatMessage(
     var hour: String,
@@ -79,7 +82,7 @@ fun ChatScreen(navController: NavHostController) {
     val viewModel: ChatScreenViewModel = ChatScreenViewModel(LocalContext.current)
 
     // Estado de los mensajes
-    val messages by remember { derivedStateOf { WSController.cliente.chat } }
+    val messages by WSController.cliente.messages.collectAsState()
 
 
     var listState = rememberLazyListState()
@@ -342,7 +345,7 @@ fun MessageItem(message: ChatMessage, viewModel: ChatScreenViewModel) {
                     )
 
                     Text(
-                        text = message.hour,
+                        text = LocalTime.parse(message.hour).format(DateTimeFormatter.ofPattern("HH:mm")),
                         color = VerdeMenta.copy(alpha = 0.6f),
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = 10.sp

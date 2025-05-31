@@ -10,6 +10,7 @@ import dev.didelfo.shadowwarden.connection.websocket.model.MessageWS
 import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
+import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatScreenViewModel
 import dev.didelfo.shadowwarden.utils.json.JsonManager
 import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import okhttp3.*
