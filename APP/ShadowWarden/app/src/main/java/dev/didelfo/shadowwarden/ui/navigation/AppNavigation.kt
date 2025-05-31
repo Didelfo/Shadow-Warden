@@ -1,6 +1,7 @@
 package dev.didelfo.shadowwarden.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,6 +20,11 @@ import java.net.URLDecoder
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+
+    LaunchedEffect(Unit) {
+        AppNavigator.navController = navController
+    }
+
     NavHost(navController = navController, startDestination = AppScreens.SplashScreen.route) {
 
 // ----------------------------------
@@ -53,25 +59,8 @@ fun AppNavigation() {
             ServerHomeScreen(navController)
         }
 
-//        composable(route = AppScreens.ChatScreen.route){
-//            ChatScreen(navController)
-//        }
-        composable(
-            route = AppScreens.ChatScreen.route,
-            arguments = listOf(
-                navArgument("messages") {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
-            val messagesJson = backStackEntry.arguments?.getString("messages") ?: ""
-            val messages = try {
-                val decodedJson = URLDecoder.decode(messagesJson, "UTF-8")
-                Gson().fromJson(decodedJson, Array<ChatMessage>::class.java).toList()
-            } catch (e: Exception) {
-                emptyList()
-            }
-            ChatScreen(navController, messages)
+        composable(route = AppScreens.ChatScreen.route) {
+            ChatScreen(navController)
         }
 
 

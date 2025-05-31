@@ -26,12 +26,6 @@ sealed class AppScreens(val route: String) {
 
     object ServerHomeScreen : AppScreens("server_home_screen")
 
-//    object ChatScreen : AppScreens("chat_screen")
+    object ChatScreen : AppScreens("chat_screen")
 
-    object ChatScreen : AppScreens("chat_screen/{messages}") {
-        fun createRoute(messages: List<ChatMessage>): String {
-            val json = Gson().toJson(messages) // Serializa la lista a JSON
-            return "chat_screen/${URLEncoder.encode(json, "UTF-8")}" // Codifica para URL
-        }
-    }
 }

@@ -34,7 +34,7 @@ import kotlin.math.roundToInt
 @Composable
 fun ServerHomeScreen(navController: NavHostController) {
 
-    var viewModel: ServerHomeScreenViewModel = ServerHomeScreenViewModel(LocalContext.current, navController)
+    var viewModel: ServerHomeScreenViewModel = ServerHomeScreenViewModel(LocalContext.current)
 
 
     var permissionss by remember {mutableStateOf(WSController.cliente.permission)}

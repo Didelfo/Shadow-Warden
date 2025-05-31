@@ -3,12 +3,13 @@ package dev.didelfo.shadowwarden.connection.websocket.components
 import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
+import dev.didelfo.shadowwarden.ui.navigation.AppNavigator
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatMessage
 
-class MessageProcessor(navController: NavHostController) {
+class MessageProcessor() {
 
-    private val nave = navController
+    val nave = checkNotNull(AppNavigator.navController)
 
 
     fun classifyCategory(m: StructureMessage){
@@ -40,9 +41,13 @@ class MessageProcessor(navController: NavHostController) {
         when(m.action){
             "SubscribeChat" -> {
                 val mensajes: List<ChatMessage> = m.data.get("mensajesChat") as List<ChatMessage>
-                nave.navigate(AppScreens.ChatScreen.createRoute(mensajes))
+                WSController.cliente.chat = mensajes
+                nave.navigate(AppScreens.ChatScreen.route)
             }
-            "MessageSend" -> {}
+            "MessageSend" -> {
+                val mensaje: ChatMessage = m.data.get("mensaje") as ChatMessage
+                WSController.cliente.addMessage(mensaje)
+            }
             else -> {}
         }
     }

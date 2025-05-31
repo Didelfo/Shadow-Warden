@@ -132,7 +132,7 @@ class HomeScreenViewModel(contex: Context, nav: NavHostController) : ViewModel()
 
                 // Esperamos la respuesta de la peticion
                 val respuesta = WSController.sendAndWaitResponse(msg)
-                MessageProcessor(nave).classifyCategory(respuesta)
+                MessageProcessor().classifyCategory(respuesta)
 
             }
             loadingScreen = false

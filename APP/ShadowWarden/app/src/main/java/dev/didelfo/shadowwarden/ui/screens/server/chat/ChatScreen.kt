@@ -72,12 +72,12 @@ data class ChatMessage(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(navController: NavHostController, mensajes: List<ChatMessage>) {
+fun ChatScreen(navController: NavHostController) {
 
     val viewModel: ChatScreenViewModel = ChatScreenViewModel(LocalContext.current)
 
     // Estado de los mensajes
-    var messages = remember { mensajes }
+    var messages = remember { viewModel.mens.toMutableList()  }
     var listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var messageText by remember { mutableStateOf("") }

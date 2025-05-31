@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import dev.didelfo.shadowwarden.connection.websocket.components.MessageProcessor
 import dev.didelfo.shadowwarden.connection.websocket.model.ClientWebSocket
 import dev.didelfo.shadowwarden.connection.websocket.model.MessageWS
 import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
@@ -86,6 +87,9 @@ object WSController {
                                 pendingRequests.remove(mensajeDesencryp.id)
                             } else {
                                 // Cuando no tenga un ID sera un mensaje que procesaremos de manera normal
+
+                                MessageProcessor().classifyCategory(mensajeDesencryp)
+
                             }
                         } catch (e: Exception){
 
@@ -94,9 +98,6 @@ object WSController {
                     // En caso que no tenga ninguno de estos tipos, que es imposible porque los controla nuestro sistema
                     else -> {}
                 }
-
-
-
             } catch (e: Exception){
 
             }
