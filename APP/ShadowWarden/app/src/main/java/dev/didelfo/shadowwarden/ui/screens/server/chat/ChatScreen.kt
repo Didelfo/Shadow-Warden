@@ -36,6 +36,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
 import dev.didelfo.shadowwarden.ui.theme.AzulGrisElegante
 import dev.didelfo.shadowwarden.ui.theme.AzulOscuroProfundo
@@ -77,7 +79,9 @@ fun ChatScreen(navController: NavHostController) {
     val viewModel: ChatScreenViewModel = ChatScreenViewModel(LocalContext.current)
 
     // Estado de los mensajes
-    var messages = remember { viewModel.mens.toMutableList()  }
+    val messages by remember { derivedStateOf { WSController.cliente.chat } }
+
+
     var listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var messageText by remember { mutableStateOf("") }

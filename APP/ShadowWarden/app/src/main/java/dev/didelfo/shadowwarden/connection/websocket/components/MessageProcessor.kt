@@ -1,6 +1,7 @@
 package dev.didelfo.shadowwarden.connection.websocket.components
 
 import androidx.navigation.NavHostController
+import com.google.gson.Gson
 import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.ui.navigation.AppNavigator
@@ -40,12 +41,23 @@ class MessageProcessor() {
     private fun classifyChat(m: StructureMessage){
         when(m.action){
             "SubscribeChat" -> {
-                val mensajes: List<ChatMessage> = m.data.get("mensajesChat") as List<ChatMessage>
+                val gson = Gson()
+                val rawList = m.data["mensajesChat"] as? List<*> ?: emptyList<Any>()
+                val mensajes = rawList.mapNotNull {
+                    try {
+                        val json = gson.toJson(it)
+                        gson.fromJson(json, ChatMessage::class.java)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
                 WSController.cliente.chat = mensajes
                 nave.navigate(AppScreens.ChatScreen.route)
             }
             "MessageSend" -> {
-                val mensaje: ChatMessage = m.data.get("mensaje") as ChatMessage
+                val gson = Gson()
+                val msgData = m.data["mensaje"]
+                val mensaje = gson.fromJson(gson.toJson(msgData), ChatMessage::class.java)
                 WSController.cliente.addMessage(mensaje)
             }
             else -> {}

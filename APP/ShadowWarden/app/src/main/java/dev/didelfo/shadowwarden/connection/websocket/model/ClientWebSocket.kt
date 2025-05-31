@@ -11,6 +11,8 @@ class ClientWebSocket {
     var publicKeyMovil: String = ""
     var permission: List<String> = listOf()
     var chat by mutableStateOf(listOf<ChatMessage>())
+         set
+
 
     fun reset(){
         publicKeyMovil = ""
