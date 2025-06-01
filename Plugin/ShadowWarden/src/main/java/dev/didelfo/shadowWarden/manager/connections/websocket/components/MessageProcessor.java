@@ -9,6 +9,7 @@ import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.manager.database.ManagerDBT;
 import dev.didelfo.shadowWarden.security.E2EE.EphemeralKeyStore;
 import dev.didelfo.shadowWarden.utils.ToolManager;
+import org.bukkit.Bukkit;
 import org.java_websocket.WebSocket;
 
 import java.util.*;
@@ -203,7 +204,25 @@ public class MessageProcessor {
                     con.close();
                 }
             }
-            case "MessageSend" -> {}
+            case "MessageSend" -> {
+                // Tenemos que comprobar si este usuario tiene permisos para el chat
+                EncryptedDatabase db = new EncryptedDatabase(pl);
+                db.connect();
+                if (
+                        (db.tienePermiso(p.getUuidMojan(), "shadowwarden.app.ui.chat")) ||
+                                (db.tienePermiso(p.getUuidMojan(), "shadowwarden.app.root"))
+                ) {
+                    db.close();
+
+                    String msg = (String) p.getData().get("mensaje");
+                    String name = (String) p.getData().get("usuario");
+
+
+                    Bukkit.getOnlinePlayers().forEach(player ->
+                            pl.getMsgManager().showMessageAPP(player, name, msg)
+                    );
+                }
+            }
             default -> {}
         }
     }

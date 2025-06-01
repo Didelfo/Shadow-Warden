@@ -24,6 +24,13 @@ public class MessageManager {
         this.audiences.player(p).sendMessage(m);
     }
 
+    public void showMessageAPP(Player p, String name, String msg) {
+        Component m = Component.text(name + " » ").color(TextColor.color(0xa05de1)).decorate(TextDecoration.BOLD).append(
+                Component.text(msg).color(TextColor.color(0xffffff))
+        );
+        this.audiences.player(p).sendMessage(m);
+    }
+
     public void showMessageNoPermission(Player p, MessageType type) {
         Component m = this.getPrefix(type).append(Component.text("No tienes permiso para ejecutar este comando.").color(TextColor.color(0xffffff)));
         this.audiences.player(p).sendMessage(m);
