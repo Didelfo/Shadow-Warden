@@ -102,7 +102,16 @@ fun ChatScreen(navController: NavHostController) {
         topBar = { toolBar("Chat del Servidor", {
             navController.navigate(AppScreens.HomeScreen.route)
         }) },
-        bottomBar = { bottomBar() }
+        bottomBar = { bottomBar(
+            messageText,
+            {messageText = it},
+            {
+                if (messageText.isNotBlank()){
+                    viewModel.enviaalServidor(messageText)
+                    messageText = ""
+                }
+            }
+        ) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -191,9 +200,9 @@ private fun toolBar(
 
 @Composable
 private fun bottomBar(
-//    messageText: String,
-//    onMessageChange: (String) -> Unit,
-//    onSendMessage: () -> Unit
+    messageText: String,
+    onMessageChange: (String) -> Unit,
+    onSendMessage: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -232,8 +241,8 @@ private fun bottomBar(
                     }
 
                     TextField(
-                        value = "",
-                        onValueChange = { } ,
+                        value = messageText,
+                        onValueChange = onMessageChange ,
                         placeholder = {
                             Text(
                                 "Escribe un mensaje...",
@@ -273,8 +282,8 @@ private fun bottomBar(
                     .padding(4.dp)
             ) {
                 IconButton(
-                    onClick = {},
-                    enabled = true,
+                    onClick = onSendMessage,
+                    enabled = messageText.isNotBlank(),
                     modifier = Modifier.size(42.dp)
                 ) {
                     Icon(
