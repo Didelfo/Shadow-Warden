@@ -2,6 +2,10 @@ package dev.didelfo.shadowwarden.ui.screens.server.chat
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.didelfo.shadowwarden.connection.websocket.WSController
@@ -20,6 +24,46 @@ import java.time.LocalTime
 class ChatScreenViewModel(context: Context) : ViewModel() {
 
     val cont = context
+
+
+    // Variables mostrar menu
+    var MostrarMuteo by mutableStateOf(false)
+    var MostrarWarn by mutableStateOf(false)
+    var MostrarBaneo by mutableStateOf(false)
+
+    var DuracionSegundos by mutableStateOf(false)
+    var Duracionminutos by mutableStateOf(false)
+    var DuracionHoras by mutableStateOf(false)
+    var DuracionDias by mutableStateOf(false)
+    var DuracionInfinito by mutableStateOf(false)
+
+
+
+    // Slide bar, - Barra horizontal
+    val valoresPermitidos = listOf(1, 5, 10, 15, 20, 25, 30)
+    var sliderIndex by mutableStateOf(0)
+        private set
+    var duracionSeleccionada by mutableStateOf(valoresPermitidos[0])
+        private set
+    fun updateSliderIndex(index: Int) {
+        sliderIndex = index.coerceIn(valoresPermitidos.indices)
+        duracionSeleccionada = valoresPermitidos[index]
+    }
+
+    fun resetTipo(){
+        MostrarMuteo = false
+        MostrarWarn = false
+        MostrarBaneo = false
+    }
+
+    fun resetDuracion(){
+        DuracionSegundos = false
+        Duracionminutos = false
+        DuracionHoras = false
+        DuracionDias = false
+        DuracionInfinito = false
+    }
+
 
     fun enviaalServidor(msg: String) {
 

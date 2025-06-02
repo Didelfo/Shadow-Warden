@@ -34,8 +34,11 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -99,6 +102,9 @@ fun ChatScreen(navController: NavHostController) {
     var showMenu by remember { mutableStateOf(false) }
     var chatSeleccionado: ChatMessage? = null
 
+    var textDuracion by remember { mutableStateOf("") }
+
+
     var listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var messageText by remember { mutableStateOf("") }
@@ -112,19 +118,24 @@ fun ChatScreen(navController: NavHostController) {
 
 
     Scaffold(
-        topBar = { toolBar("Chat del Servidor", {
-            navController.navigate(AppScreens.HomeScreen.route)
-        }) },
-        bottomBar = { bottomBar(
-            messageText,
-            {messageText = it},
-            {
-                if (messageText.isNotBlank()){
-                    viewModel.enviaalServidor(messageText)
-                    messageText = ""
-                }
+        topBar = {
+            toolBar("Chat del Servidor", {
+                navController.navigate(AppScreens.HomeScreen.route)
+            })
+        },
+        bottomBar = {
+            if (!showMenu) {
+                bottomBar(
+                    messageText,
+                    { messageText = it },
+                    {
+                        if (messageText.isNotBlank()) {
+                            viewModel.enviaalServidor(messageText)
+                            messageText = ""
+                        }
+                    })
             }
-        ) }
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -181,8 +192,8 @@ fun ChatScreen(navController: NavHostController) {
             }
 
             // Menu de moderacion
-            if (showMenu){
-                ModerationOverlay({}, {}, {})
+            if (showMenu && (chatSeleccionado != null)) {
+                ModerationOverlay(chatSeleccionado, viewModel, {}, {}, { showMenu = false })
             }
 
         }
@@ -197,6 +208,8 @@ fun ChatScreen(navController: NavHostController) {
 
 @Composable
 private fun ModerationOverlay(
+    mensjae: ChatMessage,
+    viewModel: ChatScreenViewModel,
     onClick1: () -> Unit,
     onClick2: () -> Unit,
     onDismiss: () -> Unit
@@ -226,63 +239,372 @@ private fun ModerationOverlay(
                         painter = painterResource(R.drawable.shield),
                         contentDescription = "icono escudo",
                         tint = MoradoPastel,
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(28.dp)
                     )
 
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.width(5.dp))
 
                     Text(
                         text = "Menu Moderación",
                         color = MoradoPastel,
                         fontFamily = OpenSanBold,
-                        style = MaterialTheme.typography.titleMedium
+                        fontSize = 26.sp
                     )
 
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.width(5.dp))
 
                     Icon(
                         painter = painterResource(R.drawable.shield),
                         contentDescription = "icono escudo",
                         tint = MoradoPastel,
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(28.dp)
                     )
                 }
 
+                Spacer(Modifier.height(5.dp))
+
                 Text(
-                    text = "Texto",
+                    text = "¿Que sanción deseas dar?",
                     color = VerdeMenta,
                     fontFamily = OpenSanNormal,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(1.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
+                Text(
+                    text = "Mensaje: ${mensjae.message}",
+                    color = VerdeMenta,
+                    fontFamily = OpenSanNormal,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+
+                // Botones tipo sancion
+                Row {
+
                     Button(
-                        onClick = onClick1,
-                        shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = VerdeEsmeralda)
+                        onClick = {
+                            viewModel.resetTipo()
+                            viewModel.MostrarMuteo = true
+                        },
+                        shape = RoundedCornerShape(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (viewModel.MostrarMuteo) {
+                                MoradoPastel
+                            } else {
+                                AzulGrisElegante
+                            }
+                        )
                     ) {
-                        Text("Si", color = AzulOscuroProfundo, fontFamily = OpenSanBold)
+                        Text(
+                            "Muteo", color = if (viewModel.MostrarMuteo) {
+                                AzulOscuroProfundo
+                            } else {
+                                VerdeMenta
+                            }, fontFamily = OpenSanBold
+                        )
                     }
 
                     Button(
-                        onClick = onClick2,
-                        shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = RojoCoral)
+                        onClick = {
+                            viewModel.resetTipo()
+                            viewModel.MostrarWarn = true
+
+                        },
+                        shape = RoundedCornerShape(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (viewModel.MostrarWarn) {
+                                MoradoPastel
+                            } else {
+                                AzulGrisElegante
+                            }
+                        )
                     ) {
-                        Text("No", color = AzulOscuroProfundo, fontFamily = OpenSanBold)
+                        Text(
+                            "Warn", color = if (viewModel.MostrarWarn) {
+                                AzulOscuroProfundo
+                            } else {
+                                VerdeMenta
+                            }, fontFamily = OpenSanBold
+                        )
                     }
+
+                    Button(
+                        onClick = {
+                            viewModel.resetTipo()
+                            viewModel.MostrarBaneo = true
+                        },
+                        shape = RoundedCornerShape(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (viewModel.MostrarBaneo) {
+                                MoradoPastel
+                            } else {
+                                AzulGrisElegante
+                            }
+                        )
+                    ) {
+                        Text(
+                            "Baneo", color = if (viewModel.MostrarBaneo) {
+                                AzulOscuroProfundo
+                            } else {
+                                VerdeMenta
+                            }, fontFamily = OpenSanBold
+                        )
+                    }
+
                 }
+
+                // -----------------------------------------
+                //          Vista segun tipo de sanción
+                // -----------------------------------------
+                Spacer(Modifier.height(15.dp))
+
+                if (viewModel.MostrarMuteo || viewModel.MostrarBaneo) {
+                    val valoresPermitidos = viewModel.valoresPermitidos
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            text = "Duración: ",
+                            color = VerdeMenta,
+                            fontFamily = OpenSanBold,
+                            fontSize = 18.sp
+                        )
+
+                        TextField(
+                            value = viewModel.duracionSeleccionada.toString(),
+                            onValueChange = { newValue ->
+                                if (newValue.length <= 2 && (newValue.all { it.isDigit() } || newValue.isEmpty())) {
+                                    if (newValue.isNotEmpty()) {
+                                        val numero = newValue.toInt()
+                                        val closestIndex =
+                                            valoresPermitidos.indexOfFirst { it >= numero }
+                                                .takeIf { it != -1 } ?: valoresPermitidos.lastIndex
+                                        viewModel.updateSliderIndex(closestIndex)
+                                    } else {
+                                        viewModel.updateSliderIndex(0)
+                                    }
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                cursorColor = MoradoPastel,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            textStyle = LocalTextStyle.current.copy(
+                                color = MoradoPastel,
+                                fontSize = 18.sp,
+                                fontFamily = OpenSanBold
+                            ),
+                            modifier = Modifier
+                                .width(70.dp)
+                                .height(60.dp),
+                            singleLine = true
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Slider(
+                        value = viewModel.sliderIndex.toFloat(),
+                        onValueChange = { newIndex ->
+                            viewModel.updateSliderIndex(newIndex.toInt())
+                        },
+                        valueRange = 0f..(valoresPermitidos.size - 1).toFloat(),
+                        steps = valoresPermitidos.size - 1,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = SliderDefaults.colors(
+                            thumbColor = MoradoPastel,
+                            activeTrackColor = MoradoPastel,
+                            inactiveTrackColor = MoradoPastel.copy(alpha = 0.4f)
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = "Unidad de Tiempo:",
+                        color = VerdeMenta,
+                        fontFamily = OpenSanBold,
+                        fontSize = 18.sp
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = {
+                                viewModel.resetDuracion()
+                                viewModel.DuracionSegundos = true
+                            },
+                            shape = RoundedCornerShape(0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (viewModel.DuracionSegundos) MoradoPastel else AzulGrisElegante
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp),
+                        ) {
+                            Text(
+                                text = "S",
+                                color = if (viewModel.DuracionSegundos) AzulOscuroProfundo else VerdeMenta,
+                                fontFamily = OpenSanBold,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .wrapContentWidth()
+                                    .alignByBaseline()
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                viewModel.resetDuracion()
+                                viewModel.Duracionminutos = true
+                            },
+                            shape = RoundedCornerShape(0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (viewModel.Duracionminutos) MoradoPastel else AzulGrisElegante
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp),
+                        ) {
+                            Text(
+                                text = "M",
+                                color = if (viewModel.Duracionminutos) AzulOscuroProfundo else VerdeMenta,
+                                fontFamily = OpenSanBold,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .wrapContentWidth()
+                                    .alignByBaseline()
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                viewModel.resetDuracion()
+                                viewModel.DuracionHoras = true
+                            },
+                            shape = RoundedCornerShape(0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (viewModel.DuracionHoras) MoradoPastel else AzulGrisElegante
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp),
+                        ) {
+                            Text(
+                                text = "H",
+                                color = if (viewModel.DuracionHoras) AzulOscuroProfundo else VerdeMenta,
+                                fontFamily = OpenSanBold,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .wrapContentWidth()
+                                    .alignByBaseline()
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                viewModel.resetDuracion()
+                                viewModel.DuracionDias = true
+                            },
+                            shape = RoundedCornerShape(0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (viewModel.DuracionDias) MoradoPastel else AzulGrisElegante
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp),
+                        ) {
+                            Text(
+                                text = "D",
+                                color = if (viewModel.DuracionDias) AzulOscuroProfundo else VerdeMenta,
+                                fontFamily = OpenSanBold,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .wrapContentWidth()
+                                    .alignByBaseline()
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                viewModel.resetDuracion()
+                                viewModel.DuracionInfinito = true
+                            },
+                            shape = RoundedCornerShape(0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (viewModel.DuracionInfinito) MoradoPastel else AzulGrisElegante
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp),
+                        ) {
+                            Text(
+                                text = "∞",
+                                color = if (viewModel.DuracionInfinito) AzulOscuroProfundo else VerdeMenta,
+                                fontFamily = OpenSanBold,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .wrapContentWidth()
+                                    .alignByBaseline()
+                            )
+                        }
+
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Area de texto
+
+                    Text(
+                        text = "Razón:",
+                        color = VerdeMenta,
+                        fontFamily = OpenSanBold,
+                        fontSize = 18.sp
+                    )
+                    Spacer(modifier = Modifier.height(7.dp))
+
+                    // razon
+                    
+
+                }
+
+                // Es la unica "Diferente"
+                if (viewModel.MostrarWarn) {
+
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    onClick = onClick1,
+                    shape = RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MoradoPastel)
+                ) {
+                    Text("Sancionar", color = AzulOscuroProfundo, fontFamily = OpenSanBold)
+                }
+
             }
         }
     }
 }
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -360,14 +682,14 @@ private fun bottomBar(
 
                     TextField(
                         value = messageText,
-                        onValueChange = onMessageChange ,
+                        onValueChange = onMessageChange,
                         placeholder = {
                             Text(
                                 "Escribe un mensaje...",
                                 color = VerdeMenta,
                                 fontFamily = OpenSanNormal,
                             )
-                                      },
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 4.dp),
@@ -415,9 +737,6 @@ private fun bottomBar(
         }
     }
 }
-
-
-
 
 
 @Composable
@@ -477,7 +796,8 @@ fun MessageItem(
                     )
 
                     Text(
-                        text = LocalTime.parse(message.hour).format(DateTimeFormatter.ofPattern("HH:mm")),
+                        text = LocalTime.parse(message.hour)
+                            .format(DateTimeFormatter.ofPattern("HH:mm")),
                         color = VerdeMenta.copy(alpha = 0.6f),
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = 10.sp
