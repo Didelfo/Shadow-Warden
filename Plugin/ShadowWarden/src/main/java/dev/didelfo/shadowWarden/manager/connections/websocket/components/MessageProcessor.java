@@ -214,8 +214,13 @@ public class MessageProcessor {
                 ) {
                     db.close();
 
+
+
                     String msg = (String) p.getData().get("mensaje");
                     String name = (String) p.getData().get("usuario");
+
+                    pl.getDbmT().onChat("", name, msg);
+
 
 
                     Bukkit.getOnlinePlayers().forEach(player ->
