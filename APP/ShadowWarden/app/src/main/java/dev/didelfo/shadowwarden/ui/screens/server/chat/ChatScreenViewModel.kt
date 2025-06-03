@@ -38,6 +38,9 @@ class ChatScreenViewModel(context: Context) : ViewModel() {
     var DuracionInfinito by mutableStateOf(false)
 
 
+    var TextoRazon by mutableStateOf("")
+    var botonValido by mutableStateOf(false)
+
 
     // Slide bar, - Barra horizontal
     val valoresPermitidos = listOf(1, 5, 10, 15, 20, 25, 30)
@@ -45,18 +48,40 @@ class ChatScreenViewModel(context: Context) : ViewModel() {
         private set
     var duracionSeleccionada by mutableStateOf(valoresPermitidos[0])
         private set
+
     fun updateSliderIndex(index: Int) {
         sliderIndex = index.coerceIn(valoresPermitidos.indices)
         duracionSeleccionada = valoresPermitidos[index]
     }
 
-    fun resetTipo(){
+    fun onSancionar() {
+
+    }
+
+    fun validarBoton() {
+        if (
+            (MostrarMuteo || MostrarBaneo) &&
+            (DuracionSegundos || Duracionminutos || DuracionHoras || DuracionDias || DuracionInfinito) &&
+            TextoRazon.isNotBlank()
+        ) {
+            botonValido = true
+        } else {
+            if (MostrarWarn && TextoRazon.isNotBlank()) {
+                botonValido = true
+            } else {
+                botonValido = false
+            }
+        }
+    }
+
+
+    fun resetTipo() {
         MostrarMuteo = false
         MostrarWarn = false
         MostrarBaneo = false
     }
 
-    fun resetDuracion(){
+    fun resetDuracion() {
         DuracionSegundos = false
         Duracionminutos = false
         DuracionHoras = false
@@ -82,7 +107,7 @@ class ChatScreenViewModel(context: Context) : ViewModel() {
             )
 
 
-            var map:Map<String, Any> = mapOf(
+            var map: Map<String, Any> = mapOf(
                 "mensaje" to msg,
                 "usuario" to ToolManager().getUser(cont).nick
             )
@@ -110,12 +135,14 @@ class ChatScreenViewModel(context: Context) : ViewModel() {
             WSController.sendMessage(JsonManager().objetToString(msgEnviarCi))
 
             // Añadimos a nuestro chat
-            WSController.cliente.addMessage(ChatMessage(
-                LocalTime.now().toString(),
-                "",
-                ToolManager().getUser(cont).nick,
-                msg
-            ))
+            WSController.cliente.addMessage(
+                ChatMessage(
+                    LocalTime.now().toString(),
+                    "",
+                    ToolManager().getUser(cont).nick,
+                    msg
+                )
+            )
         }
     }
 }
