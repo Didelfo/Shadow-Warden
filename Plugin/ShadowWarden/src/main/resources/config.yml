@@ -10,8 +10,8 @@ passMaestral: "shadowWardennn"
 #===============================================
 dataBase:
 
-  # Enter the type of database you are going to use: "SQLITE", "MYSQL",
-  # "MARIADB" or leave it as "NONE" if you do not use a database.
+  # Enter the type of database you are going to use: "SQLITE", "MYSQL"
+  # or leave it as "NONE" if you do not use a database.
   type: "NONE"
 
   # Enter the IP address of your database and the port, if
