@@ -7,12 +7,6 @@ commands:
 # =============================
 #       Staff Commands
 # =============================
-  staffmenu:
-    description: Abre el menu de staff
-    usage: /staffmenu
-    permission: shadowWarden.staff.menu
-    permisssion-message: No tienes permiso para usar este comando
-
   link:
     description: Comando para linkear con la aplicacion moivl
     usage: /link
@@ -23,6 +17,30 @@ commands:
     description: asdfasd
     usage: /permission
 
+# ------------ Comandos Sanciones ---------
+
+    ban:
+      description: Comando para banear permanente
+      usage: /ban
+    tempban:
+      description: Comando para banear temporalmnente
+      usage: /tempban
+    banip:
+      description: Comando para banear permanentemente una ip
+      usage: /banip
+    tempbanip:
+      description: Comando para banear temporalmente una ip
+      usage: /tempbanip
+    mute:
+      description: Comando para mutear permanentemente
+      usage: /mute
+    tempmute:
+      description: Comando para mutear temporalmente
+      usage: /tempmute
+    warn:
+      description: Comando para dar advertencias
+      usage: /tempmute
+
 permissions:
 
   # =============================
@@ -30,13 +48,32 @@ permissions:
   # =============================
 
   shadowwarden.staff:
-      menu:
-        description: Permite usar el comando /staffmenu
-        default: op
       link:
         description: Permite usar el comando /link
         default: op
       permission:
         description: Permite usar el comando /permission
         default: op
+      ban:
+        description: Permite usar el comando /ban
+        default: op
+      tempban:
+        description: Permite usar el comando /tempban
+        default: op
+      banip:
+        description: Permite usar el comando /banip
+        default: op
+      tempbanip:
+        description: Permite usar el comando /tempbanip
+        default: op
+      mute:
+        description: Permite usar el comando /mute
+        default: op
+      tempmute:
+        description: Permite usar el comando /tempmute
+        default: op
+      warn:
+        description: Permite usar el comando /warn
+        default: op
+
 

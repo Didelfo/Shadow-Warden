@@ -3,7 +3,13 @@ package dev.didelfo.shadowWarden;
 import dev.didelfo.shadowWarden.autocomplete.PermissionCompleter;
 import dev.didelfo.shadowWarden.commands.staff.PermissionCommand;
 import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
-import dev.didelfo.shadowWarden.commands.staff.StaffMenuCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.WarnCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.BanCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.BanIPCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.TempBanCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.TempBanIPCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.MuteCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.TempMuteCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventLogger;
@@ -85,9 +91,15 @@ public final class ShadowWarden extends JavaPlugin {
 
     // Inicializdor de comandos
     private void initializeCommands(ShadowWarden pl){
-        pl.getCommand("staffmenu").setExecutor(new StaffMenuCommand(pl));
         pl.getCommand("link").setExecutor(new LinkCommand(pl));
         pl.getCommand("permission").setExecutor(new PermissionCommand(pl));
+        pl.getCommand("ban").setExecutor(new BanCommand(pl));
+        pl.getCommand("tempban").setExecutor(new TempBanCommand(pl));
+        pl.getCommand("banip").setExecutor(new BanIPCommand(pl));
+        pl.getCommand("tempbanip").setExecutor(new TempBanIPCommand(pl));
+        pl.getCommand("mute").setExecutor(new MuteCommand(pl));
+        pl.getCommand("tempmute").setExecutor(new TempMuteCommand(pl));
+        pl.getCommand("warn").setExecutor(new WarnCommand(pl));
     }
 
     // Inicializador de lisener
