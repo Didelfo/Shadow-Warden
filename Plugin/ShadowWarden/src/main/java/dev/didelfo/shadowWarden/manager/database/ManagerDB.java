@@ -3,10 +3,10 @@ package dev.didelfo.shadowWarden.manager.database;
 import dev.didelfo.shadowWarden.ShadowWarden;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 
 public class ManagerDB {
@@ -17,6 +17,7 @@ public class ManagerDB {
 
     public ManagerDB(ShadowWarden pl) {
         this.plugin = pl;
+        connect();
     }
 
 
@@ -25,6 +26,7 @@ public class ManagerDB {
         boolean existe = false;
         switch (plugin.getConfig().getString("dataBase.type").toLowerCase()) {
             case "none" -> {
+                plugin.getLogger().info("Base Desactivada");
             }
             case "sqlite" -> {
                 existe = new File(plugin.getDataFolder(), "db.db").exists();
@@ -51,14 +53,8 @@ public class ManagerDB {
                         stmt.execute("""
                                     CREATE TABLE IF NOT EXISTS users (
                                         uuid TEXT PRIMARY KEY,
-                                        name TEXT
-                                    );
-                                """);
-                        stmt.execute("""
-                                    CREATE TABLE IF NOT EXISTS ip_users (
-                                        uuid_user TEXT PRIMARY KEY,
-                                        ip TEXT,
-                                        FOREIGN KEY (uuid_user) REFERENCES users(uuid) ON DELETE CASCADE
+                                        name TEXT,
+                                        ip TEXT
                                     );
                                 """);
                         stmt.execute("""
@@ -68,6 +64,8 @@ public class ManagerDB {
                                         start TEXT,
                                         expire TEXT,
                                         reason TEXT,
+                                        nameStaff TEXT,
+                                        ip TEXT,
                                         FOREIGN KEY (uuid_user) REFERENCES users(uuid) ON DELETE CASCADE
                                     );
                                 """);
@@ -81,18 +79,173 @@ public class ManagerDB {
                     throw new RuntimeException(e);
                 }
 
-                String url = "jdbc:mysql://" + plugin.getConfig().getString("dataBase.") + ":" + 3306 + "/miapp";
+                String url = "jdbc:mysql://" + plugin.getConfig().getString("dataBase.ip") + ":" + plugin.getConfig().getInt("dataBase.port") + "/";
+                String urlDB = url + plugin.getConfig().getString("dataBase.name");
 
+                // Nos conectamos primero para comprobar si existe esta base de datos
+                try (Connection conn = DriverManager.getConnection(
+                        url,
+                        plugin.getConfig().getString("dataBase.user"),
+                        plugin.getConfig().getString("dataBase.pass")
+                )) {
+                    try (Statement stmt = conn.createStatement();
+                         ResultSet rs = stmt.executeQuery("SHOW DATABASES LIKE '" + plugin.getConfig().getString("dataBase.name") + "'")) {
 
+                        boolean exists = rs.next();
 
+                        // Si no existe la creamos
+                        if (!exists) {
+                            stmt.executeUpdate("CREATE DATABASE " + plugin.getConfig().getString("dataBase.name"));
+                        }
 
+                        // Ahora conectar a la BD real
+                        connection = DriverManager.getConnection(
+                                urlDB,
+                                plugin.getConfig().getString("dataBase.user"),
+                                plugin.getConfig().getString("dataBase.pass")
+                        );
+
+                        // Creamos las tablas en la base de datos
+                        if (!exists) {
+                            try (Statement stmtt = connection.createStatement()){
+
+                                stmtt.execute("""
+                                        CREATE TABLE IF NOT EXISTS users (
+                                                uuid VARCHAR(50) PRIMARY KEY,
+                                                name VARCHAR(40) NOT NULL,
+                                                ip VARCHAR(60) NOT NULL,
+                                            );
+                                        """);
+                                stmtt.execute("""
+                                        CREATE TABLE IF NOT EXISTS sanction (
+                                                uuid_user VARCHAR(50) PRIMARY KEY,
+                                                type VARCHAR(20) NOT NULL,
+                                                start VARCHAR(70),
+                                                expire VARCHAR(70),
+                                                reason VARCHAR(120),
+                                                nameStaff VARCHAR(50),
+                                                ip VARCHAR(60),
+                                                FOREIGN KEY (uuid_user) REFERENCES users(uuid) ON DELETE CASCADE
+                                            );
+                                        """);
+                            } catch (Exception e){}
+                        }
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
             default -> {
             }
         }
-
-
     }
+
+    //Añade o actualiza un usuario en la base de datos
+    public void addOrUpdateUser(String uuid, String name, String ip) {
+        // Consulta para ver si ya existe un usuario con este UUID
+        String checkSql = "SELECT * FROM users WHERE uuid = ? LIMIT 1";
+
+        // Sentencia para actualizar los datos
+        String updateSql = "UPDATE users SET name = ?, ip = ? WHERE uuid = ?";
+
+        // Sentencia para insertar nuevos datos
+        String insertSql = "INSERT INTO users (uuid, name, ip) VALUES (?, ?, ?)";
+
+        try (PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
+            checkStmt.setString(1, uuid);
+            ResultSet rs = checkStmt.executeQuery();
+
+            if (rs.next()) {
+                // El usuario ya existe → actualizamos
+                try (PreparedStatement updateStmt = connection.prepareStatement(updateSql)) {
+                    updateStmt.setString(1, name);
+                    updateStmt.setString(2, ip);
+                    updateStmt.setString(3, uuid);
+                    updateStmt.executeUpdate();
+                }
+            } else {
+                // El usuario no existe → insertamos
+                try (PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
+                    insertStmt.setString(1, uuid);
+                    insertStmt.setString(2, name);
+                    insertStmt.setString(3, ip);
+                    insertStmt.executeUpdate();
+                }
+            }
+
+        } catch (SQLException e) {}
+    }
+
+
+    // Añadir o Actualizar sancion
+    public void addOrUpdateSanction(String uuid, String type, String reason, String Expire, String nameStaff, String ip) {
+        String checkSql = "SELECT * FROM sanction WHERE uuid_user = ? AND type = ? ORDER BY start DESC LIMIT 1";
+        String updateSql = "UPDATE sanction SET start = ?, expire = ?, reason = ?, nameStaff = ?, ip = ? WHERE uuid_user = ? AND type = ?";
+        String insertSql = "INSERT INTO sanction (uuid_user, type, start, expire, reason, nameStaff, ip) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
+            checkStmt.setString(1, uuid);
+            ResultSet rs = checkStmt.executeQuery();
+
+            String fechaAhora = getCurrentDateString();
+
+            if (rs.next()) {
+                // Ya existe un registro
+                String storedExpire = rs.getString("expire");
+
+
+                // Si expira y aunestá vigente, actualizamos, si es permanente o es anterior no lo actualizamos
+                if (!(storedExpire.equals("never") && isDateBefore(fechaAhora, storedExpire))) {
+                    try (PreparedStatement updateStmt = connection.prepareStatement(updateSql)) {
+                        updateStmt.setString(1, fechaAhora);
+                        updateStmt.setString(2, Expire);
+                        updateStmt.setString(3, reason);
+                        updateStmt.setString(4, nameStaff);
+                        updateStmt.setString(5, ip);
+                        updateStmt.setString(6, uuid);
+                        updateStmt.setString(7, type);
+                        updateStmt.executeUpdate();
+                    }
+                }
+                // Si ya expiró, podrías insertar uno nuevo (según tu lógica)
+            } else {
+                // No hay registros → insertamos nuevo
+                try (PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
+                    insertStmt.setString(1, uuid);
+                    insertStmt.setString(2, type);
+                    insertStmt.setString(3, fechaAhora);
+                    insertStmt.setString(4, Expire);
+                    insertStmt.setString(5, reason);
+                    insertStmt.setString(6, nameStaff);
+                    insertStmt.setString(7, ip);
+                    insertStmt.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private String getCurrentDateString() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return now.format(formatter);
+    }
+
+    // Devuelve true → d1 es después de d2
+    private boolean isDateAfter(String date1, String date2) {
+        return date1.compareTo(date2) > 0;
+    }
+
+    // Devuelve true → d1 es antes de d2
+    private boolean isDateBefore(String date1, String date2) {
+        return date1.compareTo(date2) < 0;
+    }
+
+
 
 
 }
