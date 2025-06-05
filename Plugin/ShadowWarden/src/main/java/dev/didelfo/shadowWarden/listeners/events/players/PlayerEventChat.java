@@ -6,6 +6,8 @@ import dev.didelfo.shadowWarden.manager.connections.websocket.model.ClientWebSoc
 import dev.didelfo.shadowWarden.manager.connections.websocket.model.MessageWS;
 import dev.didelfo.shadowWarden.manager.connections.websocket.model.StructureMessage;
 import dev.didelfo.shadowWarden.manager.message.MessageType;
+import dev.didelfo.shadowWarden.models.Sanction;
+import dev.didelfo.shadowWarden.models.User;
 import dev.didelfo.shadowWarden.security.E2EE.EphemeralKeyStore;
 import dev.didelfo.shadowWarden.utils.ToolManager;
 import org.bukkit.Bukkit;
@@ -25,49 +27,60 @@ public class PlayerEventChat implements Listener {
     private ToolManager t;
     private List<Player> jugadores = new ArrayList<>();
 
-    public PlayerEventChat(ShadowWarden pl){
+    public PlayerEventChat(ShadowWarden pl) {
         this.plugin = pl;
         this.t = pl.getT();
     }
 
     @EventHandler
-    public void onPlayerChat(PlayerChatEvent event){
+    public void onPlayerChat(PlayerChatEvent event) {
 
         Player p = event.getPlayer();
         String msg = event.getMessage();
 
         // Comprobamos que no este baneado
+        User user = plugin.getManagerDB().getInfoUser(p.getName());
 
-        // Comprobamos que no este en la lista
-        if (!jugadores.contains(p)){
+        if (plugin.getManagerDB().isPlayerSancionado(user.getUuid(),"mute", user.getIp())){
+            Sanction saninfo = plugin.getManagerDB().getInfoSanction(user.getUuid(), "mute", user.getIp());
+            String TiempoRestante = "";
+            if (saninfo.getExpire().equals("never")) {
+                TiempoRestante = "Permanente";
+            } else {
+                TiempoRestante = plugin.getT().getTiempoRestante(saninfo.getExpire());
+            }
+            plugin.getMsgManager().showMessage(p, MessageType.Sancion, "Aun estas muteado. Tiempo restante: " + TiempoRestante);
+            event.setCancelled(true);
+            return;
+        }
+
+        // Comprobamos que este activo el filtro
+        if (plugin.getConfig().getBoolean("spamfilter.enable")) {
 
             // Añadimos al jugador a la lista para evitar spam, pero comprobamos que el filtro este activado
-            if (plugin.getConfig().getBoolean("spamfilter.enable")) {
+            if (!jugadores.contains(p)) {
                 jugadores.add(p);
 
                 // Eliminamos al jugador
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     jugadores.remove(p);
                 }, 20L * plugin.getConfig().getInt("spamfilter.time")); // el tiempo se sacara de la configuracion
-            }
-
-
-
-            // Guardamos el mensaje en la BDT
-            onMessage(
-                    p.getUniqueId().toString(),
-                    p.getName().toString(),
-                    msg
-            );
-        } else {
-            // Le mostramos al jugador que no escriba tan rapido
-            plugin.getMsgManager().showMessage(p, MessageType.Chat, "Por favor, no escribas tan rapido.");
-            // Cancelamos el evento
+            } else {
+                plugin.getMsgManager().showMessage(p, MessageType.Chat, "Por favor, no escribas tan rapido.");
             event.setCancelled(true);
+            return;
+            }
         }
+
+        // Guardamos el mensaje en la BDT
+        onMessage(
+                p.getUniqueId().toString(),
+                p.getName().toString(),
+                msg
+        );
     }
 
-    private void onMessage(String uuid, String name, String msg){
+    private void onMessage(String uuid, String name, String msg) {
         plugin.getExecutor().execute(() -> {
             // Lo guardamos en la base de datos
             plugin.getDbmT().onChat(uuid, name, msg);
@@ -75,11 +88,11 @@ public class PlayerEventChat implements Listener {
 
             // Recorremos las conexiones activas y si alguna esta suscrita le mandamos el mensaje
 
-            for (Map.Entry<WebSocket, ClientWebSocket> entry : plugin.getWs().getClients().entrySet()){
+            for (Map.Entry<WebSocket, ClientWebSocket> entry : plugin.getWs().getClients().entrySet()) {
                 WebSocket con = entry.getKey();
                 ClientWebSocket cli = entry.getValue();
 
-                if (cli.getSubscription().equals("chat")){
+                if (cli.getSubscription().equals("chat")) {
                     // Le mandamos el mensaje a esa conexión
                     HashMap<String, Object> data = new HashMap<>();
                     ChatMessage ms = new ChatMessage();

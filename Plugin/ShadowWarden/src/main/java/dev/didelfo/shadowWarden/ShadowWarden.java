@@ -1,7 +1,9 @@
 package dev.didelfo.shadowWarden;
 
 import dev.didelfo.shadowWarden.autocomplete.BanCompleter;
+import dev.didelfo.shadowWarden.autocomplete.MuteCompleter;
 import dev.didelfo.shadowWarden.autocomplete.PermissionCompleter;
+import dev.didelfo.shadowWarden.autocomplete.TempBanCompleter;
 import dev.didelfo.shadowWarden.commands.staff.PermissionCommand;
 import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.WarnCommand;
@@ -48,9 +50,6 @@ public final class ShadowWarden extends JavaPlugin {
         initializeLisener(this);
         initializeCommands(this);
         initializeAutocomplete(this);
-
-        // Secuencia de inicio
-        startupSquence();
 
 
     }
@@ -110,14 +109,10 @@ public final class ShadowWarden extends JavaPlugin {
     private void initializeAutocomplete(ShadowWarden pl){
         pl.getCommand("permission").setTabCompleter(new PermissionCompleter(pl));
         pl.getCommand("ban").setTabCompleter(new BanCompleter(pl));
+        pl.getCommand("tempban").setTabCompleter(new TempBanCompleter(pl));
+        pl.getCommand("mute").setTabCompleter(new MuteCompleter(pl));
     }
 
-    // Secuencia de inicio
-    private void startupSquence(){
-        //dbm.secuenciaInicioTablas();
-
-
-    }
 
     // Getters de objetos utilies
     public ManagerDB getManagerDB() { return dbm;} // Manager BD

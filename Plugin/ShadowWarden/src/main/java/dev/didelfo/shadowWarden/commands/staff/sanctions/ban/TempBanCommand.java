@@ -137,10 +137,7 @@ public class TempBanCommand implements CommandExecutor {
                     String razon = args[2];
                     String banip = args[3];
 
-                    duracion = duracion.toLowerCase(); // 🔽 Normaliza a minúsculas
-
                     char letra = duracion.charAt(duracion.length() - 1);
-                    plugin.getLogger().info("Letra: " + letra);
                     String numeroStr = duracion.substring(0, duracion.length() - 1);
 
                     int numero = Integer.parseInt(numeroStr);
