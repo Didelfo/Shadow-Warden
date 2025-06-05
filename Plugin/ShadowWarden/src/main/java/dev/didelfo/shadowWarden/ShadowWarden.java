@@ -1,13 +1,12 @@
 package dev.didelfo.shadowWarden;
 
+import dev.didelfo.shadowWarden.autocomplete.BanCompleter;
 import dev.didelfo.shadowWarden.autocomplete.PermissionCompleter;
 import dev.didelfo.shadowWarden.commands.staff.PermissionCommand;
 import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.WarnCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.BanCommand;
-import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.BanIPCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.TempBanCommand;
-import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.TempBanIPCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.MuteCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.TempMuteCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
@@ -95,8 +94,6 @@ public final class ShadowWarden extends JavaPlugin {
         pl.getCommand("permission").setExecutor(new PermissionCommand(pl));
         pl.getCommand("ban").setExecutor(new BanCommand(pl));
         pl.getCommand("tempban").setExecutor(new TempBanCommand(pl));
-        pl.getCommand("banip").setExecutor(new BanIPCommand(pl));
-        pl.getCommand("tempbanip").setExecutor(new TempBanIPCommand(pl));
         pl.getCommand("mute").setExecutor(new MuteCommand(pl));
         pl.getCommand("tempmute").setExecutor(new TempMuteCommand(pl));
         pl.getCommand("warn").setExecutor(new WarnCommand(pl));
@@ -112,6 +109,7 @@ public final class ShadowWarden extends JavaPlugin {
     // Inicializador de autoCompletado
     private void initializeAutocomplete(ShadowWarden pl){
         pl.getCommand("permission").setTabCompleter(new PermissionCompleter(pl));
+        pl.getCommand("ban").setTabCompleter(new BanCompleter(pl));
     }
 
     // Secuencia de inicio

@@ -4,4 +4,5 @@ public enum MessageType {
     Staff,
     Permission,
     Chat,
+    Sancion,
 }

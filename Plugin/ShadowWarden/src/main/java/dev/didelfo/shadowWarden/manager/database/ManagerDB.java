@@ -1,6 +1,8 @@
 package dev.didelfo.shadowWarden.manager.database;
 
 import dev.didelfo.shadowWarden.ShadowWarden;
+import dev.didelfo.shadowWarden.models.Sanction;
+import dev.didelfo.shadowWarden.models.User;
 
 import java.io.File;
 import java.sql.*;
@@ -69,7 +71,9 @@ public class ManagerDB {
                                         FOREIGN KEY (uuid_user) REFERENCES users(uuid) ON DELETE CASCADE
                                     );
                                 """);
-                    } catch (Exception e) {}
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
             case "mysql" -> {
@@ -113,7 +117,7 @@ public class ManagerDB {
                                         CREATE TABLE IF NOT EXISTS users (
                                                 uuid VARCHAR(50) PRIMARY KEY,
                                                 name VARCHAR(40) NOT NULL,
-                                                ip VARCHAR(60) NOT NULL,
+                                                ip VARCHAR(60) NOT NULL
                                             );
                                         """);
                                 stmtt.execute("""
@@ -128,7 +132,7 @@ public class ManagerDB {
                                                 FOREIGN KEY (uuid_user) REFERENCES users(uuid) ON DELETE CASCADE
                                             );
                                         """);
-                            } catch (Exception e){}
+                            }
                         }
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
@@ -246,6 +250,84 @@ public class ManagerDB {
     }
 
 
+    // Comprobar si un jugador tiene uan sancion
+    public boolean isPlayerSancionado(String uuid, String type, String ip) {
+        String sql = """
+        SELECT * FROM sanction
+        WHERE type = ? AND (uuid_user = ? OR ip = ?)
+        ORDER BY start DESC LIMIT 1
+    """;
 
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, type);
+            stmt.setString(2, uuid);
+            stmt.setString(3, ip);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String expire = rs.getString("expire");
+                // Si es "never" → está permanentemente baneado
+                if ("never".equalsIgnoreCase(expire)) {
+                    return true;
+                } else {
+                    // Compara la fecha actual con la vencimiento
+                    String now = getCurrentDateString();
+                    return isDateBefore(now, expire); // true si ahora es antes de expire → sigue vigente el ban
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al comprobar si el jugador está baneado");
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Obtenemos la informacion de la sancion
+    public Sanction getInfoSanction(String uuid, String type, String ip){
+        String sql = "SELECT * FROM sanction WHERE type = ? AND (uuid_user = ? OR ip = ?) ORDER BY start DESC LIMIT 1";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, type);
+            stmt.setString(2, uuid);
+            stmt.setString(3, ip);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Sanction(
+                        rs.getString("expire"),
+                        rs.getString("reason"),
+                        rs.getString("nameStaff")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // Obtenemos la informacion del jugador
+    public User getInfoUser (String name){
+        String sql = "SELECT * FROM users WHERE name = ? LIMIT 1";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, name);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new User(
+                        rs.getString("uuid"),
+                        rs.getString("name"),
+                        rs.getString("ip")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
 }
