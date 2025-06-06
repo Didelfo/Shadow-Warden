@@ -337,22 +337,24 @@ public class ManagerDB {
 
         try (PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
             checkStmt.setString(1, uuid);
+            checkStmt.setString(2, type);
             ResultSet rs = checkStmt.executeQuery();
 
             String fechaAhora = getCurrentDateString();
 
             if (rs.next()) {
                 // Ya existe un registro
-                String start = rs.getString("start");
+                String startt = rs.getString("start");
                 String storedExpire = rs.getString("expire");
 
 
                 // Si expira y aunestá vigente, borramos el registro
-                if (isDateBefore(fechaAhora, storedExpire)) {
+                if (isDateBefore(fechaAhora, storedExpire) || (storedExpire.equals("never"))) {
                     try (PreparedStatement deleteStm = connection.prepareStatement(deleteSql)) {
                         deleteStm.setString(1, uuid);
                         deleteStm.setString(2, type);
-                        deleteStm.setString(3, start);
+                        deleteStm.setString(3, startt);
+                        deleteStm.execute();
                     }
                 }
             }
