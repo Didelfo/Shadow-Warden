@@ -110,11 +110,7 @@ fun ChatScreen(navController: NavHostController) {
     val messages by WSController.cliente.messages.collectAsState()
 
     // Menu de moderacion
-    var showMenu by remember { mutableStateOf(false) }
     var chatSeleccionado: ChatMessage? = null
-
-    var textDuracion by remember { mutableStateOf("") }
-
 
     var listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -135,7 +131,7 @@ fun ChatScreen(navController: NavHostController) {
             })
         },
         bottomBar = {
-            if (!showMenu) {
+            if (!viewModel.showMenu) {
                 bottomBar(
                     messageText,
                     { messageText = it },
@@ -168,7 +164,7 @@ fun ChatScreen(navController: NavHostController) {
                         {
                             // Al hacer click
                             chatSeleccionado = message
-                            showMenu = true
+                            viewModel.showMenu = true
 
                         })
                 }
@@ -203,8 +199,8 @@ fun ChatScreen(navController: NavHostController) {
             }
 
             // Menu de moderacion
-            if (showMenu && (chatSeleccionado != null)) {
-                ModerationOverlay(chatSeleccionado, viewModel, { showMenu = false; viewModel.resetDuracion(); viewModel.resetTipo() })
+            if (viewModel.showMenu && (chatSeleccionado != null)) {
+                ModerationOverlay(chatSeleccionado, viewModel, { viewModel.showMenu = false; viewModel.resetDuracion(); viewModel.resetTipo() })
             }
 
         }
@@ -573,7 +569,7 @@ private fun ModerationOverlay(
                     onClick = {
                         viewModel.validarBoton()
                         if(viewModel.botonValido){
-
+                            viewModel.onSancionar(mensjae)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),

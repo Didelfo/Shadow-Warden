@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.didelfo.shadowwarden.connection.websocket.WSController
+import dev.didelfo.shadowwarden.connection.websocket.components.MessageProcessor
 import dev.didelfo.shadowwarden.connection.websocket.model.MessageWS
 import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
@@ -41,6 +42,8 @@ class ChatScreenViewModel(context: Context) : ViewModel() {
     var TextoRazon by mutableStateOf("")
     var botonValido by mutableStateOf(false)
 
+    var showMenu by mutableStateOf(false)
+
 
     // Slide bar, - Barra horizontal
     val valoresPermitidos = listOf(1, 5, 10, 15, 20, 25, 30)
@@ -54,8 +57,82 @@ class ChatScreenViewModel(context: Context) : ViewModel() {
         duracionSeleccionada = valoresPermitidos[index]
     }
 
-    fun onSancionar() {
+    fun onSancionar(m: ChatMessage) {
+        val datos = HashMap<String, Any>()
 
+        // Ponemos el jugador que recibe la sancion
+        datos.put("jugador", m.name)
+
+        // Ponemos el tipo de sancion
+        if (MostrarMuteo) datos.put("type", "mute")
+        if (MostrarWarn) datos.put("type", "warn")
+        if (MostrarBaneo) datos.put("type", "ban")
+
+        // duracion de la sancio
+        if (DuracionInfinito) {
+            datos.put("duracion", "never")
+        } else {
+            datos.put("duracion", duracionSeleccionada.toString())
+        }
+
+        // La unidad de tiempo
+        if (DuracionSegundos) datos.put("unidad", "s")
+        if (Duracionminutos) datos.put("unidad", "m")
+        if (DuracionHoras) datos.put("unidad", "h")
+        if (DuracionDias) datos.put("unidad", "d")
+
+        // Ponemos la razon
+        datos.put("razon", TextoRazon)
+
+        // Y el nombre del staff
+        datos.put("nameStaff", ToolManager().getUser(cont).nick)
+
+
+        // Preparamos la estructura para enviar
+
+        try {
+            viewModelScope.launch {
+                var attempts = 0
+                while (!WSController.claveCompartidaUsable && attempts < 100) {
+                    delay(100)
+                    attempts++
+                }
+
+                if (!WSController.claveCompartidaUsable) {
+                    Log.e("HomeViewModel", "Timeout: No se completó el handshake.")
+                    return@launch
+                }
+
+                val hmacTool = HmacHelper()
+                val nonce = hmacTool.generateNonce()
+                val key = EphemeralKeyStore.getShared()
+                if (key != null) {
+                    val hmac = hmacTool.generateHmac(
+                        ToolManager().getToken(cont).token,
+                        key,
+                        nonce
+                    )
+
+                    val msg: StructureMessage = StructureMessage(
+                        "",
+                        "moderation",
+                        "ChatSanction",
+                        hmac,
+                        nonce,
+                        ToolManager().getUser(cont).uuid,
+                        datos
+                    )
+
+                    showMenu = false // Ocultamos el menu ya lelgara la respuesta cuando se procese
+                    val respuesta = WSController.sendAndWaitResponse(msg)
+                    MessageProcessor().classifyCategory(respuesta)
+                }
+            }
+
+
+        } catch (e: Exception) {
+            WSController.closeConnection()
+        }
     }
 
     fun validarBoton() {

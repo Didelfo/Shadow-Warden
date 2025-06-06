@@ -24,6 +24,9 @@ class MessageProcessor() {
             "chat" -> {
                 classifyChat(m)
             }
+            "moderation"  -> {
+                classifyModeration(m)
+            }
             else -> {}
         }
     }
@@ -40,8 +43,8 @@ class MessageProcessor() {
         }
     }
 
-    private fun classifyChat(m: StructureMessage){
-        when(m.action){
+    private fun classifyChat(m: StructureMessage) {
+        when (m.action) {
             "SubscribeChat" -> {
                 val gson = Gson()
                 val rawList = m.data["mensajesChat"] as? List<*> ?: emptyList<Any>()
@@ -58,15 +61,33 @@ class MessageProcessor() {
 
 
             }
+
             "MessageSend" -> {
                 val gson = Gson()
                 val msgData = m.data["mensaje"]
                 val mensaje = gson.fromJson(gson.toJson(msgData), ChatMessage::class.java)
                 WSController.cliente.addMessage(mensaje)
             }
+
             else -> {}
         }
     }
+
+    private fun classifyModeration(m: StructureMessage) {
+
+        when(m.action){
+            "ChatSanction" -> {
+                val gson = Gson()
+                val msgData = m.data["mensaje"]
+                val mensaje = gson.fromJson(gson.toJson(msgData), ChatMessage::class.java)
+                WSController.cliente.addMessage(mensaje)
+            }
+            else ->{}
+        }
+
+    }
+
+
 
 
 }
