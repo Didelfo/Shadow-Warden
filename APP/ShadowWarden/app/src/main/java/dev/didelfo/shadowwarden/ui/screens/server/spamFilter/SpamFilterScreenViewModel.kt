@@ -1,5 +1,6 @@
 package dev.didelfo.shadowwarden.ui.screens.server.spamFilter
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.connection.websocket.model.MessageWS
@@ -39,9 +40,11 @@ class SpamFilterScreenViewModel(context: android.content.Context) : ViewModel(){
                 ToolManager().getUser(cont).uuid,
                 mapOf<String, Any>(
                     "enable" to WSController.cliente.enableSpam,
-                    "time" to WSController.cliente.time
+                    "time" to WSController.cliente.time.toInt()
                 )
             )
+
+            Log.d("prueba", "" + WSController.cliente.time.toInt())
 
             val pair = EphemeralKeyStore.encryptAndSign(JsonManager().objetToString(msg))
 

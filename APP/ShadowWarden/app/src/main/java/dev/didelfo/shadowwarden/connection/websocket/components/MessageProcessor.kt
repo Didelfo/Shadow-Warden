@@ -109,12 +109,16 @@ class MessageProcessor() {
         when (m.action) {
             "GetConfigSpamFilter" -> {
                 try {
-                    WSController.cliente.enableSpam = m.data["enable"].toString().toBoolean()
-                    WSController.cliente.time= m.data["time"].toString().toInt()
+                    val enable = m.data["enable"]?.toString()?.toBooleanStrictOrNull() ?: false
+                    val time = m.data["time"]?.toString()?.toDoubleOrNull()?.toInt() ?: 0
+
+                    WSController.cliente.enableSpam = enable
+                    WSController.cliente.time = time
 
                     nave.navigate(AppScreens.SpamFilterScreen.route)
 
                 } catch (e: Exception) {
+                    Log.e("prueba", "Error al procesar GetConfigSpamFilter", e)
                     WSController.closeConnection()
                     nave.navigate(AppScreens.HomeScreen.route)
                 }
