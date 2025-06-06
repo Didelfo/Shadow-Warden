@@ -111,6 +111,9 @@ class MessageProcessor() {
                 try {
                     WSController.cliente.enableSpam = m.data["enable"].toString().toBoolean()
                     WSController.cliente.time= m.data["time"].toString().toInt()
+
+                    nave.navigate(AppScreens.SpamFilterScreen.route)
+
                 } catch (e: Exception) {
                     WSController.closeConnection()
                     nave.navigate(AppScreens.HomeScreen.route)
