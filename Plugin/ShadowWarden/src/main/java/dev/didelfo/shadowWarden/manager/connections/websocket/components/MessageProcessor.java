@@ -258,7 +258,8 @@ public class MessageProcessor {
             case "SetConfigSpamFilter" -> {
                 try {
                     Boolean enable = (Boolean) p.getData().get("enable");
-                    int time = (int) p.getData().get("time");
+                    Number timeNumber = (Number) p.getData().get("time");
+                    int time = timeNumber.intValue();
 
                     pl.getConfig().set("spamfilter.enable", enable);
                     pl.getConfig().set("spamfilter.time", time);
@@ -266,6 +267,7 @@ public class MessageProcessor {
                     pl.saveConfig();
 
                 } catch (Exception e){
+                    pl.getLogger().severe(e.getMessage());
                     pl.getWs().closeConection(con);
                 }
             }
