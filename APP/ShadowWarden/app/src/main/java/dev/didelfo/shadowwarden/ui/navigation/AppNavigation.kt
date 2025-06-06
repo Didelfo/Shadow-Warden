@@ -15,6 +15,7 @@ import dev.didelfo.shadowwarden.ui.screens.home.register.RegisterScreen
 import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatMessage
 import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatScreen
 import dev.didelfo.shadowwarden.ui.screens.server.serverhome.ServerHomeScreen
+import dev.didelfo.shadowwarden.ui.screens.server.spamFilter.SpamFilterScreen
 import java.net.URLDecoder
 
 @Composable
@@ -61,6 +62,10 @@ fun AppNavigation() {
 
         composable(route = AppScreens.ChatScreen.route) {
             ChatScreen(navController)
+        }
+
+        composable(route = AppScreens.SpamFilterScreen.route) {
+            SpamFilterScreen(navController)
         }
 
 

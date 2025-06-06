@@ -116,7 +116,7 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
                 statusHeadIconSecure = true
                 icon1 = true
                 textGuia =
-                    "Usa el comando \\\"/link\\\" en Minecraft. Cuando obtengas la verificación pulse \\\"Verificar\\\"."
+                    "Usa el comando \"/link\" en Minecraft. Cuando obtengas la verificación pulse \"Verificar\"."
                 showTextFiel = false
                 nameServer = ""
                 textButton = "Verificar"
@@ -128,7 +128,7 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
                 icon1 = true
                 icon2 = true
                 textGuia =
-                    "Usa el comando \\\"/verificar\\\" en Minecraft para confirmar la cuenta."
+                    "Usa el comando \"/link\" de nuevo en Minecraft para confirmar la cuenta. Y pulse \"Vincular\"."
                 showTextFiel = false
                 nameServer = ""
                 textButton = "Vincular"
@@ -140,7 +140,7 @@ class AddServerScreenViewModel(context: Context, nave: NavHostController) : View
                 icon2 = true
                 icon3 = true
                 textGuia =
-                    "UIntroduce el nombre con el que deseas guardar el servidor."
+                    "Introduce el nombre con el que deseas guardar el servidor. Y pulse \"Finalizar\"."
                 showTextFiel = true
                 nameServer = ""
                 textButton = "Finalizar"

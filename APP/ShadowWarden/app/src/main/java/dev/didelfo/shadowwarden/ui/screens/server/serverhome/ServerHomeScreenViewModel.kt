@@ -25,6 +25,7 @@ class ServerHomeScreenViewModel(context: Context) : ViewModel() {
     var isEditing by mutableStateOf(false)
     val allItems = listOf<GridItem>(
         GridItem(R.drawable.chat, "Chat", "shadowwarden.app.ui.chat"),
+        GridItem(R.drawable.spam, "Spam", "shadowwarden.app.ui.spam"),
     )
 
     fun clickItem(i: GridItem) {
@@ -54,7 +55,10 @@ class ServerHomeScreenViewModel(context: Context) : ViewModel() {
                 msg.category = "chat"
                 msg.action = "SubscribeChat"
             }
-
+            "shadowwarden.app.ui.spam" -> {
+                msg.category = "config"
+                msg.action = "GetConfigSpamFilter"
+            }
             else -> {}
         }
 

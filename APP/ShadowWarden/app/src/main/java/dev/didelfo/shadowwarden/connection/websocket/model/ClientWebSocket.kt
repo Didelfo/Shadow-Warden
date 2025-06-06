@@ -14,6 +14,10 @@ class ClientWebSocket {
     var publicKeyServer: String = ""
     var publicKeyMovil: String = ""
     var permission: List<String> = listOf()
+
+    var enableSpam by mutableStateOf( false)
+    var time by mutableStateOf( 0)
+
     // Usamos MutableStateFlow para tener siempre el último valor
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     var messages: StateFlow<List<ChatMessage>> = _messages

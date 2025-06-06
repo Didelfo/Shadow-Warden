@@ -28,4 +28,6 @@ sealed class AppScreens(val route: String) {
 
     object ChatScreen : AppScreens("chat_screen")
 
+    object SpamFilterScreen : AppScreens("spam_filter_screen")
+
 }
