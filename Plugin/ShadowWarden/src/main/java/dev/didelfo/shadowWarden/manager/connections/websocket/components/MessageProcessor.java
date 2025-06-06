@@ -300,8 +300,7 @@ public class MessageProcessor {
                     );
 
                     Map<String, Object> datos = new HashMap<>();
-                    String msgChat = pl.getT().objectToString(mensajeChat);
-                    datos.put("mensaje", msgChat);
+                    datos.put("mensaje", mensajeChat);
                     p.setData(datos);
 
                     String estructuraString = pl.getT().objectToString(p);
