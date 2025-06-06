@@ -9,8 +9,10 @@ import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.WarnCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.BanCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.TempBanCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.UnBanCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.MuteCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.TempMuteCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.UnMuteCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventLogger;
@@ -96,6 +98,8 @@ public final class ShadowWarden extends JavaPlugin {
         pl.getCommand("mute").setExecutor(new MuteCommand(pl));
         pl.getCommand("tempmute").setExecutor(new TempMuteCommand(pl));
         pl.getCommand("warn").setExecutor(new WarnCommand(pl));
+        pl.getCommand("unban").setExecutor(new UnBanCommand(pl));
+        pl.getCommand("unmute").setExecutor(new UnMuteCommand(pl));
     }
 
     // Inicializador de lisener

@@ -28,6 +28,10 @@ commands:
     description: Comando para banear temporalmnente
     permission: shadowwardem.moderation.tempban
     usage: /tempban
+  unban:
+    description: Comando para desbanear
+    permission: shadowwardem.moderation.unban
+    usage: /unban
   mute:
     description: Comando para mutear permanentemente
     permission: shadowwardem.moderation.mute
@@ -35,6 +39,10 @@ commands:
   tempmute:
     description: Comando para mutear temporalmente
     permission: shadowwardem.moderation.tempmute
+    usage: /tempmute
+  unmute:
+    description: Comando para desmutear
+    permission: shadowwardem.moderation.unmute
     usage: /tempmute
   warn:
     description: Comando para dar advertencias
@@ -62,10 +70,16 @@ permissions:
       tempban:
         description: Permite usar el comando /tempban
         default: op
+      unban:
+        description: Permite usar el comando /unban
+        default: op
       mute:
         description: Permite usar el comando /mute
         default: op
       tempmute:
+        description: Permite usar el comando /tempmute
+        default: op
+      unmute:
         description: Permite usar el comando /tempmute
         default: op
       warn:

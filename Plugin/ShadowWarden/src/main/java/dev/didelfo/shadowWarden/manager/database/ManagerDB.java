@@ -330,4 +330,35 @@ public class ManagerDB {
         return null;
     }
 
+    // Eliminamos la sancion
+    public void deleteSancion(String uuid, String type) {
+        String checkSql = "SELECT * FROM sanction WHERE uuid_user = ? AND type = ? ORDER BY start DESC LIMIT 1";
+        String deleteSql = "DELETE FROM sanction WHERE uuid_user = ? AND type = ? AND start = ?";
+
+        try (PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
+            checkStmt.setString(1, uuid);
+            ResultSet rs = checkStmt.executeQuery();
+
+            String fechaAhora = getCurrentDateString();
+
+            if (rs.next()) {
+                // Ya existe un registro
+                String start = rs.getString("start");
+                String storedExpire = rs.getString("expire");
+
+
+                // Si expira y aunestá vigente, borramos el registro
+                if (isDateBefore(fechaAhora, storedExpire)) {
+                    try (PreparedStatement deleteStm = connection.prepareStatement(deleteSql)) {
+                        deleteStm.setString(1, uuid);
+                        deleteStm.setString(2, type);
+                        deleteStm.setString(3, start);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
