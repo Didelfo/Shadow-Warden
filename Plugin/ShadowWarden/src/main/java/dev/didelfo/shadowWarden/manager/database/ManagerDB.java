@@ -61,7 +61,7 @@ public class ManagerDB {
                                 """);
                         stmt.execute("""
                                     CREATE TABLE IF NOT EXISTS sanction (
-                                        uuid_user TEXT PRIMARY KEY,
+                                        uuid_user TEXT,
                                         type TEXT,
                                         start TEXT,
                                         expire TEXT,
@@ -122,7 +122,7 @@ public class ManagerDB {
                                         """);
                                 stmtt.execute("""
                                         CREATE TABLE IF NOT EXISTS sanction (
-                                                uuid_user VARCHAR(50) PRIMARY KEY,
+                                                uuid_user VARCHAR(50),
                                                 type VARCHAR(20) NOT NULL,
                                                 start VARCHAR(70),
                                                 expire VARCHAR(70),
