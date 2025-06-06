@@ -347,6 +347,15 @@ public class EncryptedDatabase {
             throw new RuntimeException(e);
         }
     }
+    public void deleteUser(String name) {
+        String sql = "DELETE FROM user WHERE name = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // Eliminar token por nombre
     public void deleteTokenByName(String nombre) throws SQLException {

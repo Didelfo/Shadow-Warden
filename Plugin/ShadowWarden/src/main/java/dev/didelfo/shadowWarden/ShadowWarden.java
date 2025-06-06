@@ -6,6 +6,7 @@ import dev.didelfo.shadowWarden.autocomplete.PermissionCompleter;
 import dev.didelfo.shadowWarden.autocomplete.TempBanCompleter;
 import dev.didelfo.shadowWarden.commands.staff.PermissionCommand;
 import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
+import dev.didelfo.shadowWarden.commands.staff.UnLinkCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.WarnCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.BanCommand;
 import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.TempBanCommand;
@@ -92,6 +93,7 @@ public final class ShadowWarden extends JavaPlugin {
     // Inicializdor de comandos
     private void initializeCommands(ShadowWarden pl){
         pl.getCommand("link").setExecutor(new LinkCommand(pl));
+        pl.getCommand("unlink").setExecutor(new UnLinkCommand(pl));
         pl.getCommand("permission").setExecutor(new PermissionCommand(pl));
         pl.getCommand("ban").setExecutor(new BanCommand(pl));
         pl.getCommand("tempban").setExecutor(new TempBanCommand(pl));

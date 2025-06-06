@@ -7,18 +7,11 @@ import dev.didelfo.shadowWarden.manager.connections.websocket.model.MessageWS;
 import dev.didelfo.shadowWarden.manager.connections.websocket.model.StructureMessage;
 import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.manager.database.ManagerDBT;
-import dev.didelfo.shadowWarden.manager.message.MessageType;
-import dev.didelfo.shadowWarden.models.Sanction;
-import dev.didelfo.shadowWarden.models.User;
 import dev.didelfo.shadowWarden.security.E2EE.EphemeralKeyStore;
 import dev.didelfo.shadowWarden.utils.ToolManager;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.java_websocket.WebSocket;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -60,7 +53,6 @@ public class MessageProcessor {
                     classifyCategory(msgDescryp, con);
                 }
             } catch (Exception e) {
-                pl.getWs().closeConection(con);
                 pl.getLogger().info(e.getMessage());
             }
         });
@@ -85,7 +77,7 @@ public class MessageProcessor {
             switch (p.getCategory()) {
                 case "auth" -> processAuth(p, con);
                 case "chat" -> processChat(p, con);
-                case "moderation" -> processModeration(p, con);
+                case "config" -> processConfig(p, con);
                 default -> pl.getWs().closeConection(con);
             }
         } else {
@@ -104,7 +96,7 @@ public class MessageProcessor {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else pl.getWs().closeConection(con);
+        }
     }
 
     // ------------- Funcion segun peticion AUTH -------------------
@@ -205,7 +197,7 @@ public class MessageProcessor {
                     con.send(t.objectToString(mEnviar));
                 } else {
                     db.close();
-                    pl.getWs().closeConection(con);
+                    con.close();
                 }
             }
             case "MessageSend" -> {
@@ -232,124 +224,55 @@ public class MessageProcessor {
                     );
                 }
             }
-            default -> pl.getWs().closeConection(con);
+            default -> {}
         }
     }
 
-// ========================================
-//     Procesar Categoria moderation
-// ========================================
 
-    private void processModeration(StructureMessage p, WebSocket con){
+    private void processConfig(StructureMessage p, WebSocket con){
         switch (p.getAction()){
-            case "ChatSanction" -> {
+            case "GetConfigSpamFilter" ->{
+                Map<String, Object> datos = new HashMap<>();
+                datos.put("enable", pl.getConfig().getBoolean("spamfilter.enable"));
+                datos.put("time", pl.getConfig().getInt("spamfilter.time"));
+                p.setData(datos);
 
+
+                // ciframos el cotenido
+                EphemeralKeyStore.Pair<byte[], byte[]> pair = pl.getE2ee().encryptAndSign(
+                        t.objectToString(p),  // El mensaje
+                        pl.getWs().getClients().get(con).getShareKey(), // La clave compartida
+                        pl.getWs().getClients().get(con).getHmacKey() // La key del hmac
+                );
+
+                // mensaje que se manda
+                MessageWS mEnviar = new MessageWS(
+                        "Communication",
+                        t.byteArrayToBase64(pair.first),
+                        t.byteArrayToBase64(pair.second)
+                );
+
+                con.send(pl.getT().objectToString(mEnviar));
+
+            }
+            case "SetConfigSpamFilter" -> {
                 try {
+                    Boolean enable = (Boolean) p.getData().get("enable");
+                    int time = (int) p.getData().get("time");
 
-                    // Extraemos todos los datos para procesar la sancion
-                    String jugador = (String) p.getData().get("jugador");
-                    String type = (String) p.getData().get("type");
-                    String duracion = (String) p.getData().get("duracion");
-                    String unidad = (String) p.getData().get("unidad");
-                    String razon = (String) p.getData().get("razon");
-                    String nombreStaff = (String) p.getData().get("nameStaff");
+                    pl.getConfig().set("spamfilter.enable", enable);
+                    pl.getConfig().set("spamfilter.time", time);
 
-                    // Obtenemos los datos del jugador
-                    User user = pl.getManagerDB().getInfoUser(jugador);
-
-                    // Procesamos la duracion de la sancion
-                    LocalDateTime now = LocalDateTime.now();
-
-                    String expire = "";
-
-                    // calculamos el tiempo de la sancion
-                    if (!(duracion.equals("never"))) {
-                        int duraccion = Integer.parseInt(duracion);
-
-                        // Le sumamos el tiempo
-                        switch (unidad) {
-                            case "s" -> now = now.plusSeconds(duraccion);
-                            case "m" -> now = now.plusMinutes(duraccion);
-                            case "h" -> now = now.plusHours(duraccion);
-                            case "d" -> now = now.plusDays(duraccion);
-                            default -> {
-                            }
-                        }
-
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                       expire = now.format(formatter);
-                    } else {
-                        expire = "never";
-                    }
-
-                    pl.getManagerDB().addOrUpdateSanction(
-                            user.getUuid(),
-                            type,
-                            razon,
-                            expire,
-                            nombreStaff,
-                            ""
-                    );
-
-                    // Si hasta ahora no ha saltado el catch es que va todo bien asi que procedemos a mandar un mensaje de que tod va ok
-                    ChatMessage mensajeChat = new ChatMessage(
-                            LocalTime.now().toString(),
-                            "",
-                            "Sanción",
-                            "El jugador " + jugador + " fue sancionado correctamente."
-                    );
-
-                    Map<String, Object> datos = new HashMap<>();
-                    datos.put("mensaje", mensajeChat);
-                    p.setData(datos);
-
-                    String estructuraString = pl.getT().objectToString(p);
-
-                    EphemeralKeyStore.Pair<byte[], byte[]> pair = pl.getE2ee().encryptAndSign(
-                            estructuraString,
-                            pl.getWs().getClients().get(con).getShareKey(),
-                            pl.getWs().getClients().get(con).getHmacKey()
-                    );
-
-                    MessageWS msgFinal = new MessageWS(
-                            "Communication",
-                            pl.getT().byteArrayToBase64(pair.first),
-                            pl.getT().byteArrayToBase64(pair.second)
-                    );
-
-
-                    con.send(pl.getT().objectToString(msgFinal));
-
-
-                    if (type.equals("ban")) {
-
-                        Sanction sanInfo = pl.getManagerDB().getInfoSanction(user.getUuid(), "ban", "");
-
-                        Player jugadorBan = Bukkit.getPlayer(UUID.fromString(user.getUuid()));
-                        if (jugadorBan != null) {
-                            Bukkit.getScheduler().runTask(pl, () -> {
-                                jugadorBan.kick(pl.getMsgManager().showMessageBan(sanInfo));
-                            });
-                        }
-                    }
-
-                    if (type.equals("mute")){
-                        Player jugadord = Bukkit.getPlayer(user.getName());
-                        if (jugadord != null){
-                            pl.getMsgManager().showMessage(jugadord, MessageType.Sancion, "Has sido muteado");
-                        }
-                    }
-
+                    pl.saveConfig();
 
                 } catch (Exception e){
                     pl.getWs().closeConection(con);
                 }
-
-
             }
-            default -> pl.getWs().closeConection(con);
+            default -> {}
         }
     }
+
 
 
 }

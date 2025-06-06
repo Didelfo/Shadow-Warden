@@ -8,9 +8,15 @@ commands:
 #       Staff Commands
 # =============================
   link:
-    description: Comando para linkear con la aplicacion moivl
+    description: Comando para linkear con la aplicacion movil
     usage: /link
     permission: shadowwarden.staff.link
+    permisssion-message: No tienes permiso para usar este comando
+
+  unlink:
+    description: Comando para deslinkear con la aplicacion movil
+    usage: /unlink
+    permission: shadowwarden.staff.unlink
     permisssion-message: No tienes permiso para usar este comando
 
   permission:
@@ -22,31 +28,31 @@ commands:
 
   ban:
     description: Comando para banear permanente
-    permission: shadowwardem.moderation.ban
+    permission: shadowwarden.moderation.ban
     usage: /ban
   tempban:
     description: Comando para banear temporalmnente
-    permission: shadowwardem.moderation.tempban
+    permission: shadowwarden.moderation.tempban
     usage: /tempban
   unban:
     description: Comando para desbanear
-    permission: shadowwardem.moderation.unban
+    permission: shadowwarden.moderation.unban
     usage: /unban
   mute:
     description: Comando para mutear permanentemente
-    permission: shadowwardem.moderation.mute
+    permission: shadowwarden.moderation.mute
     usage: /mute
   tempmute:
     description: Comando para mutear temporalmente
-    permission: shadowwardem.moderation.tempmute
+    permission: shadowwarden.moderation.tempmute
     usage: /tempmute
   unmute:
     description: Comando para desmutear
-    permission: shadowwardem.moderation.unmute
+    permission: shadowwarden.moderation.unmute
     usage: /tempmute
   warn:
     description: Comando para dar advertencias
-    permission: shadowwardem.moderation.warn
+    permission: shadowwarden.moderation.warn
     usage: /warn
 
 permissions:
@@ -59,11 +65,14 @@ permissions:
       link:
         description: Permite usar el comando /link
         default: op
+      unlink:
+        description: Permite usar el comando /unlink
+        default: op
       permission:
         description: Permite usar el comando /permission
         default: op
 
-  shadowwardem.moderation:
+  shadowwarden.moderation:
       ban:
         description: Permite usar el comando /ban
         default: op
