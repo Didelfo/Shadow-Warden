@@ -687,7 +687,9 @@ private fun bottomBar(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
                             disabledIndicatorColor = Color.Transparent,
-                            errorIndicatorColor = Color.Transparent
+                            errorIndicatorColor = Color.Transparent,
+                            focusedTextColor = VerdeMenta,
+                            unfocusedTextColor = VerdeMenta
                         ),
                         shape = RoundedCornerShape(24.dp),
                         singleLine = true,
