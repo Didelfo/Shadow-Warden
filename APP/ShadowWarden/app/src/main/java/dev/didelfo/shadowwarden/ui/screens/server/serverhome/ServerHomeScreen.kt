@@ -70,6 +70,7 @@ fun ServerHomeScreen(navController: NavHostController) {
                 modifier = Modifier
                     .padding(paddingValues)
                     .fillMaxSize()
+                    .background(AzulOscuroProfundo)
             ) {
                 itemsIndexed(filteredItems) { index, item ->
                     val isBeingDragged = draggingIndex == index
