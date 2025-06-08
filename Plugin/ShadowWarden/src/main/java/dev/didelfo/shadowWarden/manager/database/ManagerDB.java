@@ -87,56 +87,42 @@ public class ManagerDB {
                 String urlDB = url + plugin.getConfig().getString("dataBase.name");
 
                 // Nos conectamos primero para comprobar si existe esta base de datos
-                try (Connection conn = DriverManager.getConnection(
-                        url,
-                        plugin.getConfig().getString("dataBase.user"),
-                        plugin.getConfig().getString("dataBase.pass")
-                )) {
-                    try (Statement stmt = conn.createStatement();
-                         ResultSet rs = stmt.executeQuery("SHOW DATABASES LIKE '" + plugin.getConfig().getString("dataBase.name") + "'")) {
 
-                        boolean exists = rs.next();
+                try {
 
-                        // Si no existe la creamos
-                        if (!exists) {
-                            stmt.executeUpdate("CREATE DATABASE " + plugin.getConfig().getString("dataBase.name"));
-                        }
+                    // Ahora conectar a la BD real
+                    connection = DriverManager.getConnection(
+                            urlDB,
+                            plugin.getConfig().getString("dataBase.user"),
+                            plugin.getConfig().getString("dataBase.pass")
+                    );
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
 
-                        // Ahora conectar a la BD real
-                        connection = DriverManager.getConnection(
-                                urlDB,
-                                plugin.getConfig().getString("dataBase.user"),
-                                plugin.getConfig().getString("dataBase.pass")
-                        );
+                // Creamos las tablas en la base de datos
 
-                        // Creamos las tablas en la base de datos
-                        if (!exists) {
-                            try (Statement stmtt = connection.createStatement()){
+                try (Statement stmtt = connection.createStatement()) {
 
-                                stmtt.execute("""
-                                        CREATE TABLE IF NOT EXISTS users (
-                                                uuid VARCHAR(50) PRIMARY KEY,
-                                                name VARCHAR(40) NOT NULL,
-                                                ip VARCHAR(60) NOT NULL
-                                            );
-                                        """);
-                                stmtt.execute("""
-                                        CREATE TABLE IF NOT EXISTS sanction (
-                                                uuid_user VARCHAR(50),
-                                                type VARCHAR(20) NOT NULL,
-                                                start VARCHAR(70),
-                                                expire VARCHAR(70),
-                                                reason VARCHAR(120),
-                                                nameStaff VARCHAR(50),
-                                                ip VARCHAR(60),
-                                                FOREIGN KEY (uuid_user) REFERENCES users(uuid) ON DELETE CASCADE
-                                            );
-                                        """);
-                            }
-                        }
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
+                    stmtt.execute("""
+                            CREATE TABLE IF NOT EXISTS users (
+                                    uuid VARCHAR(50) PRIMARY KEY,
+                                    name VARCHAR(40) NOT NULL,
+                                    ip VARCHAR(60) NOT NULL
+                                );
+                            """);
+                    stmtt.execute("""
+                            CREATE TABLE IF NOT EXISTS sanction (
+                                    uuid_user VARCHAR(50),
+                                    type VARCHAR(20) NOT NULL,
+                                    start VARCHAR(70),
+                                    expire VARCHAR(70),
+                                    reason VARCHAR(120),
+                                    nameStaff VARCHAR(50),
+                                    ip VARCHAR(60),
+                                    FOREIGN KEY (uuid_user) REFERENCES users(uuid) ON DELETE CASCADE
+                                );
+                            """);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -145,6 +131,7 @@ public class ManagerDB {
             }
         }
     }
+
 
     //Añade o actualiza un usuario en la base de datos
     public void addOrUpdateUser(String uuid, String name, String ip) {
@@ -179,7 +166,8 @@ public class ManagerDB {
                 }
             }
 
-        } catch (SQLException e) {}
+        } catch (SQLException e) {
+        }
     }
 
 
@@ -253,10 +241,10 @@ public class ManagerDB {
     // Comprobar si un jugador tiene uan sancion
     public boolean isPlayerSancionado(String uuid, String type, String ip) {
         String sql = """
-        SELECT * FROM sanction
-        WHERE type = ? AND (uuid_user = ? OR ip = ?)
-        ORDER BY start DESC LIMIT 1
-    """;
+                    SELECT * FROM sanction
+                    WHERE type = ? AND (uuid_user = ? OR ip = ?)
+                    ORDER BY start DESC LIMIT 1
+                """;
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, type);
@@ -283,7 +271,7 @@ public class ManagerDB {
     }
 
     // Obtenemos la informacion de la sancion
-    public Sanction getInfoSanction(String uuid, String type, String ip){
+    public Sanction getInfoSanction(String uuid, String type, String ip) {
         String sql = "SELECT * FROM sanction WHERE type = ? AND (uuid_user = ? OR ip = ?) ORDER BY start DESC LIMIT 1";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -308,7 +296,7 @@ public class ManagerDB {
     }
 
     // Obtenemos la informacion del jugador
-    public User getInfoUser (String name){
+    public User getInfoUser(String name) {
         String sql = "SELECT * FROM users WHERE name = ? LIMIT 1";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -362,5 +350,4 @@ public class ManagerDB {
             e.printStackTrace();
         }
     }
-
 }
