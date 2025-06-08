@@ -1,9 +1,19 @@
 package dev.didelfo.shadowWarden;
 
+import dev.didelfo.shadowWarden.autocomplete.BanCompleter;
+import dev.didelfo.shadowWarden.autocomplete.MuteCompleter;
 import dev.didelfo.shadowWarden.autocomplete.PermissionCompleter;
+import dev.didelfo.shadowWarden.autocomplete.TempBanCompleter;
 import dev.didelfo.shadowWarden.commands.staff.PermissionCommand;
 import dev.didelfo.shadowWarden.commands.staff.LinkCommand;
-import dev.didelfo.shadowWarden.commands.staff.StaffMenuCommand;
+import dev.didelfo.shadowWarden.commands.staff.UnLinkCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.WarnCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.BanCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.TempBanCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.ban.UnBanCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.MuteCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.TempMuteCommand;
+import dev.didelfo.shadowWarden.commands.staff.sanctions.mute.UnMuteCommand;
 import dev.didelfo.shadowWarden.listeners.events.inventory.InventoryListener;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventChat;
 import dev.didelfo.shadowWarden.listeners.events.players.PlayerEventLogger;
@@ -44,9 +54,6 @@ public final class ShadowWarden extends JavaPlugin {
         initializeCommands(this);
         initializeAutocomplete(this);
 
-        // Secuencia de inicio
-        startupSquence();
-
 
     }
 
@@ -85,9 +92,16 @@ public final class ShadowWarden extends JavaPlugin {
 
     // Inicializdor de comandos
     private void initializeCommands(ShadowWarden pl){
-        pl.getCommand("staffmenu").setExecutor(new StaffMenuCommand(pl));
         pl.getCommand("link").setExecutor(new LinkCommand(pl));
+        pl.getCommand("unlink").setExecutor(new UnLinkCommand(pl));
         pl.getCommand("permission").setExecutor(new PermissionCommand(pl));
+        pl.getCommand("ban").setExecutor(new BanCommand(pl));
+        pl.getCommand("tempban").setExecutor(new TempBanCommand(pl));
+        pl.getCommand("mute").setExecutor(new MuteCommand(pl));
+        pl.getCommand("tempmute").setExecutor(new TempMuteCommand(pl));
+        pl.getCommand("warn").setExecutor(new WarnCommand(pl));
+        pl.getCommand("unban").setExecutor(new UnBanCommand(pl));
+        pl.getCommand("unmute").setExecutor(new UnMuteCommand(pl));
     }
 
     // Inicializador de lisener
@@ -100,14 +114,11 @@ public final class ShadowWarden extends JavaPlugin {
     // Inicializador de autoCompletado
     private void initializeAutocomplete(ShadowWarden pl){
         pl.getCommand("permission").setTabCompleter(new PermissionCompleter(pl));
+        pl.getCommand("ban").setTabCompleter(new BanCompleter(pl));
+        pl.getCommand("tempban").setTabCompleter(new TempBanCompleter(pl));
+        pl.getCommand("mute").setTabCompleter(new MuteCompleter(pl));
     }
 
-    // Secuencia de inicio
-    private void startupSquence(){
-        //dbm.secuenciaInicioTablas();
-
-
-    }
 
     // Getters de objetos utilies
     public ManagerDB getManagerDB() { return dbm;} // Manager BD

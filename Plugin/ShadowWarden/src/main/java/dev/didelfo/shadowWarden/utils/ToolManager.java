@@ -2,8 +2,7 @@ package dev.didelfo.shadowWarden.utils;
 
 import com.google.gson.Gson;
 import dev.didelfo.shadowWarden.ShadowWarden;
-import dev.didelfo.shadowWarden.manager.connections.websocket.components.ClientWebSocket;
-import dev.didelfo.shadowWarden.manager.connections.websocket.components.StructureMessage;
+import dev.didelfo.shadowWarden.manager.connections.websocket.model.ClientWebSocket;
 import dev.didelfo.shadowWarden.manager.database.EncryptedDatabase;
 import dev.didelfo.shadowWarden.security.hmac.HmacUtil;
 import org.bukkit.inventory.ItemStack;
@@ -13,9 +12,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.Map;
 
 public class ToolManager {
 
@@ -120,6 +120,44 @@ public class ToolManager {
     }
 
 
+    // -------------- Calcular tiempo Sancion ---------
+
+    public String getTiempoRestante(String fechaGuardada) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime fechaExpiracion = LocalDateTime.parse(fechaGuardada, formatter);
+        LocalDateTime ahora = LocalDateTime.now();
+
+        if (ahora.isAfter(fechaExpiracion)) {
+            return "Expirado";
+        }
+
+        Duration duracion = Duration.between(ahora, fechaExpiracion);
+
+        long segundos = duracion.getSeconds();
+        long dias = segundos / (24 * 3600);
+        segundos = segundos % (24 * 3600);
+        long horas = segundos / 3600;
+        segundos = segundos % 3600;
+        long minutos = segundos / 60;
+        segundos = segundos % 60;
+
+        StringBuilder sb = new StringBuilder();
+
+        if (dias > 0) {
+            sb.append(dias).append("d ");
+        }
+        if (horas > 0) {
+            sb.append(horas).append("h ");
+        }
+        if (minutos > 0) {
+            sb.append(minutos).append("m ");
+        }
+        if (segundos > 0 || sb.length() == 0) {
+            sb.append(segundos).append("s");
+        }
+
+        return sb.toString().trim();
+    }
 
 
 }
