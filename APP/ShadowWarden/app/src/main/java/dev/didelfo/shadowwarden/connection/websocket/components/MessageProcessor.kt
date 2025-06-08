@@ -2,41 +2,128 @@ package dev.didelfo.shadowwarden.connection.websocket.components
 
 import android.util.Log
 import androidx.navigation.NavHostController
+import com.google.gson.Gson
+import dev.didelfo.shadowwarden.connection.websocket.WSController
+import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
+import dev.didelfo.shadowwarden.ui.navigation.AppNavigator
 import dev.didelfo.shadowwarden.ui.navigation.AppScreens
+import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatMessage
+import kotlinx.coroutines.flow.StateFlow
 
-class MessageProcessor(navController: NavHostController) {
+class MessageProcessor() {
 
-    private val nave = navController
+    val nave = checkNotNull(AppNavigator.navController)
 
 
-    fun classifyCategory(m: StructureMessage){
+    fun classifyCategory(m: StructureMessage) {
 
-        when(m.category){
-            "auth" -> {
-                classifyAuth(m)
-            }
-            "chat" -> {
-                classifyChat(m)
-            }
+        when (m.category) {
+            "auth" -> classifyAuth(m)
+            "chat" -> classifyChat(m)
+            "moderation" -> classifyModeration(m)
+            "config" -> classifyConfig(m)
             else -> {}
         }
     }
 
-    private fun classifyAuth(m: StructureMessage){
-        when(m.action){
+    private fun classifyAuth(m: StructureMessage) {
+        when (m.action) {
             "GetCurrentUserPermissions" -> {
-                // Savemos que es una lista de string
-                val permissions: List<String> = m.data.get("permissions") as List<String>
-                nave.navigate(AppScreens.ServerHomeScreen.createRoute(permissions))
+                try {
+                    // Savemos que es una lista de string
+                    val permissions: List<String> = m.data.get("permissions") as List<String>
+                    WSController.cliente.permission = permissions
+                    nave.navigate(AppScreens.ServerHomeScreen.route)
+                } catch (e: Exception) {
+                    WSController.closeConnection()
+                    nave.navigate(AppScreens.HomeScreen.route)
+                }
             }
+
             else -> {}
         }
     }
 
-    private fun classifyChat(m: StructureMessage){
-        when(m.action){
-            "JoinChat" -> {}
-            "MessageSend" -> {}
+    private fun classifyChat(m: StructureMessage) {
+        when (m.action) {
+            "SubscribeChat" -> {
+                try {
+                    val gson = Gson()
+                    val rawList = m.data["mensajesChat"] as? List<*> ?: emptyList<Any>()
+                    val mensajes = rawList.mapNotNull {
+                        try {
+                            val json = gson.toJson(it)
+                            gson.fromJson(json, ChatMessage::class.java)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    nave.navigate(AppScreens.ChatScreen.route)
+                    WSController.cliente.setMessages(mensajes)
+
+                } catch (e: Exception) {
+                    WSController.closeConnection()
+                    nave.navigate(AppScreens.HomeScreen.route)
+                }
+
+            }
+
+            "MessageSend" -> {
+                try {
+                    val gson = Gson()
+                    val msgData = m.data["mensaje"]
+                    val mensaje = gson.fromJson(gson.toJson(msgData), ChatMessage::class.java)
+                    WSController.cliente.addMessage(mensaje)
+                } catch (e: Exception) {
+                    WSController.closeConnection()
+                    nave.navigate(AppScreens.HomeScreen.route)
+                }
+            }
+
+            else -> {}
+        }
+    }
+
+    private fun classifyModeration(m: StructureMessage) {
+
+        when (m.action) {
+
+            "ChatSanction" -> {
+                try {
+                    val gson = Gson()
+                    val msgData = m.data["mensaje"]
+                    val mensaje = gson.fromJson(gson.toJson(msgData), ChatMessage::class.java)
+                    WSController.cliente.addMessage(mensaje)
+                } catch (e: Exception) {
+                    WSController.closeConnection()
+                    nave.navigate(AppScreens.HomeScreen.route)
+                }
+            }
+
+            else -> {}
+        }
+
+    }
+
+    private fun classifyConfig(m: StructureMessage) {
+        when (m.action) {
+            "GetConfigSpamFilter" -> {
+                try {
+                    val enable = m.data["enable"]?.toString()?.toBooleanStrictOrNull() ?: false
+                    val time = m.data["time"]?.toString()?.toDoubleOrNull()?.toInt() ?: 0
+
+                    WSController.cliente.enableSpam = enable
+                    WSController.cliente.time = time
+
+                    nave.navigate(AppScreens.SpamFilterScreen.route)
+
+                } catch (e: Exception) {
+                    Log.e("prueba", "Error al procesar GetConfigSpamFilter", e)
+                    WSController.closeConnection()
+                    nave.navigate(AppScreens.HomeScreen.route)
+                }
+            }
+
             else -> {}
         }
     }

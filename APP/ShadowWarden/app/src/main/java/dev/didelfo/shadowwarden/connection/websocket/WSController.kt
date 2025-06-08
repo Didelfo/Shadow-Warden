@@ -4,11 +4,13 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import dev.didelfo.shadowwarden.connection.websocket.components.ClientWebSocket
-import dev.didelfo.shadowwarden.connection.websocket.components.MessageWS
-import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
+import dev.didelfo.shadowwarden.connection.websocket.components.MessageProcessor
+import dev.didelfo.shadowwarden.connection.websocket.model.ClientWebSocket
+import dev.didelfo.shadowwarden.connection.websocket.model.MessageWS
+import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.localfiles.Server
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
+import dev.didelfo.shadowwarden.ui.screens.server.chat.ChatScreenViewModel
 import dev.didelfo.shadowwarden.utils.json.JsonManager
 import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import okhttp3.*
@@ -27,7 +29,6 @@ import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.IOException
-import kotlin.math.log
 
 object WSController {
 
@@ -35,7 +36,7 @@ object WSController {
     private var webSocket: WebSocket? = null
     private var currentServerUrl: String? = null
     private var currentCertificate: String? = null
-    private var cliente: ClientWebSocket = ClientWebSocket()
+    var cliente: ClientWebSocket = ClientWebSocket()
     private val pendingRequests = mutableMapOf<String, CancellableContinuation<StructureMessage>>()
     var claveCompartidaUsable by mutableStateOf(false)
     private var t = ToolManager()
@@ -87,6 +88,9 @@ object WSController {
                                 pendingRequests.remove(mensajeDesencryp.id)
                             } else {
                                 // Cuando no tenga un ID sera un mensaje que procesaremos de manera normal
+
+                                MessageProcessor().classifyCategory(mensajeDesencryp)
+
                             }
                         } catch (e: Exception){
 
@@ -95,9 +99,6 @@ object WSController {
                     // En caso que no tenga ninguno de estos tipos, que es imposible porque los controla nuestro sistema
                     else -> {}
                 }
-
-
-
             } catch (e: Exception){
 
             }
@@ -163,6 +164,7 @@ object WSController {
         webSocket?.close(1000, "Cierre solicitado")
         webSocket = null
         currentServerUrl = null
+        cliente.reset()
     }
 
     // Metodo de mandar y esperar respuesta

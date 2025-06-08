@@ -2,8 +2,8 @@ package dev.didelfo.shadowwarden.utils.tools
 
 import android.content.Context
 import com.google.gson.Gson
-import dev.didelfo.shadowwarden.connection.websocket.components.MessageWS
-import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
+import dev.didelfo.shadowwarden.connection.websocket.model.MessageWS
+import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.localfiles.Tokeen
 import dev.didelfo.shadowwarden.security.keys.alias.GetAliasKey
 import dev.didelfo.shadowwarden.security.keys.alias.KeyAlias

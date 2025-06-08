@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.viewModel.server
+package dev.didelfo.shadowwarden.ui.screens.server.serverhome
 
 import android.content.Context
 import android.util.Log
@@ -11,22 +11,21 @@ import androidx.navigation.NavHostController
 import dev.didelfo.shadowwarden.R
 import dev.didelfo.shadowwarden.connection.websocket.WSController
 import dev.didelfo.shadowwarden.connection.websocket.components.MessageProcessor
-import dev.didelfo.shadowwarden.connection.websocket.components.StructureMessage
+import dev.didelfo.shadowwarden.connection.websocket.model.StructureMessage
 import dev.didelfo.shadowwarden.security.E2EE.EphemeralKeyStore
 import dev.didelfo.shadowwarden.security.HMAC.HmacHelper
-import dev.didelfo.shadowwarden.ui.screens.server.GridItem
 import dev.didelfo.shadowwarden.utils.tools.ToolManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class ServerHomeScreenViewModel(context: Context, nav: NavHostController) : ViewModel() {
+class ServerHomeScreenViewModel(context: Context) : ViewModel() {
 
     val cont = context
-    val nave = nav
 
     var isEditing by mutableStateOf(false)
     val allItems = listOf<GridItem>(
         GridItem(R.drawable.chat, "Chat", "shadowwarden.app.ui.chat"),
+        GridItem(R.drawable.spam, "Spam", "shadowwarden.app.ui.spam"),
     )
 
     fun clickItem(i: GridItem) {
@@ -53,10 +52,13 @@ class ServerHomeScreenViewModel(context: Context, nav: NavHostController) : View
         when (i.id) {
             "shadowwarden.app.ui.chat" -> {
                 // Solicitamos al servidor inscribirnos en el chat
-                msg.category = "register"
+                msg.category = "chat"
                 msg.action = "SubscribeChat"
             }
-
+            "shadowwarden.app.ui.spam" -> {
+                msg.category = "config"
+                msg.action = "GetConfigSpamFilter"
+            }
             else -> {}
         }
 
@@ -75,7 +77,7 @@ class ServerHomeScreenViewModel(context: Context, nav: NavHostController) : View
 
             // Esperamos la respuesta de la peticion
             val respuesta = WSController.sendAndWaitResponse(msg)
-            MessageProcessor(nave).classifyCategory(respuesta)
+            MessageProcessor().classifyCategory(respuesta)
         }
     }
 }

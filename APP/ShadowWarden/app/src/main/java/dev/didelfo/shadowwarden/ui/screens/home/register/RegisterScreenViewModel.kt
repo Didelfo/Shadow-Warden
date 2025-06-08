@@ -1,4 +1,4 @@
-package dev.didelfo.shadowwarden.ui.viewModel.home
+package dev.didelfo.shadowwarden.ui.screens.home.register
 
 import android.content.Context
 import androidx.compose.runtime.getValue
