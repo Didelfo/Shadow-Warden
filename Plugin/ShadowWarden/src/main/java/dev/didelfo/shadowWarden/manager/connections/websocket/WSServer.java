@@ -60,7 +60,7 @@ public class WSServer extends WebSocketServer {
 
     @Override
     public void onClose(WebSocket con, int i, String s, boolean b) {
-        plugin.getLogger().info("[Movil] -> Desconectado");
+        closeConection(con);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class WSServer extends WebSocketServer {
 
     @Override
     public void onError(WebSocket con, Exception e) {
-
+        closeConection(con);
     }
 
     @Override
